@@ -5396,3 +5396,23 @@ and stays resolved. M5.0, M0.22 and M0.21(c) are unchanged.
 > both jobs — `check` and the clean-machine `setup` — every step success,
 > first attempt, the second on the bumped actions and the new linter. No
 > Register changed.
+
+> **2026-10-03 — the publication record amended, on the author's
+> instruction.** `docs/PUBLICATION.md` said "The history is published with
+> the tree and is unchanged", which the decision of this day supersedes. An
+> amendment is appended in `1668e33`; the twenty-four lines above it are
+> byte-identical, and the three the `pages` workflow reads still lead the
+> file. It records, in the author's words, that the address on two early
+> commits does not go public and that a snapshot was chosen over a rewrite;
+> what that changes (the commit ids the log cites and the `engine_sha`
+> stamps name commits in the private, archived history) and what it does not
+> (the Registers, the decisions and the dated log, published as they were);
+> the three other exposures confirmed as kept; and the date the repository
+> was set public. `make check`: 652 passed, 1 deselected; both publication
+> checks clean. The site was redeployed (pages run `37131372227`) and the
+> live copy of the record carries the amendment.
+
+> **S1, S3, S10 — 2026-10-03, the merges' record and the amendment on the CI
+> machine.** `b352c43`: run `37130714573`; `1668e33`: run `37131359535`; both
+> jobs — `check` and the clean-machine `setup` — every step success, first
+> attempt. No Register changed.
