@@ -5325,3 +5325,24 @@ and stays resolved. M5.0, M0.22 and M0.21(c) are unchanged.
 > never held them. Which repository, and the tag and the release on it,
 > follow on the author's word. From the snapshot on, history is never
 > rewritten.
+
+> **2026-10-03 — the snapshot published to a repository that never held the
+> history.** On the author's choice ("Rename and replace"): the repository
+> that carried the history was renamed `MaverickHQ/occams-test-lab-history`
+> and stays private and whole, head `21a7d66` (CI run `37125190544`, both
+> jobs green); a fresh `MaverickHQ/occams-test-lab` was created, private
+> until the author's flip, and received one commit, `d14ad4b` — the same
+> tree, authored with the noreply address. Verified before the push in a
+> clone holding only that branch: one commit, 347 objects, neither the old
+> root nor the old head present, the address in no object, 652 passed and 1
+> deselected, the whole-tree scan and the site clean. This checkout now has
+> two remotes — `origin`, the published line on `main`, and `history`, the
+> private line on `history-main` — and a local pre-push hook refuses any ref
+> descending from the old root to anything but `history`. The tag `v1.0.0`
+> and its release move to the published line with this entry's commit; the
+> old tag stays with the history.
+
+> **S1, S3, S10 — 2026-10-03, the snapshot on the CI machine.** `d14ad4b` on
+> the new repository: run `37125612092`, both jobs — `check` and the
+> clean-machine `setup` — every step success, first attempt. No Register
+> changed.
