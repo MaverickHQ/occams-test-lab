@@ -1,0 +1,30 @@
+# M16.5 / ADR-0054 — the pinned heads attested outside the repository, without a key.
+# A Register's chain shows that no line changed without the rest; it cannot show that
+# the file is the one that was written. `register/HEADS.toml` pins every store's count
+# and head, and this workflow attests that file whenever it changes: a signed statement
+# bound to this repository and this workflow, recorded in a public transparency log that
+# dates it. Verify with:
+#   gh attestation verify register/HEADS.toml --repo MaverickHQ/occams-test-lab
+# The attestation dates the pin, not the past.
+name: attest
+on:
+  push:
+    branches: [main]
+    paths: ["register/HEADS.toml"]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  attest:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: The stores match the pin before the pin is attested
+        run: python3 -c "import sys; sys.path.insert(0, '.'); from occams.register import heads; raise SystemExit(heads.main(['check']))"
+      - uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-path: register/HEADS.toml
