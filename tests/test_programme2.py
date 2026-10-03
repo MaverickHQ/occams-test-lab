@@ -43,7 +43,7 @@ def test_affordability_says_what_each_floor_costs_in_trades_and_never_reads_meas
     a = archive(tmp_path / "archive")
     u = affordability(cfg, latest(a), span=(LO, LO + 1199), name="fixture")
     assert u["names"] == 3 and u["measurement_days"] == 600 and set(u["rates"]) == set(SIGNAL_RATES)
-    for r, row in u["rates"].items():
+    for row in u["rates"].values():
         assert 0 < row["n_eff"] <= row["n_raw"]
         floors = [row["affordable_floor"][k] for k in CELLS]
         assert all(f is None or f in FLOORS_WIDE for f in floors)

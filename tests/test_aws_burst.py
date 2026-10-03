@@ -19,7 +19,8 @@ def test_the_runbook_and_the_boot_script_parse_carry_no_credential_and_resume_ra
     assert "sleep 300" in boot and "set-desired-capacity" in boot and "--desired-capacity 0" in boot
     assert "set -Eeuo pipefail" in boot and "trap 'on_error $LINENO' ERR" in boot and "awscli-exe-linux-x86_64.zip" in boot
     assert boot.index('mkdir -p "$OUT/cells"') < boot.index("chown -R ubuntu:ubuntu") < boot.index("sudo -u ubuntu nohup")
-    assert "return 0\n}" in boot and 'ls "$OUT/cells"' not in boot and 'BASH_SUBSHELL' in boot and 'mkdir -p "$OUT/cells"' in boot and "| wc -l)\n" not in boot.split("progress()")[1].split("}")[0].replace("| wc -l)\n  [", "")
+    assert "return 0\n}" in boot and 'ls "$OUT/cells"' not in boot and 'BASH_SUBSHELL' in boot and 'mkdir -p "$OUT/cells"' in boot
+    assert "| wc -l)\n" not in boot.split("progress()")[1].split("}")[0].replace("| wc -l)\n  [", "")
     assert "install -y -qq git make unzip jq python3.12-venv" in boot and "apt-get install -y -qq git python3.12-venv awscli" not in boot
     assert "NO REPORT" in run and "console)" in run
     assert "X-aws-ec2-metadata-token" in boot and "--with-decryption" in boot and 'chmod 600 "configs/$CONFIG"' in boot

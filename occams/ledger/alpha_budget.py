@@ -29,7 +29,6 @@ from occams.config import Config, InformationAxis
 from occams.guards import Refusal
 from occams.hypothesis import Tier
 from occams.register import Register, register_record
-from dataclasses import dataclass as _dc
 
 EXHAUSTED = "AXIS_BUDGET_EXHAUSTED"
 
@@ -37,7 +36,7 @@ EXHAUSTED = "AXIS_BUDGET_EXHAUSTED"
 # ---- Register records ----------------------------------------------------
 
 @register_record
-@_dc(frozen=True)
+@dataclass(frozen=True)
 class AlphaSpent:
     hypothesis_id: str
     axis: str
@@ -50,7 +49,7 @@ class AlphaSpent:
 
 
 @register_record
-@_dc(frozen=True)
+@dataclass(frozen=True)
 class ReserveTransfer:
     axis: str
     alpha_moved: float
@@ -59,7 +58,7 @@ class ReserveTransfer:
 
 
 @register_record
-@_dc(frozen=True)
+@dataclass(frozen=True)
 class AlphaAccrued:
     axis: str
     alpha_accrued: float
@@ -68,7 +67,7 @@ class AlphaAccrued:
 
 
 @register_record
-@_dc(frozen=True)
+@dataclass(frozen=True)
 class ObservationsConsumed:
     hypothesis_id: str
     axis: str

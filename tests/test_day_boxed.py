@@ -28,7 +28,7 @@ def spec(**kw):
 
 
 def bars(rows, name="F"):
-    o, h, lo, c = zip(*rows)
+    o, h, lo, c = zip(*rows, strict=True)
     return Bars(name, tuple(map(float, o)), tuple(map(float, h)), tuple(map(float, lo)), tuple(map(float, c)),
                 tuple(1.0 for _ in rows), tuple(range(len(rows))))
 

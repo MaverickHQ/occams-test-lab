@@ -213,6 +213,13 @@ def _cols(ds: list[dict], f) -> str:
     return " | ".join(f(d) for d in ds)
 
 
+def _spend_cell(d: dict, ax: str, k: int) -> str:
+    """One config's cell of the spend table: the charge per question · how many it affords."""
+    if ax not in d["axes"]:
+        return "—"
+    return f"{d['axes'][ax]['spend_per_question'][k]:.3f} · {d['axes'][ax]['questions_affordable'][k]}"
+
+
 def falsifier_table(ds: list[dict]) -> str:
     """P(the first N mechanism verdicts are all null) by base rate, one
     block per config, the declared count marked."""
@@ -238,13 +245,15 @@ def affordability_table(cfg: Config, us: list[dict]) -> str:
     lines = ["", f"**Universe affordability, on paper** (`{Path(cfg.path).name}`) — trades a mechanism firing at r per name-day "
              "would afford on the measurement partition after the design effect at the universe's own same-day rho "
              "(daily returns, definition partition only), and the lowest floor in "
-             + "/".join(f"{f:g}" for f in FLOORS_WIDE) + "R that count can detect at each sweep size — a lower floor needs more trades. The floor stays the author's.", "",
+             + "/".join(f"{f:g}" for f in FLOORS_WIDE)
+             + "R that count can detect at each sweep size — a lower floor needs more trades. The floor stays the author's.", "",
              "| universe | names | meas. days | rho | rate | N raw | N effective | lowest detectable floor at " + " / ".join(f"k={k}" for k in CELLS) + " |",
              "|---|---|---|---|---|---|---|---|"]
     for u in us:
         for r, row in u["rates"].items():
             afford = " / ".join(f"{row['affordable_floor'][k]:g}R" if row["affordable_floor"][k] is not None else "none" for k in CELLS)
-            lines.append(f"| {u['name']} | {u['names']} | {u['measurement_days']:,} | {u['rho']:.2f} | {r:.2f} | {row['n_raw']:,} | {row['n_eff']:,} | {afford} |")
+            lines.append(f"| {u['name']} | {u['names']} | {u['measurement_days']:,} | {u['rho']:.2f} | {r:.2f} | {row['n_raw']:,} | "
+                         f"{row['n_eff']:,} | {afford} |")
     lines.append("")
     return "\n".join(lines)
 
@@ -271,12 +280,13 @@ def report(cfgs: list[Config], universes_: list[dict] | None = None) -> str:
     for ax in sorted({a for d in ds for a in d['axes']}):
         for k in CELLS:
             lines.append(f"| {ax}: spend per {k}-cell question · affordable | "
-                         f"{_cols(ds, lambda d, ax=ax, k=k: (f'{d['axes'][ax]['spend_per_question'][k]:.3f} · {d['axes'][ax]['questions_affordable'][k]}' if ax in d['axes'] else '—'))} |")
+                         f"{_cols(ds, lambda d, ax=ax, k=k: _spend_cell(d, ax, k))} |")
         lines.append(f"| {ax}: N per cell, mechanism, at {'/'.join(str(f) for f in FLOORS)}R | "
                      f"{_cols(ds, lambda d, ax=ax: ('/'.join(str(d['axes'][ax]['required_n_mech'][f]) for f in FLOORS) if ax in d['axes'] else '—'))} |")
         lines.append(f"| {ax}: N per cell, implementation | "
                      f"{_cols(ds, lambda d, ax=ax: ('/'.join(str(d['axes'][ax]['required_n_impl'][f]) for f in FLOORS) if ax in d['axes'] else '—'))} |")
-    lines.append(f"| mechanism verdicts affordable at {CELLS[0]}/{CELLS[1]} cells | {_cols(ds, lambda d: f'{d['verdicts_affordable'][CELLS[0]]} / {d['verdicts_affordable'][CELLS[1]]}')} |")
+    affordable = _cols(ds, lambda d: f"{d['verdicts_affordable'][CELLS[0]]} / {d['verdicts_affordable'][CELLS[1]]}")
+    lines.append(f"| mechanism verdicts affordable at {CELLS[0]}/{CELLS[1]} cells | {affordable} |")
     lines.append(f"| falsifier count · P(all null with a real edge) | {_cols(ds, lambda d: f'{d['falsifier_count']} · {d['p_all_null_with_edge']:.1%}')} |")
     lines.append(f"| partitions def/meas/res | {_cols(ds, lambda d: '/'.join(f'{x:g}' for x in d['partitions']))} |")
     lines.append("")
@@ -285,7 +295,8 @@ def report(cfgs: list[Config], universes_: list[dict] | None = None) -> str:
             lines.append(f"{'REFUSE' if fl.severity == 'refuse' else 'warn'} [{Path(d['config']).name}]: {fl.text}")
     lines.append("")
     lines.append(f"On paper: sigma {SIGMA_R}R and a {FLOOR_EV}R floor are the M0.15 conventions; a Hypothesis declares its own. "
-                 "A registered question is stamped with its config; changing alpha, partitions or the falsifier afterwards is a recorded decision, not a re-run.")
+                 "A registered question is stamped with its config; changing alpha, partitions or the falsifier afterwards is a recorded "
+                 "decision, not a re-run.")
     lines.append(falsifier_table(ds))
     if universes_:
         lines.append(affordability_table(cfgs[0], universes_))

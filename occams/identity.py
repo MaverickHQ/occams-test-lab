@@ -22,7 +22,7 @@ import ast
 import hashlib
 import subprocess
 from pathlib import Path
-from typing import Iterable
+from collections.abc import Iterable
 
 ROOT = Path(__file__).resolve().parent.parent
 ENTRY = ("occams.loop", "occams.engine.day_boxed", "occams.engine.position_boxed", "occams.survey.run")   # the modules that measure
@@ -52,9 +52,9 @@ def _file_of(module: str, root: Path) -> Path | None:
     base = root.joinpath(*module.split("."))
     if _exists_exactly(base.with_suffix(".py")):
         return base.with_suffix(".py")
-    if base.name in {p.name for p in base.parent.iterdir()} if base.parent.is_dir() else False:
-        if _exists_exactly(base / "__init__.py"):
-            return base / "__init__.py"
+    named_exactly = base.parent.is_dir() and base.name in {p.name for p in base.parent.iterdir()}
+    if named_exactly and _exists_exactly(base / "__init__.py"):
+        return base / "__init__.py"
     return None
 
 

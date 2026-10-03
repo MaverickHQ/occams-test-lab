@@ -21,7 +21,7 @@ from __future__ import annotations
 
 import argparse
 import sys
-from datetime import date, datetime, timezone
+from datetime import date, datetime, UTC
 from pathlib import Path
 
 from occams.console.facts import AuthorView, Facts, Finding, gather
@@ -438,7 +438,7 @@ def main(argv: list[str] | None = None) -> int:
     if out.exists():
         print(f"REFUSED: {out} exists — a conclusion is superseded by a new file, never overwritten; choose another path")
         return 1
-    text = render(f, generated=datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S+00:00"))
+    text = render(f, generated=datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%S+00:00"))
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(text, encoding="utf-8")
     print(f"conclusion: {out} ({len(text):,} bytes, {'author' if author else 'plain'}'s build) — {Path(a.register).name}: "

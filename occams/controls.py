@@ -181,7 +181,8 @@ def run_day_boxed(kind: str, cfg: dict, register_dir: Path, *, seed: int | None 
                   float(cfg["gates"]["loo_min_fraction"]))
     h = Hypothesis(
         id=f"CONTROL-{kind.upper()}-DAY-BOXED", tier=Tier.MECHANISM, axis=InformationAxis.PRICE_DAILY,
-        mechanism="apparatus test through the day-boxed engine: " + ("random entry has no edge" if kind == "null" else "a planted reversal at the floor is detectable over always-long"),
+        mechanism="apparatus test through the day-boxed engine: " + (
+            "random entry has no edge" if kind == "null" else "a planted reversal at the floor is detectable over always-long"),
         if_true="the pipeline refuses it" if kind == "null" else "the pipeline accepts it",
         if_false="the guards are decorative" if kind == "null" else "the gates are jointly unsatisfiable",
         falsifier="the opposite decision", floor=floor,

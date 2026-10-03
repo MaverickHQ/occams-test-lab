@@ -39,7 +39,7 @@ class HypothesisRegistered:
     universe: str = ""
 
     @classmethod
-    def from_hypothesis(cls, h) -> "HypothesisRegistered":
+    def from_hypothesis(cls, h) -> HypothesisRegistered:
         sv = h.survey or {}
         return cls(h.id, h.tier.value, h.axis.value, h.mechanism, h.falsifier,
                    h.floor.ev_net_r, h.floor.min_trades_per_year, h.search_space_size,
@@ -83,7 +83,7 @@ class HypothesisResolved:
     engine_code_sha: str = ""       # ADR-0055: the content hash of what measured it; "" on records before the rule
 
     @classmethod
-    def from_verdict(cls, hid: str, v) -> "HypothesisResolved":
+    def from_verdict(cls, hid: str, v) -> HypothesisResolved:
         return cls(hid, v.outcome, v.ev_net_r, v.trades_per_year, v.spec_hash,
                    v.engine_sha, v.seed, v.partition, tuple(v.refusals), getattr(v, "cost_basis", "unknown"),
                    getattr(v, "family_hash", ""), tuple(getattr(v, "winner_cell", ())), tuple(getattr(v, "checks", ())),

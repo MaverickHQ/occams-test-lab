@@ -41,7 +41,8 @@ def test_the_page_says_what_was_asked_on_what_what_it_showed_and_whether_it_is_r
 def test_the_command_writes_the_page_and_refuses_another_grids_results(tmp_path, capsys):
     a, cfg, reg, grid, out = survey(tmp_path)
     html = tmp_path / "docs" / "surveys" / "x.html"
-    rc = page_main([str(tmp_path / "grid-t.toml"), "--out", str(out), "--register", str(reg.path), "--config", str(tmp_path / "occams.toml"), "--html", str(html)])
+    rc = page_main([str(tmp_path / "grid-t.toml"), "--out", str(out), "--register", str(reg.path), "--config", str(tmp_path / "occams.toml"),
+                    "--html", str(html)])
     assert rc == 0 and html.exists() and "priced" in capsys.readouterr().out and html.read_text().startswith("<!doctype html>")
     other = tmp_path / "grid-o.toml"
     other.write_text((tmp_path / "grid-t.toml").read_text().replace('name = "grid-t"', 'name = "grid-o"'))

@@ -6,7 +6,7 @@ twice and the runner's own logic tested without a venue."""
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Callable, Iterator
+from collections.abc import Callable, Iterator
 
 from occams.cards import Acknowledgement, Decision
 from occams.data.bars import Bars

@@ -39,7 +39,7 @@ class Partitions:
             raise ValueError("partitions must sum to exactly 1")
 
     @classmethod
-    def from_config(cls, cfg) -> "Partitions":
+    def from_config(cls, cfg) -> Partitions:
         return cls(cfg.partitions.definition, cfg.partitions.measurement, cfg.partitions.reserve)
 
     def bounds(self, n_days: int) -> dict[str, tuple[int, int]]:
@@ -111,7 +111,7 @@ def declared_universe(register, name: str) -> dict | None:
     return recs[-1] if recs else None
 
 
-def span_for(register, bars_by_name, split: "Partitions", universe: str = "") -> tuple[int, int]:
+def span_for(register, bars_by_name, split: Partitions, universe: str = "") -> tuple[int, int]:
     """The span partitions are cut from: the frozen calendar when one
     exists; otherwise the archive's live span, but only while that span
     reproduces every boundary the Register already used. A live span that
@@ -138,7 +138,7 @@ def _recorded_cuts(register) -> list[tuple[str, str, tuple[int, int]]]:
     return out
 
 
-def _mismatches(cuts, split: "Partitions", lo: int, hi: int) -> list[str]:
+def _mismatches(cuts, split: Partitions, lo: int, hi: int) -> list[str]:
     b = split.bounds_over(lo, hi)
     return [f"{who} cut {part} as [{lo_}, {hi_}) but this span cuts it as [{b[part][0]}, {b[part][1]})"
             for who, part, (lo_, hi_) in cuts if b[part] != (lo_, hi_)]

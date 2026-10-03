@@ -108,12 +108,12 @@ class EquityCosts:
 
     @classmethod
     def declared(cls, instrument_class: InstrumentClass, *, instrument_currency: str, account_currency: str,
-                 low: bool = False) -> "EquityCosts":
+                 low: bool = False) -> EquityCosts:
         lo, hi = DECLARED_SPREAD[instrument_class]
         return cls(instrument_class, instrument_currency, account_currency,
                    Spread(lo if low else hi, "declared", DECLARED_PROVENANCE))
 
-    def bound(self) -> "EquityCosts":
+    def bound(self) -> EquityCosts:
         """The conservative bound approval uses (D23): the worst end of the
         declared range. A measured spread is already a fact and stays."""
         if self.spread.basis == "measured":
@@ -121,7 +121,7 @@ class EquityCosts:
         _, hi = DECLARED_SPREAD[self.instrument_class]
         return replace(self, spread=Spread(hi, "bounded", DECLARED_PROVENANCE))
 
-    def with_measured(self, observations: tuple[SpreadObservation, ...], *, provenance: str) -> "EquityCosts":
+    def with_measured(self, observations: tuple[SpreadObservation, ...], *, provenance: str) -> EquityCosts:
         return replace(self, spread=measured_spread(observations, provenance=provenance))
 
     @property

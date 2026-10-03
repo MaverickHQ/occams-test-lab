@@ -181,7 +181,8 @@ def test_bad_toml_is_a_refusal(tmp_path):
 def test_a_toml_file_round_trips(tmp_path):
     p = tmp_path / "occams.toml"
     lines = []
-    for sec, body in (("capital", FIXTURE["capital"]), ("alpha", {k: v for k, v in FIXTURE["alpha"].items() if k != "axes"}), ("lab", FIXTURE["lab"]), ("partitions", FIXTURE["partitions"])):
+    for sec, body in (("capital", FIXTURE["capital"]), ("alpha", {k: v for k, v in FIXTURE["alpha"].items() if k != "axes"}),
+                      ("lab", FIXTURE["lab"]), ("partitions", FIXTURE["partitions"])):
         lines.append(f"[{sec}]")
         lines += [f'{k} = "{v}"' if isinstance(v, str) else f"{k} = {v}" for k, v in body.items()]
     for ax, body in FIXTURE["alpha"]["axes"].items():

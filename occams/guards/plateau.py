@@ -18,7 +18,7 @@ T = "MEASURED->FORWARD"
 
 def neighbourhood(m, cell):
     """All cells within Chebyshev distance 1, the cell itself included."""
-    return [c for c in m.cells if all(abs(a - b) <= 1 for a, b in zip(c.indices, cell.indices))]
+    return [c for c in m.cells if all(abs(a - b) <= 1 for a, b in zip(c.indices, cell.indices, strict=True))]
 
 
 def evaluate(m, gates) -> tuple[Refusal | None, dict]:

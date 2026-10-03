@@ -165,7 +165,7 @@ def _section(raw: dict[str, Any], name: str, fields: dict[str, type], reasons: l
     return out
 
 
-def parse(raw: dict[str, Any], path: Path) -> Config:
+def parse(raw: dict[str, Any], path: Path) -> Config:  # noqa: C901 — one refusal per missing or malformed key, in order; split, the schema scatters
     reasons: list[str] = []
     cap = _section(raw, "capital", CAPITAL_FIELDS, reasons)
     alp = _section(raw, "alpha", ALPHA_FIELDS, reasons)

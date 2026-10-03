@@ -31,7 +31,7 @@ import sys
 import tomllib
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterator
+from collections.abc import Iterator
 
 from occams.proposers.base import Sweep
 from occams.proposers.price import PRICE_ENTRIES, entry_params, mechanism_sentence, price_template
@@ -219,7 +219,7 @@ def _numbers(v, *, what: str, positive: bool = True) -> tuple[float, ...]:
     return out
 
 
-def load(path: str | Path, *, register=None, plateau_cells: int | None = None) -> Grid:
+def load(path: str | Path, *, register=None, plateau_cells: int | None = None) -> Grid:  # noqa: C901 — one refusal per way a grid can be wrong
     """Load a grid or refuse it by name. With ``register``, every universe
     must be a ``UniverseDeclared`` record; with ``plateau_cells``, every
     family's sweep must hold a plateau of that size. Every distinct template

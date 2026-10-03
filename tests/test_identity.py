@@ -38,8 +38,9 @@ def test_code_closure_sha_covers_fills(tmp_path):
                 "occams/guards/forward.py", "occams/data/partitions.py", "occams/engine/probes.py", "occams/inference.py",
                 "occams/loop.py", "occams/survey/run.py", "occams/__init__.py"):
         assert rel in files, rel
-    assert not [f for f in files if f.startswith("occams/console/")] and "occams/survey/page.py" not in files   # a command line's imports are not a measurement's
-    assert len({f.lower() for f in files}) == len(files) and "occams/register/Store.py" not in files            # exact names: the same closure on any file system
+    # a command line's imports are not a measurement's; names are matched exactly, so the closure is the same on any file system
+    assert not [f for f in files if f.startswith("occams/console/")] and "occams/survey/page.py" not in files
+    assert len({f.lower() for f in files}) == len(files) and "occams/register/Store.py" not in files
     fills = root / "occams" / "core" / "execution.py"
     fills.write_bytes(fills.read_bytes() + b"#")
     assert identity.code_closure_sha(root=root) != before

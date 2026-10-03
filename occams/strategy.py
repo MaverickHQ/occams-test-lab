@@ -18,7 +18,8 @@ import hashlib
 import json
 from dataclasses import dataclass, replace
 from types import SimpleNamespace
-from typing import Any, Mapping
+from typing import Any
+from collections.abc import Mapping
 
 from occams.guards import Refused, refuse_or_pass
 
@@ -70,11 +71,11 @@ class Strategy:
     spec: Any = None  # a StrategySpec once M3 supplies one; its identity() is the mapping above
 
     @classmethod
-    def specify(cls, identity: Mapping[str, Any], *, hypothesis_id: str | None = None) -> "Strategy":
+    def specify(cls, identity: Mapping[str, Any], *, hypothesis_id: str | None = None) -> Strategy:
         return cls(tuple(sorted((k, v) for k, v in identity.items())), hypothesis_id)
 
     @classmethod
-    def from_spec(cls, spec, *, hypothesis_id: str | None = None) -> "Strategy":
+    def from_spec(cls, spec, *, hypothesis_id: str | None = None) -> Strategy:
         ident = spec.identity()
         return cls(tuple(sorted((k, json.dumps(v, sort_keys=True)) for k, v in ident.items())),
                    hypothesis_id, spec=spec)

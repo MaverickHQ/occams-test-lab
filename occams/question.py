@@ -80,7 +80,7 @@ class Question:
                            "instrument_currency": self.instrument_currency}, sort_keys=True)
 
     @classmethod
-    def from_json(cls, text: str) -> "Question":
+    def from_json(cls, text: str) -> Question:
         d = json.loads(text)
         h = d["hypothesis"]
         hyp = Hypothesis(id=h["id"], tier=Tier(h["tier"]), axis=InformationAxis(h["axis"]), mechanism=h["mechanism"],
@@ -149,7 +149,7 @@ def max_plateau_neighbourhood(sweep: Sweep) -> int:
 
 def register_question(q: Question, *, confirmation: Confirmation, budget: AlphaBudget, register: Register,
                       declared: Consumed | None, parent: Hypothesis | None = None,
-                      names: "frozenset[str] | None" = None) -> Question:
+                      names: frozenset[str] | None = None) -> Question:
     """M8.1: accepted, the axis decremented by rate × k. M8.2: an underpowered
     question is refused here — before it runs and before it spends — and so
     is a pooled set too small for leave-one-out ever to pass."""
@@ -341,7 +341,7 @@ def resolve_question(q: Question, m: Measurement, *, register: Register, archive
     winner = m.winner
     for r in fired:  # N6: every refusal is queryable, with its evidence, not only named in the Verdict
         register.append(register.RefusalRecorded(r.transition, r.reason, dict(r.evidence), winner.spec_hash, h.id))
-    for name, (r, seen) in zip(forward.CHECKS, judged):    # M16.8: and every check's numbers, passing or failing, before the resolution
+    for name, (r, seen) in zip(forward.CHECKS, judged, strict=True):    # M16.8: and every check's numbers, passing or failing, before the resolution
         register.append(register.GuardEvidence(h.id, winner.spec_hash, name, r is None, dict(seen)))
     winner_spec = apply_cell(q.template, dict(winner.params))
     assert winner_spec.hash == winner.spec_hash
@@ -532,21 +532,23 @@ def main(argv=None) -> int:
               f"{pre['baseline_trades']} trades; the template's signals EV {pre['definition_ev_net']:+.3f}; margin "
               f"{pre['definition_ev_net'] - pre['baseline_ev_net']:+.3f} — the fifth check (ADR-0043) asks the same at the corrected alpha "
               f"on the measurement partition")
-    print(f"available_n {pre['available_n']}" + (f" -> effective {h.power_plan.available_n} at measured rho {h.power_plan.rho:.3f}" if h.power_plan.rho is not None else " (clustering not measurable on the definition signals)"))
+    print(f"available_n {pre['available_n']}" + (f" -> effective {h.power_plan.available_n} at measured rho {h.power_plan.rho:.3f}"
+                                                  if h.power_plan.rho is not None else " (clustering not measurable on the definition signals)"))
     if pre.get("thinnest_cell"):
         tc = pre["thinnest_cell"]
         geom = ", ".join(f"{k} {v:g}" for k, v in tc["point"].items())
         print(f"the sweep's thinnest cell on the definition partition: {geom} — {tc['definition_trades']} trades, ≈{tc['available_n']} on the "
               f"measurement partition, against {pre['template_available_n']} from the template's signals; available_n is the lesser, because "
               f"the guard at measurement counts the winner's own trades (M8.2, M13.9)")
-    print(f"required_n per cell {h.required_n} at per-cell alpha {budget.rate(h.axis, h.tier):.4g}; spend {budget.spend_for(h.axis, h.tier, h.search_space_size):.4g} "
-          f"of {budget.remaining(h.axis):.4g} remaining on {h.axis.value}")
+    print(f"required_n per cell {h.required_n} at per-cell alpha {budget.rate(h.axis, h.tier):.4g}; "
+          f"spend {budget.spend_for(h.axis, h.tier, h.search_space_size):.4g} of {budget.remaining(h.axis):.4g} remaining on {h.axis.value}")
     from occams.guards.leave_one_out import MIN_GROUPS
     powered = h.power_plan.available_n >= h.required_n
     supportable = len(pre["names"]) >= MIN_GROUPS
     print("POWERED" if powered else "UNDERPOWERED — registration would be refused (M8.2)")
     if not supportable:
-        print(f"UNSUPPORTABLE — {len(pre['names'])} name(s); leave-one-out needs {MIN_GROUPS}, so no verdict on this set could be supported; registration would be refused")
+        print(f"UNSUPPORTABLE — {len(pre['names'])} name(s); leave-one-out needs {MIN_GROUPS}, so no verdict on this set could be supported; "
+              f"registration would be refused")
     cap = max_plateau_neighbourhood(sweep)
     plateau_ok = h.gates.plateau_cells <= cap
     if not plateau_ok:

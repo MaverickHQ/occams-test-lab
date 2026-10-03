@@ -146,8 +146,8 @@ def test_the_winner_is_the_largest_margin_over_always_long_and_leave_one_out_rea
 
     def cell(idx, by_group, baseline=None):
         trades = tuple(Trade(ev, g, i) for g, ev, n in by_group for i in range(n))
-        base = None if baseline is None else tuple((g, b, n) for (g, _e, n), b in zip(by_group, baseline))
-        base_ev = None if baseline is None else sum(b * n for (g, _e, n), b in zip(by_group, baseline)) / sum(n for _, _, n in by_group)
+        base = None if baseline is None else tuple((g, b, n) for (g, _e, n), b in zip(by_group, baseline, strict=True))
+        base_ev = None if baseline is None else sum(b * n for (g, _e, n), b in zip(by_group, baseline, strict=True)) / sum(n for _, _, n in by_group)
         return Cell((idx, 0), (("stop", float(idx)),), trades, baseline_ev=base_ev, baseline_by_group=base or ())
     groups = [("A", 0.5, 10), ("B", 0.5, 10), ("C", 0.5, 10)]
     x = cell(0, groups, baseline=(0.4, 0.4, 0.4))                       # EV 0.5, always-long 0.4: margin 0.1
@@ -163,3 +163,28 @@ def test_the_winner_is_the_largest_margin_over_always_long_and_leave_one_out_rea
     on_ev = Measurement(spec_hash="s", engine="t", engine_sha="e", seed=1, partition="measurement", years=1.0,
                         cells=(cell(0, [("A", 0.9, 10), ("B", 0.1, 10), ("C", 0.1, 10)]),), null_ev=())
     assert leave_one_out.check(on_ev, hyp().gates).evidence["group"] == "A"
+
+
+def test_leave_one_out_refuses_a_non_positive_pooled_score_by_name():
+    """M16.12 (the review's F24): a fraction of a non-positive score is a threshold with the wrong sign. It refused —
+    but as `carried by one group`, which is not what happened: there was nothing to carry."""
+    m = measure(synthetic.flat(-0.10))                       # every group loses: the pooled margin is negative
+    assert m.score(m.winner) < 0
+    r = leave_one_out.check(m, hyp().gates)
+    assert r is not None and r.reason == "leave-one-out: the pooled score is not positive; leave-one-out has nothing to preserve"
+    assert r.evidence["pooled_score"] == m.score(m.winner) and "group" not in r.evidence
+    refusal, seen = leave_one_out.evaluate(m, hyp().gates)
+    assert seen["reason"] == refusal.reason and "leave-one-out" in fired(m, hyp())
+
+
+def test_strict_zips_refuse_cells_of_unequal_depth():
+    """A sweep whose cells do not share one shape is refused at the neighbourhood, not silently truncated to the shorter index."""
+    import pytest
+
+    from occams.measurement import Cell, Measurement, Trade
+
+    a = Cell((0, 0), (("stop", 1.0), ("hold", 1.0)), (Trade(0.1, "A", 1),))
+    b = Cell((0,), (("stop", 1.0),), (Trade(0.1, "A", 1),))
+    m = Measurement(spec_hash="s", engine="t", engine_sha="e", seed=1, partition="measurement", years=1.0, cells=(a, b), null_ev=())
+    with pytest.raises(ValueError, match="zip"):
+        plateau.neighbourhood(m, a)

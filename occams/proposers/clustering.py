@@ -9,7 +9,7 @@ from __future__ import annotations
 from collections import defaultdict
 from dataclasses import dataclass
 from statistics import fmean
-from typing import Iterable
+from collections.abc import Iterable
 
 from occams.core import power as _power
 from occams.proposers.regime import ClusterLevel

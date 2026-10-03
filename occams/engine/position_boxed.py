@@ -16,7 +16,7 @@ refused here and a ``position_boxed`` one is refused there (M9.3).
 from __future__ import annotations
 
 from itertools import product
-from typing import Callable
+from collections.abc import Callable
 
 
 from occams.core import execution as ex
@@ -208,7 +208,7 @@ def measure(template: StrategySpec, axes: dict[str, list[float]],
     compiled_by_idx: dict[tuple[int, ...], CompiledStrategy] = {}
     passive: dict[tuple[int, ...], object] = {}
     for idx in product(*(range(len(axes[a])) for a in names)):
-        params = {a: float(axes[a][i]) for a, i in zip(names, idx)}
+        params = {a: float(axes[a][i]) for a, i in zip(names, idx, strict=True)}
         c = to_engine(cell_spec(template, params))
         trades = run(c, bars_by_name, seed=seed, cost_in_r=cost_in_r, actions=actions, costs=costs, regime=regime)
         probe = always_long_trades(c, bars_by_name, seed=seed, cost_in_r=cost_in_r, actions=actions, costs=costs, regime=regime)

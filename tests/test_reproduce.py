@@ -49,7 +49,8 @@ def test_private_reproduction_recreates_the_stamped_verdict_and_fails_loudly_wit
     before = reg.path.read_text()
     assert reproduce_main(args) == 0
     out = capsys.readouterr().out
-    assert "REPRODUCED: the stamped Verdict of Q-1 is recreated exactly" in out and "ev_net_r" in out and "config" not in out.split("REPRODUCED")[0].lower().replace("--config", "")
+    assert "REPRODUCED: the stamped Verdict of Q-1 is recreated exactly" in out and "ev_net_r" in out
+    assert "config" not in out.split("REPRODUCED")[0].lower().replace("--config", "")
     assert reg.path.read_text() == before                                 # a reproduction writes nothing to the Register
     # a question the queue does not hold, then no archive at all: failures with reasons, never a skip
     assert reproduce_main([*args[:2], "Q-9", *args[3:]]) == 2 and "no HypothesisResolved" in capsys.readouterr().out

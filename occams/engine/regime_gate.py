@@ -35,7 +35,7 @@ class RegimeContext:
         return self.classifier.frozen_hash
 
     @classmethod
-    def from_register(cls, register, archive) -> "RegimeContext | None":
+    def from_register(cls, register, archive) -> RegimeContext | None:
         from occams.proposers.regime import ClusterLevel, frozen
 
         clf = frozen(register)

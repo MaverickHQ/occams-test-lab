@@ -46,7 +46,7 @@ def test_forged_and_rechained_register_fails_against_pin(tmp_path):
     prev = "genesis"
     for seq, ln in enumerate(lines):
         ln["prev"] = prev
-        ln["sha"] = hashlib.sha256(f"{prev}|{seq}|{canonical(ln['payload'])}".encode("utf-8")).hexdigest()
+        ln["sha"] = hashlib.sha256(f"{prev}|{seq}|{canonical(ln['payload'])}".encode()).hexdigest()
         prev = ln["sha"]
     store.write_text("\n".join(canonical(ln) for ln in lines) + "\n", encoding="utf-8")
     assert Store(store).verify() == 37, "the chain alone accepts the forgery — that is the defect"

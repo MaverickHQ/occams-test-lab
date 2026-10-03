@@ -16,7 +16,7 @@ import hashlib
 import json
 from dataclasses import dataclass
 from itertools import product
-from typing import Callable
+from collections.abc import Callable
 
 import numpy as np
 
@@ -89,7 +89,7 @@ def _score(clf: RegimeClassifier, bars_by_name: dict[str, Bars]) -> float | None
     counts = {r: 0 for r in Regime}
     for b in bars_by_name.values():
         labs = [x for x in clf.labels(b) if x is not None]
-        for a, c in zip(labs, labs[1:]):
+        for a, c in zip(labs, labs[1:], strict=False):
             persist += a is c
             total += 1
         for x in labs:
@@ -131,7 +131,7 @@ def assert_causal(label_at: Callable[[Bars, int], object], bars: Bars, *, seed: 
         t = int(rng.integers(1, n))
         before = label_at(bars, t)
         scale = float(1.0 + rng.choice([-0.3, 0.3]))
-        f = lambda seq: tuple(v * scale if i >= t else v for i, v in enumerate(seq))  # noqa: E731
+        f = lambda seq, t=t, scale=scale: tuple(v * scale if i >= t else v for i, v in enumerate(seq))  # noqa: E731
         perturbed = Bars(bars.name, f(bars.open), f(bars.high), f(bars.low), f(bars.close), bars.volume, bars.day,
                          close_at=bars.close_at)
         after = label_at(perturbed, t)
@@ -212,10 +212,9 @@ def freeze(archive, cfg, *, register, level: ClusterLevel, index_name: str, seed
     from occams.data.partitions import Partitions
 
     current = frozen(register)
-    if current is not None:
-        if supersedes != current.frozen_hash or not reason.strip():
-            raise AlreadyFrozen("a classifier is already frozen in this Register; freezing again is a recorded supersession — "
-                                "name the frozen hash it supersedes and the reason (ADR-0005)")
+    if current is not None and (supersedes != current.frozen_hash or not reason.strip()):
+        raise AlreadyFrozen("a classifier is already frozen in this Register; freezing again is a recorded supersession — "
+                            "name the frozen hash it supersedes and the reason (ADR-0005)")
     parts = Partitions.from_config(cfg)
     latest = archive.latest_bars()
     if not latest:
@@ -303,7 +302,8 @@ def main(argv=None) -> int:
         return 1
     r = [x for x in reg.records() if x["type"] == "ClassifierFrozen"][-1]
     print(f"frozen {clf.frozen_hash[:12]}: short {clf.short} / long {clf.long} / band {clf.band}, {a.level}-level on {a.index}")
-    print(f"definition partition days [{r['definition_start_day']}, {r['definition_end_day']}) = {r['definition_first_at'][:10]} -> {r['definition_last_at'][:10]} over {list(r['names'])}")
+    print(f"definition partition days [{r['definition_start_day']}, {r['definition_end_day']}) = "
+          f"{r['definition_first_at'][:10]} -> {r['definition_last_at'][:10]} over {list(r['names'])}")
     print(f"persistence {r['persistence']:.3f}; label shares " + ", ".join(f"{k} {v:.1%}" for k, v in r["shares"].items()))
     return 0
 
@@ -379,7 +379,7 @@ def precommit(template, *, archive, cfg, register, seed: int, sweep=None) -> dic
 
         counts = []
         for values in itertools.product(*(v for _k, v in sweep.axes)):
-            point = dict(zip((k for k, _v in sweep.axes), values))
+            point = dict(zip((k for k, _v in sweep.axes), values, strict=True))
             n_cell = len(engine.run(to_engine(apply_cell(template, point)), definition, seed=seed, regime=ctx))
             counts.append((n_cell, point))
         n_thin, point_thin = min(counts, key=lambda c: c[0])
@@ -388,12 +388,14 @@ def precommit(template, *, archive, cfg, register, seed: int, sweep=None) -> dic
         available = min(available, thin_available)
     # the declared level: a classifier's own when gated; else same-day clusters across a pooled set (INDEX), one name alone (INSTRUMENT)
     level = ctx.classifier.level if ctx else (ClusterLevel.INDEX if len(definition) > 1 else ClusterLevel.INSTRUMENT)
+    measurable = len({t.day for t in trades}) >= 2 and len(trades) >= 3
     cm = measure_clustering([t.as_trade() for t in trades], level=level,
-                            provenance=f"definition partition {b['definition']}, {len(trades)} signals on {sorted(definition)}")         if len({t.day for t in trades}) >= 2 and len(trades) >= 3 else None
+                            provenance=f"definition partition {b['definition']}, {len(trades)} signals on {sorted(definition)}") if measurable else None
     return {"definition_trades": len(trades), "definition_days": def_days, "measurement_days": meas_days,
             "definition_ev_net": (sum(t.net_r for t in trades) / len(trades)) if trades else None,
             "baseline_trades": len(base), "baseline_ev_net": (sum(t.net_r for t in base) / len(base)) if base else None,
-            "names": names_in_measurement, "rate_per_name_day": rate_per_name_day, "available_n": available, "template_available_n": template_available, "thinnest_cell": thinnest,
+            "names": names_in_measurement, "rate_per_name_day": rate_per_name_day, "available_n": available,
+            "template_available_n": template_available, "thinnest_cell": thinnest,
             "clustering": cm, "context": ctx, "definition_bars": definition, "measurement_bounds": b["measurement"]}
 
 
@@ -414,7 +416,7 @@ def definition_surface(template, sweep, definition_bars, *, ctx, seed: int) -> l
     axes = sweep.as_dict()
     out = []
     for values in product(*axes.values()):
-        params = dict(zip(axes, values))
+        params = dict(zip(axes, values, strict=True))
         c = to_engine(apply_cell(template, params))
         trades = engine.run(c, definition_bars, seed=seed, regime=ctx, audit_fills=False)
         base_ev, _by = baseline_summary(engine.always_long_trades(c, definition_bars, seed=seed, cost_in_r=0.0, regime=ctx))
@@ -444,7 +446,7 @@ def axis_sensitivity(template, sweep, definition_bars, *, ctx, seed: int) -> dic
     engine = position_boxed if template.horizon is Horizon.MULTI_DAY else day_boxed
     outcomes = {}
     for idx in product(*(range(len(axes[a])) for a in names)):
-        params = {a: float(axes[a][i]) for a, i in zip(names, idx)}
+        params = {a: float(axes[a][i]) for a, i in zip(names, idx, strict=True)}
         trades = engine.run(to_engine(apply_cell(template, params)), definition_bars, seed=seed, regime=ctx, audit_fills=False)
         outcomes[idx] = tuple((round(t.gross_r, 9), t.reason) for t in trades)
     sens = {}
@@ -455,7 +457,7 @@ def axis_sensitivity(template, sweep, definition_bars, *, ctx, seed: int) -> dic
         for idx, out in outcomes.items():
             for j in range(idx[ai] + 1, len(axes[axis])):
                 other = outcomes[idx[:ai] + (j,) + idx[ai + 1:]]
-                differ = sum(1 for x, y in zip(out, other) if x != y) + abs(len(out) - len(other))
+                differ = sum(1 for x, y in zip(out, other, strict=False) if x != y) + abs(len(out) - len(other))
                 worst = max(worst, differ / max(1, len(out), len(other)))
         sens[axis] = worst
     return sens

@@ -58,7 +58,8 @@ def test_fifth_check_holds_size_on_empty_world_position_boxed():
     _within("position_boxed:martingale-rho0.0", "beats_always_long")
 
 
-@pytest.mark.xfail(strict=True, reason="M16.15 (ADR-0049): the baseline is long on every box whatever the winner's side — a coin flip beats it by being short half the time")
+@pytest.mark.xfail(strict=True, reason="M16.15 (ADR-0049): the baseline is long on every box whatever the winner's side — "
+                                       "a coin flip beats it by being short half the time")
 def test_fifth_check_refuses_coin_flip_on_drifting_paths():
     """The review's F04: on a market that falls, a coin flip passes the check that is meant to attest the entry."""
     _within("day_boxed:downdrift-rho0.0:coin", "beats_always_long")

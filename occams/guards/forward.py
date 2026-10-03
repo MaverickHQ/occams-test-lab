@@ -16,13 +16,13 @@ def check(m, h) -> tuple[Refusal, ...] | None:
 
 def passes(m, h) -> tuple[str, ...]:
     """The names of the checks that pass, for a record that says so."""
-    return tuple(name for name, (r, _) in zip(CHECKS, evaluations(m, h)) if r is None)
+    return tuple(name for name, (r, _) in zip(CHECKS, evaluations(m, h), strict=True) if r is None)
 
 
 def evidence(m, h) -> tuple[tuple[str, bool, dict], ...]:
     """(check, passed, the numbers it judged) for each of the five, in order — what a
     resolution records before it resolves, pass or fail (M16.8)."""
-    return tuple((name, r is None, dict(seen)) for name, (r, seen) in zip(CHECKS, evaluations(m, h)))
+    return tuple((name, r is None, dict(seen)) for name, (r, seen) in zip(CHECKS, evaluations(m, h), strict=True))
 
 
 def evaluations(m, h) -> tuple[tuple[Refusal | None, dict], ...]:

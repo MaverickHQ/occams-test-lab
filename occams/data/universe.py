@@ -6,7 +6,7 @@ names included; names enter and leave as they did in life.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Mapping
+from collections.abc import Mapping
 
 from occams.spec.spec import UniverseRule
 

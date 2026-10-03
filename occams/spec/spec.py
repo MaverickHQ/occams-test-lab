@@ -235,7 +235,7 @@ class StrategySpec:
         return json.dumps(self.identity(), sort_keys=True, indent=1)
 
     @classmethod
-    def from_json(cls, text: str) -> "StrategySpec":
+    def from_json(cls, text: str) -> StrategySpec:
         d = json.loads(text)
         return cls(
             entries=tuple(Entry(EntryKind(e["kind"]), Side(e["side"]), tuple((k, v) for k, v in e["params"])) for e in d["entries"]),
@@ -251,7 +251,7 @@ class StrategySpec:
                                                                d["regime"]["index"]),
         )
 
-    def replace(self, **changes) -> "StrategySpec":
+    def replace(self, **changes) -> StrategySpec:
         current = {f.name: getattr(self, f.name) for f in fields(self)}
         current.update(changes)
         return StrategySpec(**current)

@@ -26,10 +26,13 @@ def test_a_signal_that_only_rides_the_drift_is_refused_by_name(tmp_path):
     assert len(m.baseline_ev) == 400
     q, v, deployable = resolve_question(q, m, register=reg, archive=arch, seed=3, path_draws=200)
     assert v.outcome == "null" and deployable is None
-    assert [r.split(":")[0] for r in v.refusals] == ["beats-always-long"]
+    # M16.12: the winner *is* always-long, so its margin is nil, and leave-one-out now refuses a pooled score with nothing to
+    # preserve by name — it used to pass it. The fifth check refused then and refuses now; the verdict is null either way.
+    assert [r.split(":")[0] for r in v.refusals] == ["leave-one-out", "beats-always-long"] and m.score(m.winner) == 0.0
+    assert v.refusals[0] == "leave-one-out: the pooled score is not positive; leave-one-out has nothing to preserve"
     assert v.checks == forward.CHECKS
     rec = [r for r in reg.records() if r["type"] == "HypothesisResolved"][-1]
-    assert tuple(rec["checks"]) == forward.CHECKS and rec["refusals"][0].startswith("beats-always-long: being long")
+    assert tuple(rec["checks"]) == forward.CHECKS and rec["refusals"][-1].startswith("beats-always-long: being long")
     assert rec["surface"] == "margin" and m.surface == "margin"                                  # ADR-0045: the record names its surface
     ev = [r for r in reg.records() if r["type"] == "RefusalRecorded"][-1]["evidence"]
     assert ev["p_baseline"] > ev["alpha_corrected"] and "baseline_mean" in ev

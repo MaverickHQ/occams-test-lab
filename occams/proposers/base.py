@@ -158,7 +158,7 @@ class DraftQueued:
     notes: str
 
     @classmethod
-    def from_draft(cls, d: Draft) -> "DraftQueued":
+    def from_draft(cls, d: Draft) -> DraftQueued:
         return cls(d.proposer, d.axis.value, d.tier.value, d.mechanism, d.if_true, d.if_false, d.falsifier,
                    d.floor.ev_net_r, d.floor.min_trades_per_year, d.sweep.as_dict(), d.search_space_size,
                    d.sigma_r, d.sigma_provenance, d.power,
@@ -230,7 +230,7 @@ class Sandbox:
     operations: Any = field(default_factory=lambda: _Denied("Operations access"))
 
     @classmethod
-    def build(cls, register, queue: DraftQueue, *, allow_hosts: frozenset[str] = frozenset(), fetcher=None) -> "Sandbox":
+    def build(cls, register, queue: DraftQueue, *, allow_hosts: frozenset[str] = frozenset(), fetcher=None) -> Sandbox:
         return cls(ReadOnlyRegister(register), WriteOnlyQueue(queue), Allowlist(frozenset(allow_hosts)), fetcher)
 
     def retrieve(self, url: str):

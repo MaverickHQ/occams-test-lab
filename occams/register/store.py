@@ -15,7 +15,7 @@ import json
 import os
 from contextlib import contextmanager
 from dataclasses import dataclass, fields, is_dataclass
-from datetime import datetime, timezone
+from datetime import datetime, UTC
 from pathlib import Path
 from typing import Any, ClassVar
 
@@ -63,7 +63,7 @@ def operations_record(cls):
 
 def now() -> str:
     """An instant, never a date (R10)."""
-    return datetime.now(timezone.utc).isoformat(timespec="microseconds")
+    return datetime.now(UTC).isoformat(timespec="microseconds")
 
 
 def _plain(v: Any) -> Any:
@@ -123,7 +123,7 @@ class Store:
 
     @staticmethod
     def _digest(prev: str, seq: int, payload: dict) -> str:
-        return hashlib.sha256(f"{prev}|{seq}|{canonical(payload)}".encode("utf-8")).hexdigest()
+        return hashlib.sha256(f"{prev}|{seq}|{canonical(payload)}".encode()).hexdigest()
 
     def _check(self, lines: list[dict], *, start: int, prev: str) -> None:
         for i, line in enumerate(lines, start):
@@ -161,7 +161,7 @@ class Store:
         self._truncated(data)
         lines = self._parse(data)
         self._check(lines, start=0, prev="genesis")
-        if len(lines) < len(self._verified) or any(a["sha"] != b["sha"] for a, b in zip(self._verified, lines)):
+        if len(lines) < len(self._verified) or any(a["sha"] != b["sha"] for a, b in zip(self._verified, lines, strict=False)):
             raise TamperedHistory(f"{self.name}: truncated or replaced — the {len(self._verified)} records this store verified "
                                   f"are not the first records of the file")
         self._remember(lines, data)

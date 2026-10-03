@@ -39,3 +39,17 @@ def test_controls_comment_matches_computed_n():
     assert m, "the comment that states the required count is gone"
     assert int(m.group(2)) == cells
     assert int(m.group(1).replace(",", "")) == need
+
+
+def test_claude_md_is_small():
+    """M16.12 (the review's F25): the project context an agent reads first had grown to forty-three kilobytes of
+    history in paragraphs a thousand characters long. The history is the task list's status log; this file is the
+    rules and where to look — under five kilobytes, no line over two hundred characters, and still naming every rule."""
+    text = (ROOT / "CLAUDE.md").read_text(encoding="utf-8")
+    assert len(text.encode("utf-8")) < 5000, len(text.encode("utf-8"))
+    assert max(len(line) for line in text.splitlines()) <= 200
+    flat = " ".join(text.split())
+    for rule in ("author's alone", "never committed", "Append, never overwrite", "`register --yes`", "`APPROVED -> LIVE`",
+                 "vendored and never edited", "never goes to `origin`", "never merge on GitHub's side", "History is never rewritten",
+                 "never set it as a remote", "must refuse", "must accept", "TASKS-v4.md"):
+        assert rule in flat, rule

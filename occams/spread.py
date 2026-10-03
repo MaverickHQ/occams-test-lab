@@ -15,7 +15,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
-from datetime import datetime, timezone
+from datetime import datetime, UTC
 from pathlib import Path
 from statistics import fmean
 
@@ -31,7 +31,7 @@ def record(path: Path, *, instrument: str, bid: float, ask: float, phase: str, a
         raise ValueError("a spread needs 0 < bid < ask")
     if path.name.count(".local.") == 0:
         raise ValueError("observations go in a *.local.* file, which is gitignored; where they were observed stays off the record")
-    obs = SpreadObservation(instrument, at or datetime.now(timezone.utc).isoformat(timespec="seconds"), float(bid), float(ask), phase)
+    obs = SpreadObservation(instrument, at or datetime.now(UTC).isoformat(timespec="seconds"), float(bid), float(ask), phase)
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("a", encoding="utf-8") as f:
         f.write(json.dumps(obs.__dict__, sort_keys=True) + "\n")
@@ -53,7 +53,7 @@ def summarise(path: Path, *, provenance: str) -> dict:
     by_phase = {p: fmean(o.fraction for o in obs if o.phase == p) for p in PHASES if any(o.phase == p for o in obs)}
     out = {"fraction": sp.fraction, "basis": sp.basis, "provenance": sp.provenance, "observations": sp.observations,
            "instruments": {k: {"mean": fmean(v), "max": max(v), "n": len(v)} for k, v in sorted(by_instrument.items())},
-           "phases": by_phase, "measured_at": datetime.now(timezone.utc).isoformat(timespec="seconds")}
+           "phases": by_phase, "measured_at": datetime.now(UTC).isoformat(timespec="seconds")}
     path.with_suffix(".measurement.json").write_text(json.dumps(out, indent=1, sort_keys=True) + "\n", encoding="utf-8")
     return out
 

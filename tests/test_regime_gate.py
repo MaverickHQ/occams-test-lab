@@ -5,7 +5,7 @@ reading the frozen classifier from the Register."""
 from __future__ import annotations
 
 import copy
-from datetime import datetime, timezone
+from datetime import datetime, UTC
 from pathlib import Path
 
 import pytest
@@ -83,7 +83,7 @@ def test_admission_is_causal():
     ctx = RegimeContext(CLF, "IDX", idx)
     for first in (60, 120, 200, 333):
         before = admits(spec().regime, ctx, w["A"], first)
-        f = lambda seq: tuple(v * 1.4 if i >= first else v for i, v in enumerate(seq))  # noqa: E731
+        f = lambda seq, first=first: tuple(v * 1.4 if i >= first else v for i, v in enumerate(seq))  # noqa: E731
         bumped = Bars("IDX", f(idx.open), f(idx.high), f(idx.low), f(idx.close), idx.volume, idx.day)
         assert admits(spec().regime, RegimeContext(CLF, "IDX", bumped), w["A"], first) == before
 
@@ -114,7 +114,7 @@ def test_the_forward_runner_refuses_a_gated_spec_without_its_classifier(tmp_path
     with pytest.raises(GateRefusal):
         open_window(to_engine(spec()), ForwardWindow(3, 30), venue=ProposalVenue(DryRunTransport()),
                     register=Register(tmp_path / "r.jsonl"), operations=Operations(tmp_path / "o.jsonl"),
-                    min_size=Money(1.0, "XXX"), hypothesis_id="H", now=datetime(2026, 9, 11, tzinfo=timezone.utc))
+                    min_size=Money(1.0, "XXX"), hypothesis_id="H", now=datetime(2026, 9, 11, tzinfo=UTC))
 
 
 def test_measure_question_reads_the_frozen_classifier_from_the_register(tmp_path):
@@ -169,7 +169,7 @@ def test_m4_11_a_label_known_between_two_venues_closes_refuses_the_earlier_venue
     lon = replace(w["A"], name="LON", close_at=closes("LSE"))
     nyc = replace(w["A"], name="NYC", close_at=closes("NYSE"))
     # the index bar the label for day d reads is bar d-1; stamp its close at 18:00 UTC on day d — an ordinal that lies about when the label was known
-    late = replace(idx, close_at=tuple(datetime.combine(date.fromordinal(start + d + 1), time(18, 0), tzinfo=timezone.utc).isoformat() for d in idx.day))
+    late = replace(idx, close_at=tuple(datetime.combine(date.fromordinal(start + d + 1), time(18, 0), tzinfo=UTC).isoformat() for d in idx.day))
     ctx, plain = RegimeContext(CLF, "IDX", late), RegimeContext(CLF, "IDX", idx)
     boxes = [f for f in range(60, 400) if admits(spec().regime, plain, w["A"], f)]      # the up-regime boxes, by ordinal
     assert boxes

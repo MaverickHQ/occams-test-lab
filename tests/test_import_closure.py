@@ -24,7 +24,7 @@ def test_core_is_import_closed():
 
 
 def test_the_admitted_lazy_import_is_the_only_one():
-    assert _closure().LAZY_ADMITTED == {("archive", "boto3")}
+    assert {("archive", "boto3")} == _closure().LAZY_ADMITTED
 
 
 def test_core_has_twelve_modules_and_not_report():

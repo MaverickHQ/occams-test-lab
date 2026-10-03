@@ -18,12 +18,12 @@ def reg(tmp_path):
 
 
 def test_the_full_legal_set_is_exactly_this():
-    assert LEGAL == {
+    assert {
         (S.SPECIFIED, S.COMPILED), (S.COMPILED, S.MEASURED), (S.MEASURED, S.FORWARD),
         (S.FORWARD, S.APPROVED), (S.APPROVED, S.LIVE), (S.LIVE, S.HALTED), (S.HALTED, S.LIVE),
         (S.MEASURED, S.RETIRED), (S.FORWARD, S.RETIRED), (S.APPROVED, S.RETIRED),
         (S.LIVE, S.RETIRED), (S.HALTED, S.RETIRED),
-    }
+    } == LEGAL
 
 
 @pytest.mark.parametrize("a,b", [(a, b) for a, b in itertools.product(S, S) if (a, b) not in LEGAL])

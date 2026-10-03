@@ -10,10 +10,10 @@ one reading under which no venue's close can leak.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import date, datetime, time, timezone
+from datetime import date, datetime, time, UTC
 from zoneinfo import ZoneInfo
 
-UTC = timezone.utc
+UTC = UTC
 
 
 class NotAnInstant(TypeError):
@@ -70,7 +70,7 @@ class Claim:
         object.__setattr__(self, "known_at", instant(self.known_at))
 
     @classmethod
-    def from_as_of(cls, text: str, as_of) -> "Claim":
+    def from_as_of(cls, text: str, as_of) -> Claim:
         """A datetime is taken as the instant; a date is read as end of day (M4.5)."""
         if isinstance(as_of, datetime):
             return cls(text, as_of)

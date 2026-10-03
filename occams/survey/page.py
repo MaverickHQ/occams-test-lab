@@ -24,7 +24,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
-from datetime import date, datetime, timezone
+from datetime import date, datetime, UTC
 from pathlib import Path
 
 from occams.console.render import CSS, count, esc, num, pill, short
@@ -313,7 +313,7 @@ def render_page(grid: Grid, out: Path, *, register=None, cfg=None, generated: st
                  f'{count(held)} held; {count(summary.get("measurement_days", 0))} days of measurement partition untouched.</p>'
                  + _refusals(rows, u) + f'<h3>Top {TOP_ROWS} by margin over always-long</h3>' + _universe_table(rows, u)
                  + '<h3>Cells, in full</h3>' + _cards(rows, out, grid, u, pricer))
-    gen = generated or datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S+00:00")
+    gen = generated or datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%S+00:00")
     return ("<!doctype html>\n<html lang=\"en\"><head><meta charset=\"utf-8\">"
             "<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">"
             f"<title>Survey {esc(index['grid'])} · seed {esc(str(index['seed']))}</title><style>{CSS}{PAGE_CSS}</style></head><body><main>"

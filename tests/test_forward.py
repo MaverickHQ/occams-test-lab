@@ -6,7 +6,7 @@ from __future__ import annotations
 
 import dataclasses
 import inspect
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta, UTC
 
 import pytest
 
@@ -25,7 +25,7 @@ from occams.venues.paper import PaperVenue
 from occams.venues.proposal import ProposalVenue
 
 CAPS = frozenset({Capability.NATIVE_STOP, Capability.RESTING_ORDERS})
-T0 = datetime(2026, 9, 11, 21, 0, tzinfo=timezone.utc)
+T0 = datetime(2026, 9, 11, 21, 0, tzinfo=UTC)
 MIN = Money(1.0, "XXX")  # fixture: minimum size in a fictional account currency, never a recommendation
 
 

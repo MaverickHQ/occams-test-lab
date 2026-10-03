@@ -152,7 +152,8 @@ def test_the_conclusion_carries_the_survey_layer_and_passes_the_gate(tmp_path, c
     assert "| beats-null | passed |" in text and "| leave-one-out | passed |" in text
     # the survey layer: cells screened, questions from it, shrinkage, eras
     assert "`grid-t`, grid `gggggggggggg`, seed 7: 32 cells over etfs" in text and "Questions registered from it: `Q2-001` (cell `cell0123456789ab`)" in text
-    assert "Cells screened: 32 across 1 survey(s), stamped on every question registered from them (32 in all, N6); questions registered: 1; verdicts: 1." in text
+    assert ("Cells screened: 32 across 1 survey(s), stamped on every question registered from them (32 in all, N6); "
+            "questions registered: 1; verdicts: 1.") in text
     assert "No forward window was opened; no Strategy passed MEASURED." in text   # the fixture records no FORWARD transition
     assert "| `Q2-001` | `cell0123456789ab` | 32 | +0.314 | +0.210 | -0.104 | +0.428 | +0.260 | -0.168 | supported (#8) |" in text
     assert "70 at +0.200 / 70 at +0.250 / 70 at +0.180; each held out +0.215, +0.190, +0.225; 1 missed (#7)" in text
@@ -174,7 +175,8 @@ def test_programme_one_concludes_from_its_lab_closed_record(tmp_path, capsys):
     out = tmp_path / "p1.md"
     assert conclude_main(["--register", str(ROOT / "register" / "register.jsonl"), "--out", str(out)]) == 0
     text = out.read_text(encoding="utf-8")
-    assert "what 3 verdicts established" in text and "the lab's falsifier fired on 3 null mechanism verdicts (Q-003, Q-004, Q-005) (ADR-0033) — record `#33`" in text
+    assert "what 3 verdicts established" in text
+    assert "the lab's falsifier fired on 3 null mechanism verdicts (Q-003, Q-004, Q-005) (ADR-0033) — record `#33`" in text
     assert "| outcome | **null** (#9) | **null** (#21) | **null** (#32) |" in text
     assert "Refused: beats-null (random entry under the same geometry does as well); floor (" in text and "Passed: plateau." in text
     assert "No survey was recorded; every question came from a Draft." in text and "plain build" in text

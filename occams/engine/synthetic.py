@@ -13,7 +13,7 @@ Every number it needs is passed in; it holds no constants of its own.
 from __future__ import annotations
 
 from itertools import product
-from typing import Callable
+from collections.abc import Callable
 
 import numpy as np
 
@@ -55,14 +55,14 @@ def measure(*, spec_hash: str, seed: int, axes: dict[str, list[float]], groups: 
     days = int(round(years * 252))
     cells = []
     for idx in product(*(range(len(axes[a])) for a in names)):
-        params = tuple((a, float(axes[a][i])) for a, i in zip(names, idx))
+        params = tuple((a, float(axes[a][i])) for a, i in zip(names, idx, strict=True))
         trades = []
         by_group = []
         for g in groups:
             z = rng.standard_normal(n_per_group)
             when = rng.integers(0, days, size=n_per_group)
             e = effect(idx, g) - cost_in_r
-            trades.extend(Trade(float(e + sigma_r * zi), g, int(d)) for zi, d in zip(z, when))
+            trades.extend(Trade(float(e + sigma_r * zi), g, int(d)) for zi, d in zip(z, when, strict=True))
             # ADR-0045: always-long at the same geometry under the law is its expectation — no effect, the spread paid —
             # per group; the law has no bars to probe, and the fifth check's Monte Carlo below carries the sampling noise
             by_group.append((g, float(-cost_in_r), n_per_group))

@@ -21,7 +21,7 @@ import subprocess
 import tempfile
 from collections import defaultdict
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import datetime, UTC
 from pathlib import Path
 
 from occams.register import Register
@@ -45,7 +45,7 @@ class AuthorView:
     config_sha: str
 
     @classmethod
-    def from_config(cls, cfg) -> "AuthorView":
+    def from_config(cls, cfg) -> AuthorView:
         from occams.whatif import config_sha
 
         return cls({ax.value: float(a.budget) for ax, a in cfg.alpha.axes.items()},
@@ -262,7 +262,7 @@ def gather(register_path: Path, *, archive_dir: Path | None = None, author: Auth
         register_path=str(register_path),
         head=chain[-1]["sha"] if chain else "genesis",
         chain=chain,
-        generated=generated or datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S+00:00"),
+        generated=generated or datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%S+00:00"),
         repo_sha=repo_sha if repo_sha is not None else _repo_sha(Path(register_path).resolve().parent),
         engine_sha=measured[-1]["engine_sha"] if measured else None,
         config_sha=author.config_sha if author else (stamped[-1] if stamped else None),

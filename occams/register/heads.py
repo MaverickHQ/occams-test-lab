@@ -14,7 +14,7 @@ from __future__ import annotations
 import sys
 import tomllib
 from pathlib import Path
-from typing import Iterable
+from collections.abc import Iterable
 
 from occams.register.store import Store, TamperedHistory, now
 

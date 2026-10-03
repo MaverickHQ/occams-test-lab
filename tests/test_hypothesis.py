@@ -3,6 +3,8 @@ implementation Hypothesis without a resolved mechanism parent raises."""
 
 from __future__ import annotations
 
+import dataclasses
+
 import pytest
 
 from occams.config import InformationAxis
@@ -145,5 +147,5 @@ def test_instances_are_frozen_and_transitions_return_new_ones(reg):
     d = draft()
     h = register(d, confirmation=HUMAN, parent=None, register=reg, budget=budget(reg))
     assert d.state is HypothesisState.DRAFT and h.state is HypothesisState.REGISTERED
-    with pytest.raises(Exception):
+    with pytest.raises(dataclasses.FrozenInstanceError):
         d.state = HypothesisState.RESOLVED  # type: ignore[misc]

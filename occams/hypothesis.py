@@ -45,7 +45,7 @@ class PowerPlan:
     rho: float | None = None            # measured intra-cluster correlation, once it is (M7.7)
     rho_provenance: str = ""
 
-    def with_clustering(self, cm) -> "PowerPlan":
+    def with_clustering(self, cm) -> PowerPlan:
         """Consume a *measured* clustering: the design effect is applied to
         THIS plan's ``available_n`` (the trades the measurement partition
         affords), not to the sample the correlation was measured on. A bare

@@ -55,7 +55,7 @@ def reverting_bars(name: str, *, first: int, days: int, seed: int) -> Bars:
     rng = np.random.default_rng(seed)
     o, h, lo, c = [], [], [], []
     close = 100.0
-    for t in range(days):
+    for _ in range(days):
         z, u = rng.standard_normal(), abs(rng.standard_normal())
         r = 0.010 + 0.004 * z if len(c) >= 2 and c[-1] < c[-2] < (c[-3] if len(c) >= 3 else c[-2] + 1) else 0.012 * z
         op = close
@@ -268,7 +268,7 @@ def test_a_family_with_targets_declares_the_capability_its_target_cells_need(tmp
         from itertools import product
         axes = fam.sweep.as_dict()
         for values in product(*axes.values()):
-            to_engine(apply_cell(template, dict(zip(axes, values))))   # every cell of the sweep compiles from the family's template
+            to_engine(apply_cell(template, dict(zip(axes, values, strict=True))))   # every cell of the sweep compiles from the family's template
 
 
 @pytest.mark.slow

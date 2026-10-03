@@ -4,7 +4,7 @@ everywhere · M4.5 date-only as_of · M4.6 partitions · M4.7 one reserve look
 
 from __future__ import annotations
 
-from datetime import date, datetime, timezone
+from datetime import date, datetime, UTC
 from zoneinfo import ZoneInfo
 
 import pytest
@@ -34,7 +34,7 @@ def spec(**kw):
 
 
 def bars(rows, name="S"):
-    o, h, lo, c = zip(*rows)
+    o, h, lo, c = zip(*rows, strict=True)
     return Bars(name, tuple(map(float, o)), tuple(map(float, h)), tuple(map(float, lo)), tuple(map(float, c)),
                 tuple(1.0 for _ in rows), tuple(range(len(rows))))
 
@@ -98,7 +98,7 @@ def test_cross_venue_same_date_is_refused_by_instant_where_a_date_would_allow_it
     d = date(2026, 6, 15)
     lse_close = session_close(d, "LSE")      # 15:30Z in summer
     nyse_close = session_close(d, "NYSE")    # 20:00Z
-    known = datetime(2026, 6, 15, 18, 0, tzinfo=timezone.utc)  # a regime label computed at 18:00Z
+    known = datetime(2026, 6, 15, 18, 0, tzinfo=UTC)  # a regime label computed at 18:00Z
     assert lse_close.date() == nyse_close.date() == known.date()  # a date comparison sees no difference
     assert usable(nyse_close, known) is True
     assert usable(lse_close, known) is False  # the LSE bar closed before the label existed
