@@ -93,6 +93,7 @@ def default_targets() -> list[Path]:
     out += sorted((ROOT / "docs").glob("EXTENDING.md"))      # M15.10: the extending guide
     out += sorted((ROOT / "docs").glob("EXPLAINER-*.md"))     # M15.11: the explainers
     out += sorted((ROOT / "docs").glob("PUBLICATION.md"))     # M15.12: the decision itself goes out with the pages
+    out += sorted((ROOT / "docs" / "reviews").glob("*.md"))   # M16.2: an external review and its verification go out with the pages
     out += sorted((ROOT / "register").glob("*.jsonl"))
     if (ROOT / "build" / "console.html").exists():
         out.append(ROOT / "build" / "console.html")
@@ -162,6 +163,16 @@ def scan_tree(files: list[Path], *, decisions: list[dict], root: Path = ROOT) ->
     return unresolved, kept
 
 
+def heads_problems(root: Path = ROOT) -> list[str]:
+    """M16.4 / ADR-0054: every committed store against its pinned count and head. A rewrite
+    or a truncation of a store verifies on its own chain and fails here."""
+    if str(ROOT) not in sys.path:
+        sys.path.insert(0, str(ROOT))
+    from occams.register import heads
+
+    return heads.check(Path(root) / "register" / "HEADS.toml", root=Path(root))
+
+
 def tree_main() -> int:
     unresolved, kept = scan_tree(committed_text_files(), decisions=load_decisions())
     for h in unresolved:
@@ -182,6 +193,7 @@ def main(argv: list[str] | None = None) -> int:
     if "--all" in argv:
         return tree_main()
     targets = [Path(a) for a in argv] or default_targets()
+    heads = [] if argv else heads_problems()
     problems: list[str] = []
     pages = regs = 0
     for t in targets:
@@ -196,12 +208,14 @@ def main(argv: list[str] | None = None) -> int:
         else:
             pages += 1
             problems += check_page(text, name=rel)
+    problems += [f"pinned heads — {h}" for h in heads]
     if problems:
         for p in problems:
             print(f"PREPUBLISH FAIL: {p}")
         return 1
+    pinned = "" if argv else "; every committed store matches its pinned head (ADR-0054)"
     print(f"prepublish: {pages} page(s), {regs} register(s) clean — no script, no network, no credential shape, no broker term, "
-          f"no raw bars, no money key (M11.7)")
+          f"no raw bars, no money key (M11.7){pinned}")
     return 0
 
 

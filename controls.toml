@@ -15,7 +15,7 @@ power = 0.80
 [world]                      # the synthetic law the engine draws from
 groups = ["A", "B", "C", "D", "E"]
 years = 10
-trades_per_group_year = 20   # 5 x 10 x 20 = 1,000 per cell, above the 834 the plan requires at 9 cells
+trades_per_group_year = 20   # 5 x 10 x 20 = 1,000 per cell, above the 837 the plan requires at 9 cells
 cost_in_r = 0.05             # random entry loses the spread: the null's mean is -cost
 seed = 20260910
 

@@ -5,7 +5,7 @@ status: "PUBLISHED; M16 OPEN (2026-10-03): an external review of the inference, 
 created: 2026-08-31
 updated: 2026-10-03
 supersedes: "TASKS-v3.md. Earlier versions remain unedited."
-relates_to: "REQUIREMENTS-v4.md · DESIGN-v4.md · CONTEXT.md · docs/adr/0001-0046"
+relates_to: "REQUIREMENTS-v4.md · DESIGN-v4.md · CONTEXT.md · docs/adr/0001-0055"
 convention: "Append-only. Status changes are appended with a date. A task is DONE only when its Done-when check runs and passes in CI."
 ---
 
@@ -65,7 +65,7 @@ record.
 | **M13** | **open 2026-09-20 (ADR-0046)** — the third programme: whether a margin the screen finds transfers, on its own Register and numbers; M13.0–M13.4 done, readiness done, twenty Drafts; a first attempt refused underpowered before any spend; **Q3-001 registered by the author (#10–#11) and refused by the guard at measurement (#12): the winning cell holds 863 trades against 1,068 required — no verdict, 0.15 alpha spent, regime 0.05 left**; **stopped by the author 2026-09-22 (#13), no verdict; the conclusion adopted the same day — M13 closed** | `docs/PROGRAMME-3-CONCLUSION.md` | M13.9 built 2026-09-23; the closing statement and the publication decision, the author's |
 | **M14** | **open 2026-09-20** — operational maturity, from an external review verified claim by claim: seven items owed, five findings rejected on the facts and recorded so they are not rediscovered; **M14.0–M14.5 done 2026-09-21; M14.6 done and M14.7 built 2026-09-23** (M14.7's box-level proof waits for the next burst) | — | nothing owed in M14; the burst proof when a burst next runs |
 | **M15** | **open 2026-09-24** — the lab for others: what a hedge fund, a prop firm, an independent quant and a retail trader each need from it, and what a stranger needs to clone, configure and run it, burst included; the publication decision (R7) closes it | — | **closed 2026-09-26** — M15.0–M15.5 and M15.9–M15.11 done, M15.6–M15.8 closed by the author's decision, M15.12 decided: publish · **published 2026-10-03** (M15.13–M15.16) |
-| **M16** | **open 2026-10-03** — the inference review of 2026-10-03: twenty-five fixes, verified by rerun, then built in three releases (1.0.1 the record corrected, 1.1.0 the apparatus measures itself, 2.0.0 the guards corrected) that run end to end on the author's one instruction; the redesigns go to the successor lab | — | **open** — M16.0 done (verified 2026-10-03); M16.1–M16.20 owed; no row stops for the author |
+| **M16** | **open 2026-10-03** — the inference review of 2026-10-03: twenty-five fixes, verified by rerun, then built in three releases (1.0.1 the record corrected, 1.1.0 the apparatus measures itself, 2.0.0 the guards corrected) that run end to end on the author's one instruction; the redesigns go to the successor lab | — | **open, running since 2026-10-03** on the author's instruction ("run M16. Add including M16.21") — the row markers say where it stands |
 
 **Standing checks at the last green run (`34482191071`):** S1 ✓ · S2 ✓ (0.02 s)
 · S3 ✓ both engines · S5 ✓ · S6 ✓ (no `pytest.skip` anywhere, vendored
@@ -759,10 +759,10 @@ below; any number; any edit to an adopted document; any key.
 | # | Task (review ids) | Done when |
 |---|---|---|
 | **M16.0** | **The review verified by rerun** (appendix A) | The table above · **DONE 2026-10-03** |
-| **M16.1** | **The ADRs.** ADR-0047 (fixes bind forward; a re-score is a diagnostic, never a verdict; conservative fixes land before non-conservative ones), ADR-0048 (nulls at the winner's count, by calendar date, p counted plus one), ADR-0049 (the fifth check side-matched and dependence-aware), ADR-0051 (plateau), ADR-0054 (heads pinned and attested), ADR-0055 (engine identified by content), each recording the author's instruction as its adoption; ADR-0050 written as *proposed*; ADR-0047 lists the numbers the review reserves and this lab leaves unused | Seven files under `docs/adr/`; the ADR counts in `README.md` and `CLAUDE.md` match; `make site` builds them; the whole-tree scan clean |
-| **M16.2** | **The review, published** as `docs/reviews/2026-10-03-inference-review.md` with the verification beside it; one sentence reworded where the publication gate requires, and marked as reworded | The file is in the tree and on the site; `make prepublish-all` reports no new unresolved hit and no new kept one |
-| **M16.3** | **Known limitations, and the wording** (F22; the wording half of F08). `README.md` and `docs/INTEGRITY.md` gain a section naming each P0 and P1 finding with its measured rate and the release that fixes it or the reason it is the successor's; "calibration half" becomes "the definition partition, the oldest 30 %" and "the half no one looked at" becomes "the measurement partition, the next 50 %"; the Makefile says five checks; the `controls.toml` comment says the computed count | `tests/test_docs.py`: no "calibration half" in the README, the Makefile's sentence names five, the comment's integer equals the computed `required_n` — each seen failing first |
-| **M16.4** | **Heads pinned** (F11 part 1; T03). `register/HEADS.toml` with path, count and head for the six stores; a test and a `tools/prepublish.py` check that fail on any mismatch; the review's forgery and truncation as tests | `test_committed_registers_match_pinned_heads`, `test_forged_and_rechained_register_fails_against_pin`, `test_truncated_register_fails_against_pinned_count`, `test_prepublish_checks_heads` green, each seen failing first |
+| **M16.1** | **The ADRs.** ADR-0047 (fixes bind forward; a re-score is a diagnostic, never a verdict; conservative fixes land before non-conservative ones), ADR-0048 (nulls at the winner's count, by calendar date, p counted plus one), ADR-0049 (the fifth check side-matched and dependence-aware), ADR-0051 (plateau), ADR-0054 (heads pinned and attested), ADR-0055 (engine identified by content), each recording the author's instruction as its adoption; ADR-0050 written as *proposed*; ADR-0047 lists the numbers the review reserves and this lab leaves unused | Seven files under `docs/adr/`; the ADR counts in `README.md` and `CLAUDE.md` match; `make site` builds them; the whole-tree scan clean · **DONE 2026-10-03:** seven ADRs under `docs/adr/` — 0047, 0048, 0049, 0050, 0051, 0054, 0055 — each recording the instruction as its adoption; ADR-0050 adopted too, since the instruction named M16.21; fifty-three files, and the counts in `README.md` and `CLAUDE.md` say so; the site builds them |
+| **M16.2** | **The review, published** as `docs/reviews/2026-10-03-inference-review.md` with the verification beside it; one sentence reworded where the publication gate requires, and marked as reworded | The file is in the tree and on the site; `make prepublish-all` reports no new unresolved hit and no new kept one · **DONE 2026-10-03:** `docs/reviews/2026-10-03-inference-review.md` and its verification beside it; the gate objected to two sentences, not one — a venue-type phrase and a path under the home directory — and both are reworded and marked; both pages in the publication check's default targets and on the site |
+| **M16.3** | **Known limitations, and the wording** (F22; the wording half of F08). `README.md` and `docs/INTEGRITY.md` gain a section naming each P0 and P1 finding with its measured rate and the release that fixes it or the reason it is the successor's; "calibration half" becomes "the definition partition, the oldest 30 %" and "the half no one looked at" becomes "the measurement partition, the next 50 %"; the Makefile says five checks; the `controls.toml` comment says the computed count | `tests/test_docs.py`: no "calibration half" in the README, the Makefile's sentence names five, the comment's integer equals the computed `required_n` — each seen failing first · **DONE 2026-10-03:** *Known limitations of the guards* in the README, fifteen findings with what was measured and where each is fixed, and a section in `docs/INTEGRITY.md`; the partition wording corrected in the README and in `docs/EXPLAINER-Q2-001.md`; the Makefile says five; the comment says 837; `tests/test_docs.py`, three tests, each seen failing first |
+| **M16.4** | **Heads pinned** (F11 part 1; T03). `register/HEADS.toml` with path, count and head for the six stores; a test and a `tools/prepublish.py` check that fail on any mismatch; the review's forgery and truncation as tests | `test_committed_registers_match_pinned_heads`, `test_forged_and_rechained_register_fails_against_pin`, `test_truncated_register_fails_against_pinned_count`, `test_prepublish_checks_heads` green, each seen failing first · **DONE 2026-10-03:** `occams/register/heads.py`, `python -m occams register pin|check`, `register/HEADS.toml` pinning six stores — the three programme heads are the ones the closing statement cites; the loop moves a pinned store's pin after its appends; `tools/prepublish.py` fails on a mismatch; five tests in `tests/test_register_anchor.py` and one in `tests/test_prepublish.py`, each seen failing first |
 | **M16.5** | **The pinned heads attested, without a key** (replaces F11 parts 2 and 3; T04). A workflow that attests `register/HEADS.toml` on every change to it, the action pinned by commit, permissions on that job alone | The workflow run is green and `gh attestation verify register/HEADS.toml` succeeds against this repository; if the service refuses, the row is BLOCKED with the reason and the pin stands |
 | **M16.6** | **Release 1.0.1.** Version, notes that say what was found and that no guard changed, tag, release, redeploy | `make check` and both CI jobs green on the tagged commit; the tag and the release exist; every link on the site's index answers |
 
@@ -5630,4 +5630,32 @@ and stays resolved. M5.0, M0.22 and M0.21(c) are unchanged.
 > each, and the one instruction to run M16 is written out as exactly what it
 > adopts. This supersedes "nothing is open" in the entry above; how a change
 > is made is unchanged.
+
+> **2026-10-03 — the author's instruction: "run M16. Add including M16.21".**
+> By M16's own terms that instruction adopts ADR-0047, 0048, 0049, 0051, 0054
+> and 0055, and — M16.21 being named — ADR-0050 as well: the floor cleared by
+> a lower confidence bound, power planned against an alternative declared per
+> question. It authorises the review's publication here, three releases, and
+> the diagnostic re-score. It adopts no number, no edit to an adopted
+> document and no key. The run began the same day. M16.21 is built after
+> M16.16 and before the re-score, so the re-score can judge the floor too.
+
+> **2026-10-03 — M16.1 to M16.4 closed: the decisions written, the review
+> published, the record's wording corrected, the heads pinned.** One commit
+> for the four rows, because they share the README. Before the two null ADRs
+> were written their mechanism was prototyped on the review's own worlds, so
+> that the decision would describe something that reaches its declared rate:
+> the winner and its reference summed by calendar day and resampled together
+> in blocks of days. Measured over 300 seeds against a tolerance of 0.023 at
+> 0.01 and 0.079 at 0.05 — day-boxed with a common factor of 0.5: beats-null
+> 0.017 and 0.057 (as built, 0.093 and 0.213), the fifth check 0.010 and
+> 0.033; position-boxed with independent names: 0.010 and 0.063, and 0.000 and
+> 0.033; position-boxed with the common factor: 0.017 and 0.100 for
+> beats-null — over at 0.05, with a block only as long as the hold. ADR-0048
+> therefore states the block as a multiple of the hold that the size table
+> must justify, and M16.14 records the multiple. The review's two proposed
+> forms of the null were measured or reasoned out and are in ADR-0048's
+> rejected options. The gate found two sentences to reword in the review, not
+> the one M16.2 expected. The three programme heads the pin records are the
+> three the closing statement cites.
 

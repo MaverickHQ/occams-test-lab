@@ -27,6 +27,7 @@ where to read them.
 | to run it, extend it, or recover from a failure | [docs/SETUP.md](docs/SETUP.md), [docs/EXTENDING.md](docs/EXTENDING.md), [docs/RUNBOOK.md](docs/RUNBOOK.md) |
 | the record itself | the three Registers under [register/](register/), the decisions under [docs/adr/](docs/adr/), the dated log in [TASKS-v4.md](TASKS-v4.md) |
 | what it was built to | [REQUIREMENTS-v4.md](REQUIREMENTS-v4.md), [DESIGN-v4.md](DESIGN-v4.md), [CONTEXT.md](CONTEXT.md) |
+| what an external review found wrong with the guards, and what was done | [Known limitations](#known-limitations-of-the-guards), [the review](docs/reviews/2026-10-03-inference-review.md), [its verification](docs/reviews/2026-10-03-inference-review-verification.md) |
 | the publication decision, the security policy, the licence | [docs/PUBLICATION.md](docs/PUBLICATION.md), [SECURITY.md](SECURITY.md), [LICENSE](LICENSE) and [NOTICE](NOTICE) |
 
 ## What is published here
@@ -36,7 +37,7 @@ where to read them.
   the console and the pages, the reproduction paths, the setup path.
 - **The record.** Three hash-chained Registers — every question, verdict,
   refusal, stop and decision, 85 records across three programmes — with
-  forty-six ADRs and a task list whose log says what happened each day and
+  fifty-three ADRs and a task list whose log says what happened each day and
   why.
 - **The results.** The console, the programme page, two survey pages of
   38,976 cells each with their readiness tables, the three programme
@@ -109,6 +110,37 @@ says so in its own words.
 - **A record rewritten.** The Register is append-only and hash-chained; a
   correction supersedes; a tampered file cannot be extended.
 
+## Known limitations of the guards
+
+An external review on 2026-10-03 found the guards looser than this page
+claims, and every claim it made was rerun and confirmed before anything was
+changed ([the review](docs/reviews/2026-10-03-inference-review.md),
+[the verification](docs/reviews/2026-10-03-inference-review-verification.md)).
+Each finding errs toward a false positive, so no null verdict is at risk
+from it; the one supported verdict is where it bites.
+
+| What was found | Measured on this code | Where it is fixed |
+|---|---|---|
+| The multi-day engine's null is resampled at the pool's size, not the winner's | 0.140 false positives at a declared 0.01, on a world with no effect | 2.0.0, ADR-0048 |
+| Both engines' nulls treat trades that share a date as independent | 0.093 at a declared 0.01 when the names share a market | 2.0.0, ADR-0048 |
+| The fifth check compares with always-long whatever side the winner took | a coin flip passes it on the day-boxed null control | 2.0.0, ADR-0049 |
+| The floor is cleared by the winner's point estimate | an effect exactly at the floor passes about half the time | 2.0.0, ADR-0050 |
+| Power is planned at one cell's dispersion while any cell may win | Q2-001 planned at 2.22 R and won where its sibling measures 4.09 R | 2.0.0, ADR-0050 |
+| The plateau keeps the winner in its own median, with a slack in absolute R | — | 2.0.0, ADR-0051 |
+| The Register's chain carries no key | a forged and re-chained copy verifies; so does a truncated one | 1.0.1, ADR-0054: the heads are pinned and attested |
+| The engine is identified by a commit that can read `-dirty` and a hand-kept file list | every programme 2 verdict reads `-dirty` | 1.1.0, ADR-0055 |
+| The controls show that a coin flip is refused once, not how often a guard errs | — | 1.1.0: a size-and-power table |
+| The commits the verdicts stamp are not in this repository | by the publication decision | 2.0.0: their hashes, with the sources kept beside the private archive |
+| A survey's readiness table tests its own top twenty at an uncorrected alpha | twenty of twenty pass, in both surveys | not here: it needs every cell run again; the successor lab's |
+| A second look at one partition passes on a sentence, or on a change of axis | Q2-002 re-measured Q2-001's mechanism on the same days | not here: no registration runs in this lab again |
+| Each programme declares its own alpha total | 1.20 declared across three programmes, 0.55 spent | not here, for the same reason |
+| The single-name universes are today's members measured on earlier history | named on every universe record, never corrected | not here: data the declared budget does not buy |
+| Costs are a declared bound, never measured, and a stop fills at its level | — | not here: nothing trades (ADR-0044) |
+
+What the corrected rules would have said of each of the six questions is
+recorded beside the record, never in its place, as a diagnostic re-score
+(ADR-0047). The verdicts stand as reached.
+
 ## What you get by cloning it
 
 A research process, not a signal: a lab that refuses your idea unless it
@@ -125,13 +157,15 @@ to use it, in increasing cost:
    record you declare (`python -m occams ingest --csv`), declare a universe,
    freeze its calendar, freeze a classifier, copy
    `surveys/grid-template.toml`, and survey it: every cell of your idea
-   against always-long at the same geometry, on the calibration half only,
-   at no cost to your error budget, on one page. Nothing in a survey is a
+   against always-long at the same geometry, on the definition partition
+   only — the oldest 30 % of the frozen calendar — at no cost to your error
+   budget, on one page. Nothing in a survey is a
    verdict, and it says so.
 3. **A programme, with a data key.** Declare your numbers (`python -m occams
    init`, then `whatif` to see what they afford), ingest, survey 38,976 cells
    on a spot instance in about an hour, register the one cell worth your
-   alpha, let the loop measure it on the half no one looked at, and read the
+   alpha, let the loop measure it on the measurement partition — the next
+   50 %, read once — and read the
    verdict with the record beside it that says what being long would have
    made. Stop by record; the conclusion writes itself from the Register.
 
@@ -175,7 +209,7 @@ P3 programme-3.jsonl: 14 records, 1 question(s), 0 resolved, 1 survey(s), stoppe
 ```
 
 The top of a survey's readiness table — one gate-ready cell per family,
-its EV on the calibration half, always-long at the same geometry, the
+its EV on the definition partition, always-long at the same geometry, the
 margin, the fifth check's verdict, the margin by era, and what registering
 it would cost:
 
@@ -186,10 +220,12 @@ it would cost:
 | 3 | `2f89cd3fc3abbd83` | sp_100 | +0.230 | −0.085 | +0.315 | pass | +0.341 / +0.287 / +0.331 | 30 · 0.3 |
 | 4 | `5834abf51248fbb5` | index_etfs | +0.211 | −0.098 | +0.309 | pass | +0.173 / +0.336 / +0.361 | 15 · 0.15 |
 
-Twenty of twenty passed that table's fifth check on the calibration half in
-each of two surveys; the one that was measured lost its whole margin on the
-other half. That is the lesson of the verdict table above, and why the
-pages show the screen and the verdict side by side.
+Twenty of twenty passed that table's fifth check on the definition partition
+in each of two surveys; the one that was measured lost its whole margin on
+the measurement partition. That is the lesson of the verdict table above, and
+why the pages show the screen and the verdict side by side. The table's test
+is also blind to the selection that produced its twenty rows: see *Known
+limitations of the guards* above.
 
 The pages themselves: [docs/console.html](docs/console.html) (every
 record, the controls recomputed on each build),
@@ -289,7 +325,7 @@ make console-offline  # the plain build from the committed Register alone; no co
 - **[TASKS-v4.md](TASKS-v4.md)** — executable delivery sequence and gates.
 - **[ALIGNMENT-v4.md](ALIGNMENT-v4.md)** — non-normative reconciliation map
   from each prior review finding to its v4 proof.
-- **[docs/adr/](docs/adr/)** — the decisions (0001–0046) and their rejected alternatives.
+- **[docs/adr/](docs/adr/)** — the decisions (0001–0055; 0052 and 0053 are unused) and their rejected alternatives.
 - **[docs/M0-ANSWERS.md](docs/M0-ANSWERS.md)** — the M0 evidence, dated 2026-09-10.
 - **[PROVENANCE.md](PROVENANCE.md)** — the vendored core's donor commit and hashes.
 - **[CLAUDE.md](CLAUDE.md)** — working rules: read order, read-only

@@ -39,6 +39,26 @@ finding believable; they do not make one. What they cost is written
 beside them — 0.55 of 1.20 alpha across three programmes, and a survey
 that screened 77,952 cells to register three questions.
 
+## What an external review found, 2026-10-03
+
+The table above says which guard answers which failure. It does not say how
+often each guard errs, and until this review nobody had measured that. On a
+world with no effect the multi-day engine's beats-null check fired at 0.140
+against a declared 0.01; on names that share a market the day-boxed one
+fired at 0.093; a coin flip passed the fifth check on the day-boxed null
+control; the floor was cleared by a point estimate; a re-chained forgery of
+a Register verified. Each was rerun and confirmed
+([the review](reviews/2026-10-03-inference-review.md),
+[the verification](reviews/2026-10-03-inference-review-verification.md)).
+
+Every one of them errs toward a false positive. The four null verdicts
+therefore stand under every correction; the supported one, Q2-001, is where
+a correction bites, and the lab had already written beside it that its
+entry added nothing. The README's *Known limitations of the guards* lists
+each finding, what was measured, and the release that fixes it or the reason
+it is left to the successor lab. The size of every guard is now a number the
+build measures (`make calibrate`), not a property the table asserts.
+
 ## Reading the evidence yourself
 
 ```bash

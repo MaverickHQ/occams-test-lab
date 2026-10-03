@@ -9,7 +9,7 @@ with the records beside it on `docs/programme.html` and in
 
 In September 2026 the lab screened 38,976 ways of entering and exiting a
 trade — every mechanism its closed list could express, on four groups of
-US stocks and funds, on the calibration half of the history only, at no
+US stocks and funds, on the definition partition only, the oldest 30 % of the history, at no
 cost to its error budget (record #9). From that screen the author chose
 one cell and registered it as a question (#13): **after a four-day run
 of lower closes on a large US stock, while the market's own trend
@@ -21,7 +21,8 @@ was read (#12).
 
 ## What the machine found
 
-On the half of the history no one had looked at, the strategy made
+On the measurement partition — the next 50 % of the history, which no one
+had looked at — the strategy made
 **+0.213 units of risk per trade after costs, over 6,946 trades, about
 413 a year** (#19). It passed every check the lab then had:
 
@@ -52,8 +53,8 @@ The entry signal — the four-day run of lower closes — added nothing.
 What the strategy captured was the market's own return during the years
 its classifier called "up", 2003 to 2019, at the twenty-day holding
 period its sweep had chosen because that was where the raw return was
-largest. On the calibration half, the same comparison had shown a
-comfortable margin of +0.239; on the test half it vanished (#24).
+largest. On the definition partition, the same comparison had shown a
+comfortable margin of +0.239; on the measurement partition it vanished (#24).
 
 ## Why the checks did not see it
 

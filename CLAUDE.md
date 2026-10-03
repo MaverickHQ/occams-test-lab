@@ -50,7 +50,7 @@ Both programmes' conclusions are adopted (2026-09-20). **M13 — the third progr
 4. `TASKS-v4.md` — the executable sequence and gates; `docs/M0-ANSWERS.md`
    is its M0 evidence, dated 2026-09-10
 5. `CONTEXT.md` — canonical language. Use these words; avoid the listed alternatives
-6. `docs/adr/0001-0046` — the decisions and their rejected alternatives
+6. `docs/adr/0001-0055` — the decisions and their rejected alternatives (0052 and 0053 are unused; ADR-0047 says why)
 7. `docs/drafts/` — proposed hypotheses. **No standing, no alpha spent** until
    a human registers one at M8.1
 

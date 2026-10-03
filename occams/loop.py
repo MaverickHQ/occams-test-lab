@@ -39,6 +39,9 @@ def run(cfg: Config, *, register: Register, archive: BarArchive, queue: Question
         return _run(cfg, register=register, archive=archive, queue=queue, seed=seed, null_draws=null_draws, path_draws=path_draws)
     finally:
         clear_engine_sha()
+        from occams.register.heads import repin_if_pinned
+
+        repin_if_pinned(register.path)   # ADR-0054: a pinned store's pin moves with its appends, by this call and never by hand
 
 
 def _run(cfg: Config, *, register: Register, archive: BarArchive, queue: QuestionQueue, seed: int,

@@ -77,6 +77,10 @@ def main(argv: list[str] | None = None) -> int:
         from occams.console.programme import main as programme_main
 
         return programme_main(argv[1:])
+    if argv and argv[0] == "register":
+        from occams.register.heads import main as heads_main
+
+        return heads_main(argv[1:])
     if argv and argv[0] == "reproduce":
         from occams.reproduce import main as reproduce_main
 

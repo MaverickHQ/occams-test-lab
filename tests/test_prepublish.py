@@ -89,3 +89,22 @@ def test_the_whole_tree_scan_names_every_hit_and_keeps_one_only_by_recorded_deci
     assert any(p.name == "prepublish.py" for p in files)
     own = pp.scan_tree([ROOT / "tools" / "prepublish.py", ROOT / "tests" / "test_prepublish.py"], decisions=[])[0]
     assert own == []
+
+
+def test_prepublish_checks_heads(tmp_path, capsys):
+    """M16.4 / ADR-0054: the publication check fails when a committed store has left its pin."""
+    import shutil
+
+    from occams.register import heads
+
+    pp = _load()
+    assert pp.heads_problems() == [], "the committed stores match their pins"
+    (tmp_path / "register").mkdir()
+    store = tmp_path / "register" / "programme-3.jsonl"
+    shutil.copy(ROOT / "register" / "programme-3.jsonl", store)
+    heads.pin(tmp_path / "register" / "HEADS.toml", [store], root=tmp_path)
+    assert pp.heads_problems(root=tmp_path) == []
+    store.write_text("\n".join(store.read_text(encoding="utf-8").splitlines()[:5]) + "\n", encoding="utf-8")
+    problems = pp.heads_problems(root=tmp_path)
+    assert problems and "truncated" in problems[0]
+

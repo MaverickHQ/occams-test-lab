@@ -1,0 +1,40 @@
+# The count and the head of every hash-chained store under register/ (ADR-0054).
+# Written by `python -m occams register pin` after an append, never by hand; compared
+# with the stores by the tests and by tools/prepublish.py; attested outside this
+# repository whenever it changes. The attestation dates the pin, not the past.
+
+[[store]]
+path = "register/programme-2-queue.jsonl"
+count = 2
+head = "a1c2f0c2ea4bf503bae8c19c75faee2fad139e543700ba39ba5aea9ab1e83525"
+pinned_at = "2026-10-03T18:31:09.490505+00:00"
+
+[[store]]
+path = "register/programme-2.jsonl"
+count = 37
+head = "23cf22aa6586900549d3cba4470361914f864dad852727733adb972592535aeb"
+pinned_at = "2026-10-03T18:31:09.494304+00:00"
+
+[[store]]
+path = "register/programme-3-queue.jsonl"
+count = 1
+head = "c5fa35b10a3fc5d9a035981cf696accc77a300f51201f27b8a1dfc015a4963e2"
+pinned_at = "2026-10-03T18:31:09.495180+00:00"
+
+[[store]]
+path = "register/programme-3.jsonl"
+count = 14
+head = "e92fda14a7f144bea322fcc60745dc9e8df74887cdda57f56845c1e43ad044c1"
+pinned_at = "2026-10-03T18:31:09.496801+00:00"
+
+[[store]]
+path = "register/queue.jsonl"
+count = 3
+head = "7a539892747f482e520c65cf8a003a3386e63c37966164b8a26f37b4e6817340"
+pinned_at = "2026-10-03T18:31:09.497650+00:00"
+
+[[store]]
+path = "register/register.jsonl"
+count = 34
+head = "c2706a09716bde335f66b085074e8b6f41f6e33623aef8069702ec4db2fccb87"
+pinned_at = "2026-10-03T18:31:09.500426+00:00"
