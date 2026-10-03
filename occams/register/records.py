@@ -60,6 +60,7 @@ class HypothesisMeasured:
     partition: str
     n: int
     search_space_size: int
+    engine_code_sha: str = ""       # ADR-0055: the content hash of what measured it, beside the commit; "" on records before the rule
 
 
 @register_record
@@ -79,13 +80,14 @@ class HypothesisResolved:
     winner_cell: tuple[int, ...] = ()
     checks: tuple[str, ...] = ()    # ADR-0043: the checks this verdict was evaluated against, by name; empty means the four of DESIGN §3 as first written
     surface: str = ""               # ADR-0045: "margin" over always-long chose the winner, or "ev"; empty on records before the rule
+    engine_code_sha: str = ""       # ADR-0055: the content hash of what measured it; "" on records before the rule
 
     @classmethod
     def from_verdict(cls, hid: str, v) -> "HypothesisResolved":
         return cls(hid, v.outcome, v.ev_net_r, v.trades_per_year, v.spec_hash,
                    v.engine_sha, v.seed, v.partition, tuple(v.refusals), getattr(v, "cost_basis", "unknown"),
                    getattr(v, "family_hash", ""), tuple(getattr(v, "winner_cell", ())), tuple(getattr(v, "checks", ())),
-                   str(getattr(v, "surface", "") or ""))
+                   str(getattr(v, "surface", "") or ""), str(getattr(v, "engine_code_sha", "") or ""))
 
 
 @register_record

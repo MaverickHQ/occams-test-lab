@@ -248,10 +248,14 @@ def measure_question(q: Question, *, cfg: Config, archive: BarArchive, register:
     """Reads the archive's measurement partition; the engine is the one the
     horizon selects; costs are the bounded model in the configured currency.
     ``window`` (M15.9) narrows the partition to a roll inside it."""
+    from occams import identity
+
+    identity.require_clean(f"REGISTERED -> MEASURED of {q.id}")     # ADR-0055: dirty or unknown code does not measure
     w = measurement_world(q, cfg=cfg, archive=archive, register=register, partition=partition, window=window)
     m = w["engine"].measure(q.template, q.sweep.as_dict(), apply_cell, w["world"], seed=seed, cost_in_r=0.0,
                             null_draws=null_draws, partition=partition, actions=w["actions"], partition_bounds=w["bounds"],
                             split=w["parts"].as_tuple(), costs=w["costs"], regime=w["regime"])
+    m = replace(m, engine_code_sha=identity.own_code_sha())         # the content hash, beside the commit, on every record of it
     h = measure(q.hypothesis, m, register=register)
     return replace(q, hypothesis=h), m
 
@@ -344,7 +348,8 @@ def resolve_question(q: Question, m: Measurement, *, register: Register, archive
     outcome = "supported" if not fired else "null"
     v = Verdict(outcome, winner.ev, winner.n / m.years, winner.spec_hash, m.engine_sha, m.seed, m.partition,
                 tuple(r.reason for r in fired), cost_basis=m.cost_basis, family_hash=m.spec_hash,
-                winner_cell=tuple(winner.indices), checks=tuple(forward.CHECKS), surface=m.surface)
+                winner_cell=tuple(winner.indices), checks=tuple(forward.CHECKS), surface=m.surface,
+                engine_code_sha=m.engine_code_sha)
     # the template's Strategy: SPECIFIED -> COMPILED -> MEASURED, and no further
     template_s = Strategy.from_spec(q.template, hypothesis_id=h.id)
     template_s = transition(template_s, StrategyState.COMPILED, register=register)

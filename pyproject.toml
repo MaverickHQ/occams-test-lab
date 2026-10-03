@@ -31,6 +31,7 @@ pythonpath = ["."]
 markers = [
   "slow: a test that takes seconds, not milliseconds — skipped by `make test-fast`, never by `make check`",
   "calibration: a row of the size-and-power table, minutes over hundreds of seeds — run by `make calibrate` and a scheduled workflow, never by `make check` (M16.7)",
+  "real_identity: a test of the engine's identity itself — it reads the tree's own commit and dirtiness instead of the identity the suite is supplied (M16.10, ADR-0055)",
 ]
 # One vendored case asserts that pyarrow is a declared dependency — true of
 # the donor's derived bar layer, not of this repository, which has none.

@@ -111,6 +111,7 @@ class Verdict:
     winner_cell: tuple[int, ...] = ()
     checks: tuple[str, ...] = ()  # the checks evaluated, by name (ADR-0043): the record says five, or which four
     surface: str = ""             # what chose the winner (ADR-0045): "margin" over always-long, or "ev"; "" on records before it
+    engine_code_sha: str = ""     # the content hash of what measured it (ADR-0055); "" on verdicts before the rule
 
 
 @dataclass(frozen=True)
@@ -208,7 +209,8 @@ def measure(h: Hypothesis, m: Measurement, *, register) -> Hypothesis:
     register.append(register.HypothesisMeasured(hypothesis_id=h.id, spec_hash=m.spec_hash,
                                                 engine=m.engine, engine_sha=m.engine_sha,
                                                 seed=m.seed, partition=m.partition,
-                                                n=m.winner.n, search_space_size=m.search_space_size))
+                                                n=m.winner.n, search_space_size=m.search_space_size,
+                                                engine_code_sha=str(getattr(m, "engine_code_sha", "") or "")))
     return out
 
 

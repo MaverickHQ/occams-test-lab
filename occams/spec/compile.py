@@ -133,13 +133,11 @@ def validate(spec: StrategySpec) -> None:
                            + " — capabilities are identity (ADR-0018), so declare them")
 
 
-# M14.3: the sha a run stamps on everything it compiles. The core's
-# ``engine_sha()`` reads ``git status`` at call time, and a loop appends to a
-# tracked Register before it compiles the first cell — so every verdict of
-# programme 2 carries ``-dirty`` from the loop's own writes. A run that calls
-# ``stamp_engine_sha()`` before its first append reports the tree it started
-# on; ``engine_code_sha`` (the content hash on every record) stays the
-# reproduction key either way.
+# M14.3: the sha a run stamps on everything it compiles — the tree as the run found it,
+# read once. M16.10 (ADR-0055): it is read by ``occams.identity``, on the code paths only,
+# so a Register the run appends to no longer marks the engine dirty; the vendored
+# ``core/archive.engine_sha`` is no longer asked. The content hash beside it on every
+# measured, resolved and surveyed record is ``identity.code_closure_sha()``.
 _STAMPED_ENGINE_SHA: str | None = None
 
 
@@ -147,9 +145,9 @@ def stamp_engine_sha() -> str:
     """Take the commit (and dirtiness) of the tree *now* and stamp it on every
     ``to_engine`` until ``clear_engine_sha``; returns the stamp."""
     global _STAMPED_ENGINE_SHA
-    from occams.core.archive import engine_sha
+    from occams import identity
 
-    _STAMPED_ENGINE_SHA = engine_sha()
+    _STAMPED_ENGINE_SHA = identity.engine_sha()
     return _STAMPED_ENGINE_SHA
 
 
@@ -159,9 +157,9 @@ def clear_engine_sha() -> None:
 
 
 def current_engine_sha() -> str:
-    from occams.core.archive import engine_sha
+    from occams import identity
 
-    return _STAMPED_ENGINE_SHA if _STAMPED_ENGINE_SHA is not None else engine_sha()
+    return _STAMPED_ENGINE_SHA if _STAMPED_ENGINE_SHA is not None else identity.engine_sha()
 
 
 def to_engine(spec: StrategySpec) -> CompiledStrategy:

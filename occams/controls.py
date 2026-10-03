@@ -214,6 +214,10 @@ def main(argv: list[str] | None = None) -> int:
     o = run(kind, load_controls(), reg_dir, engine=engine)
     print(f"{kind.upper()} CONTROL [{engine}] — {o.hypothesis_id}, spec {o.spec_hash[:12]}, "
           f"N = {o.n} (required {o.required_n}), winner EV = {o.winner_ev:+.4f} net R")
+    from occams import identity
+
+    # an apparatus control checks a change *before* it is committed, so it runs on the tree as it is and says what that was
+    print(f"apparatus control, exempt from the clean-code rule (ADR-0055): {identity.describe()}")
     if kind == "null":
         if o.accepted:
             print("ACCEPTED at MEASURED -> FORWARD. A coin flip passed. STOP AND FIX THE GUARDS (S3).")

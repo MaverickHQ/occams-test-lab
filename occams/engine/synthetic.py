@@ -41,9 +41,9 @@ def carried_by(size: float, group_name: str, n_groups: int) -> Effect:
 
 
 def engine_sha() -> str:
-    from occams.core.archive import engine_sha as _sha
+    from occams.spec.compile import current_engine_sha
 
-    return _sha()
+    return current_engine_sha()
 
 
 def measure(*, spec_hash: str, seed: int, axes: dict[str, list[float]], groups: list[str],

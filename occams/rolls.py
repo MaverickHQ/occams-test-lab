@@ -37,6 +37,9 @@ def remeasure(q, *, cfg, archive, register: Register, out: Register, seed: int, 
     resolved = [r for r in register.records() if r["type"] == "HypothesisResolved" and r["hypothesis_id"] == q.id]
     if not resolved:
         raise Refused((forward.Refusal("REGISTERED->MEASURED", f"{q.id} has no HypothesisResolved record; a roll re-measures a verdict", {}),))
+    from occams import identity
+
+    identity.require_clean(f"a roll of {q.id}")     # ADR-0055: a roll is a measurement
     head = register.chain()[-1]["sha"]
     bounds = measurement_world(q, cfg=cfg, archive=archive, register=register)["bounds"]
     stamp_engine_sha()

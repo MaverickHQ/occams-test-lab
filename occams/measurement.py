@@ -91,6 +91,7 @@ class Measurement:
     split: tuple[float, float, float] | None = None   # the configured definition/measurement/reserve
     cost_basis: str = "declared"  # declared | bounded | measured (D23, M5.2) — approval needs bounded or measured
     baseline_ev: tuple[float, ...] = ()   # ADR-0043: Monte Carlo EVs of always-long at the same geometry and gate; empty is refused by the fifth check, never passed
+    engine_code_sha: str = ""             # ADR-0055: the content hash of what measured it — the import closure of the modules that measure
 
     @property
     def surface(self) -> str:

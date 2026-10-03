@@ -139,19 +139,19 @@ def test_a_verdict_is_followed_by_the_winners_era_decomposition_with_its_missed_
 
 
 def test_the_loop_stamps_its_engine_sha_before_its_first_append(tmp_path, monkeypatch):
-    """M14.3: the core's ``engine_sha()`` reads ``git status`` at call time, and the loop appends to a tracked Register
-    before it compiles a cell — so every record of a run must carry the sha the loop took at its start, not one that
-    its own writes dirtied; after the run the stamp is cleared and the compiler reads the tree again."""
-    import occams.core.archive as core_archive
+    """M14.3: every record of a run carries the sha the loop took at its start, read once; after the run the stamp is
+    cleared and the compiler reads the tree again. Since M16.10 the sha is ``occams.identity``'s — judged on the code
+    paths alone, so the loop's own appends no longer dirty it — and the vendored function is not asked."""
+    from occams import identity
     from occams.spec.compile import current_engine_sha
 
     calls = []
 
-    def sha_now():
+    def sha_now(root=identity.ROOT):
         calls.append(1)
         return "abc123" if len(calls) == 1 else "abc123-dirty"
 
-    monkeypatch.setattr(core_archive, "engine_sha", sha_now)
+    monkeypatch.setattr(identity, "engine_sha", sha_now)
     c = cfg(falsifier_count=10)
     reg, arch, queue = queued(tmp_path, c, ["Q-1"], drift=0.0, edge=True)
     res = run(c, register=reg, archive=arch, queue=queue, seed=5, null_draws=300, path_draws=50)

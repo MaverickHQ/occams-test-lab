@@ -32,9 +32,11 @@ class LoopResult:
 
 def run(cfg: Config, *, register: Register, archive: BarArchive, queue: QuestionQueue, seed: int,
         null_draws: int = 4000, path_draws: int = 2000) -> LoopResult:
+    from occams import identity
     from occams.spec.compile import clear_engine_sha, stamp_engine_sha
 
-    stamp_engine_sha()      # M14.3: the tree as the loop found it, before the loop's own appends dirty it
+    identity.require_clean("the loop")   # ADR-0055: refused by name before anything is read or appended
+    stamp_engine_sha()      # M14.3: the tree as the loop found it, read once
     try:
         return _run(cfg, register=register, archive=archive, queue=queue, seed=seed, null_draws=null_draws, path_draws=path_draws)
     finally:
@@ -76,8 +78,14 @@ def main(argv: list[str] | None = None) -> int:
         return 2
     seed = int(argv[argv.index("--seed") + 1])
     cfg = load(argv[argv.index("--config") + 1] if "--config" in argv else None)
-    res = run(cfg, register=Register(Path(argv[0])), archive=BarArchive(Path(argv[1])), queue=QuestionQueue(Path(argv[2])),
-              seed=seed)
+    from occams.identity import EngineNotClean
+
+    try:
+        res = run(cfg, register=Register(Path(argv[0])), archive=BarArchive(Path(argv[1])), queue=QuestionQueue(Path(argv[2])),
+                  seed=seed)
+    except EngineNotClean as e:
+        print(f"REFUSED: {e}")
+        return 2
     for hid, out in res.resolved:
         print(f"resolved {hid}: {out}")
     for hid, why in res.refused:

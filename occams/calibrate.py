@@ -165,9 +165,9 @@ SAVED = "OCCAMS_CALIBRATION_CACHE"      # a file `--save` wrote: the tests read 
 
 def _code_stamp() -> str:
     """The engine code the p-values were drawn on; a saved table from other code is not read."""
-    from occams.survey.run import engine_code_sha
+    from occams import identity
 
-    return engine_code_sha()
+    return identity.own_code_sha()
 
 
 def _saved() -> dict:

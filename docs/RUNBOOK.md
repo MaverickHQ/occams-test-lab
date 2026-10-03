@@ -156,9 +156,19 @@ make reproduce-public                      # the pipeline on synthetic fixtures;
 ```
 
 `--at-commit` recreates the stamped commit in a worktree. The reproduction
-key is `engine_code_sha`, the content hash on every record; `engine_sha` is
-the commit and carries `-dirty` only when the tree was dirty before the run
-began (M14.3).
+key is `engine_code_sha`: the content hash of everything a measurement
+imports, on every measured, resolved and surveyed record since M16.10
+(ADR-0055). `engine_sha` is the commit, read once when the run begins
+(M14.3).
+
+**The loop, a survey or a roll says `REFUSED: … the code differs from
+commit …`.** Dirty or unknown code does not measure (ADR-0055). Only code
+counts — `occams/`, `tools/`, `pyproject.toml` — so a Register, an archive
+or a page written by a run never causes it. Commit the change, then run
+again. `make null`, `make signal` and the test suite are exempt, so a change
+is checked before it is committed; the controls print the identity they ran
+on. Records made before the rule may read `-dirty`: that was the loop's own
+appends, and the record stands as written.
 
 ## Stopping a programme and writing its conclusion
 

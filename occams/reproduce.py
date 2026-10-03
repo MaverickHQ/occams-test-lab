@@ -114,9 +114,9 @@ def private(a) -> int:
               f"costs and partitions may differ, and a difference below may be the config's, not the engine's")
     if a.at_commit:
         return _at_commit(a, stamped_commit, resolved, measured, names)
-    from occams.core.archive import engine_sha
+    from occams import identity
 
-    here = engine_sha()
+    here = identity.engine_sha()
     with tempfile.TemporaryDirectory(prefix="occams-reproduce-") as tmp:
         scratch = Path(tmp) / "register.jsonl"
         shutil.copy(a.register, scratch)                         # the Register is never written by a reproduction

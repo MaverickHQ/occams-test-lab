@@ -12,7 +12,7 @@ from occams.data.partitions import Partitions, freeze_calendar
 from occams.proposers.regime import ClusterLevel, freeze
 from occams.register import Register
 from occams.survey.grid import load as load_grid
-from occams.survey.run import ENGINE_FILES, SurveyRefused, engine_code_sha, main as run_main, record_survey, run_survey
+from occams.survey.run import SurveyRefused, engine_code_sha, main as run_main, record_survey, run_survey
 from occams.universe import main as universe_main
 from tests.test_calendar import latest
 from tests.test_console import config_on_disk
@@ -131,8 +131,12 @@ def test_a_cell_is_stamped_with_the_engines_code_not_the_commit(tmp_path):
     c = json.loads(next((out / "cells").glob("*.json")).read_text())
     assert c["engine_code_sha"] == engine_code_sha() and len(c["engine_code_sha"]) == 16 and "engine_sha" not in c
     assert res["engine_shas"]["engine_code_sha"] == engine_code_sha() and "position_boxed" in res["engine_shas"]
+    from occams import identity
+
     root = Path(__file__).resolve().parent.parent
-    assert all((root / f).exists() for f in ENGINE_FILES) and "occams/survey/run.py" in ENGINE_FILES
+    files = identity.closure()                 # M16.10: the import closure of the modules that measure, not a list kept by hand
+    assert all((root / f).exists() for f in files) and "occams/survey/run.py" in files and "occams/core/execution.py" in files
+    assert engine_code_sha() == identity.code_closure_sha()
     assert "-dirty" not in c["engine_code_sha"] and not any(ch in "-g" for ch in c["engine_code_sha"] if ch == "-")
 
 

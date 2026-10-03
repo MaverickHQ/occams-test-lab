@@ -44,21 +44,15 @@ from occams.whatif import CELLS, FLOORS_WIDE, SIGMA_R
 
 ERAS = 3
 INDEX_FILE = "survey.json"
-ENGINE_FILES = ("occams/engine/day_boxed.py", "occams/engine/position_boxed.py", "occams/engine/regime_gate.py",
-                "occams/engine/common.py", "occams/engine/probes.py", "occams/inference.py",       # M16.9: code that moved stays covered
-                "occams/costs/auditors.py", "occams/costs/equity.py", "occams/data/actions.py", "occams/data/bars.py",
-                "occams/spec/spec.py", "occams/spec/compile.py", "occams/proposers/clustering.py", "occams/survey/run.py")
-
-
 def engine_code_sha() -> str:
     """The hash of the engine's own code — what a cell's numbers depend on —
     so two surveys are byte-identical across commits that leave the engine
-    alone. The commit is provenance and lives in the index, not the cells."""
-    root = Path(__file__).resolve().parent.parent.parent
-    h = hashlib.sha256()
-    for rel in ENGINE_FILES:
-        h.update(rel.encode("utf-8") + b"\0" + (root / rel).read_bytes() + b"\0")
-    return h.hexdigest()[:16]
+    alone. The commit is provenance and lives in the index, not the cells.
+    Since M16.10 (ADR-0055) it is the import closure of the modules that
+    measure, not a list kept by hand."""
+    from occams import identity
+
+    return identity.own_code_sha()
 
 
 class SurveyRefused(RuntimeError):
@@ -503,6 +497,10 @@ def run_survey(grid: Grid, *, archive, register, cfg, out: Path, seed: int, work
     from occams.engine.regime_gate import RegimeContext
     from occams.proposers.regime import frozen
 
+    if not dry_run:
+        from occams import identity
+
+        identity.require_clean("a survey")     # ADR-0055: dirty or unknown code does not screen either
     parts = Partitions.from_config(cfg)
     latest = archive.latest_bars(names=survey_names(grid, register))     # M14.7: the grid's names, nothing else
     wanted = [u for u, _s, _r in grid.universes if universe is None or u == universe]
