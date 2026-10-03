@@ -5371,3 +5371,28 @@ and stays resolved. M5.0, M0.22 and M0.21(c) are unchanged.
 > verdict on `55f4233`, the commit the release names: run `37125861444`, both
 > jobs — `check` and the clean-machine `setup` — every step success, first
 > attempt. No Register changed.
+
+> **2026-10-03 — the five Dependabot bumps merged; the history repository
+> archived.** On the author's word. Each new pin was first checked against
+> its release tag (`actions/checkout` 7.0.1, `actions/setup-python` 7.0.0,
+> `actions/upload-pages-artifact` 5.0.0, `actions/deploy-pages` 5.0.1) and
+> `ruff` 0.16.9 against the index. The merges were made in this checkout
+> under the noreply identity and pushed, not on GitHub's side: a server-side
+> merge is authored with the account's web address, which is the one thing
+> the snapshot exists to keep out of the public line. Two of the five
+> changed adjacent lines of `check.yml` and were resolved by hand, both
+> bumps kept; no old pin remains. The linter here was brought to the new pin
+> (the virtual environment has no `pip`; `uv pip install` does it) and the
+> lint rerun on it. `make check`: 652 passed, 1 deselected. Pushed as
+> `1c9d900`; GitHub marks all five merged and none is open. The `pages`
+> workflow was dispatched again, the only run that exercises the two Pages
+> actions: run `37130499783`, build and deploy green, the site answering.
+> `MaverickHQ/occams-test-lab-history` is archived — read-only, private,
+> nothing to an anonymous request — so nothing is pushed there again and
+> Dependabot is quiet there.
+
+> **S1, S3, S10 — 2026-10-03, the publication record and the merges on the
+> CI machine.** `45d5b9c`: run `37126592833`; `1c9d900`: run `37130491074`;
+> both jobs — `check` and the clean-machine `setup` — every step success,
+> first attempt, the second on the bumped actions and the new linter. No
+> Register changed.
