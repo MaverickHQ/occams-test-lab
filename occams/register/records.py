@@ -1,5 +1,5 @@
 """The record types the two stores accept (M14.6, split from ``occams/register.py``):
-seventeen for the Register — publishable by construction, ``@register_record`` refusing any
+nineteen for the Register — publishable by construction, ``@register_record`` refusing any
 field that could carry money — and four for Operations, never published. A record's
 ``type`` in the chain is its class name, unchanged by the move.
 """
@@ -181,6 +181,22 @@ class RefusalRecorded:
     evidence: dict
     spec_hash: str | None
     hypothesis_id: str | None
+
+
+@register_record
+@dataclass(frozen=True)
+class GuardEvidence:
+    """What one check of MEASURED -> FORWARD judged, passing or failing (M16.8; ADR-0048 §4;
+    the review's F03). A refusal always carried its evidence; a pass left only its name in
+    the Verdict, so a check that passed on the edge and one that passed by a mile read the
+    same. One record per check, appended before the resolution it belongs to."""
+
+    hypothesis_id: str
+    spec_hash: str               # the winner's
+    check: str                   # one of ``guards.forward.CHECKS``
+    passed: bool
+    evidence: dict               # the numbers the check judged; statistics in net R, never money
+    transition: str = "MEASURED->FORWARD"
 
 
 @register_record

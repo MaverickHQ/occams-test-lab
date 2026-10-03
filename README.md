@@ -292,6 +292,7 @@ make null            # a coin flip through the whole pipeline is REFUSED, naming
 make signal          # a planted effect at the floor is ACCEPTED, naming all five checks (S10, ADR-0043)
 make check           # tests · lint · credential scan · provenance · null · signal
 make test-fast       # every test not marked slow — the fast cycle, never the proof (M14.1)
+make calibrate       # the size-and-power table: each Monte Carlo guard alone, 200 seeds, against the rate it declares — minutes, never part of `make check` (M16.7)
 python -m occams --schema   # every required config key, no values
 python -m occams whatif a.toml b.toml [--archive archive --register R]   # what candidate configs imply, side by side, with refusals flagged; the falsifier arithmetic and universe affordability (M12.0)
 python -m occams loop REGISTER ARCHIVE QUEUE --seed N [--config C]   # run the registered queue unattended with a declared seed (no default, M12.6); after each verdict the winner's era decomposition with its missed entries and, for a question from a survey, the shrinkage from screening; stops when the falsifier fires

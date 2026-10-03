@@ -87,7 +87,7 @@ def test_records_carry_an_instant_not_a_date(tmp_path):
 
 PUBLIC_NAMES = (
     "CalendarFrozen", "ClassifierFrozen", "EraDecomposition", "Exposure", "FORBIDDEN_IN_REGISTER", "ForwardFill",
-    "ForwardWindowOpened", "ForwardWindowResolved", "HypothesisMeasured", "HypothesisRegistered", "HypothesisResolved",
+    "ForwardWindowOpened", "ForwardWindowResolved", "GuardEvidence", "HypothesisMeasured", "HypothesisRegistered", "HypothesisResolved",
     "LabClosed", "Money", "NotPublishable", "Operations", "OrderIntent", "PathsArchived", "ProgrammeStopped",
     "ProposalIssued", "RefusalRecorded", "Register", "ReserveLook", "RollMeasured", "Shrinkage", "Store", "StrategyTransitioned",
     "SurveyRecorded", "TamperedHistory", "UniverseDeclared", "_plain", "canonical", "now", "operations_record",
@@ -103,13 +103,13 @@ def test_the_package_exposes_every_name_the_module_had_and_binds_the_records_to_
     # the record types live in records.py, the chain machinery in store.py, the two stores bind them here
     record_types = [getattr(records, n) for n in dir(records) if getattr(getattr(records, n), "__register_record__", False)
                     or getattr(getattr(records, n), "__operations_record__", False)]
-    assert len(record_types) == 22 and all(t.__module__ == "occams.register.records" for t in record_types)
+    assert len(record_types) == 23 and all(t.__module__ == "occams.register.records" for t in record_types)
     assert store.Store.__module__ == "occams.register.store" and not any(getattr(store, n, None) is Register for n in dir(store))
     assert pkg.Register.__module__ == "occams.register" and pkg.Operations.__module__ == "occams.register"
-    # the seventeen defined here are attached to Register (other modules attach their own, e.g. the ledger's)
+    # the nineteen defined here are attached to Register (other modules attach their own, e.g. the ledger's)
     attached = {n for n in dir(Register) if getattr(getattr(Register, n), "__register_record__", False)}
     defined = {t.__name__ for t in record_types if getattr(t, "__register_record__", False)}
-    assert len(defined) == 18 and defined <= attached and all(getattr(Register, n) is getattr(records, n) for n in defined)
+    assert len(defined) == 19 and defined <= attached and all(getattr(Register, n) is getattr(records, n) for n in defined)
     assert pkg.HypothesisRegistered.__name__ == "HypothesisRegistered"    # the chain's ``type`` is the class name, unmoved
 
 

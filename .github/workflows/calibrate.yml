@@ -1,0 +1,39 @@
+name: calibrate
+
+# M16.7 (ADR-0047 §6): the size-and-power table — each Monte Carlo guard in isolation, over
+# hundreds of seeds, against the rate it declares. Minutes, not seconds, so it runs weekly and
+# on demand and never in `check`. A row out of tolerance that is not a known, named defect
+# fails this run; a known defect that stops failing fails it too, until its mark is removed.
+
+on:
+  schedule:
+    - cron: "17 5 * * 1"        # Mondays, 05:17 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  calibrate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install
+        run: pip install -e ".[dev]"
+      - name: The table
+        run: |
+          {
+            echo '```'
+            python -m occams.calibrate --save build/calibration.json
+            echo '```'
+          } | tee "$GITHUB_STEP_SUMMARY"
+      - name: The rows as tests
+        # the p-values the table just drew, read back: the rows are judged on the same draws, once
+        env:
+          OCCAMS_CALIBRATION_CACHE: build/calibration.json
+        run: python -m pytest -m calibration tests/test_apparatus_size.py

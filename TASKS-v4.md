@@ -764,15 +764,15 @@ below; any number; any edit to an adopted document; any key.
 | **M16.3** | **Known limitations, and the wording** (F22; the wording half of F08). `README.md` and `docs/INTEGRITY.md` gain a section naming each P0 and P1 finding with its measured rate and the release that fixes it or the reason it is the successor's; "calibration half" becomes "the definition partition, the oldest 30 %" and "the half no one looked at" becomes "the measurement partition, the next 50 %"; the Makefile says five checks; the `controls.toml` comment says the computed count | `tests/test_docs.py`: no "calibration half" in the README, the Makefile's sentence names five, the comment's integer equals the computed `required_n` — each seen failing first · **DONE 2026-10-03:** *Known limitations of the guards* in the README, fifteen findings with what was measured and where each is fixed, and a section in `docs/INTEGRITY.md`; the partition wording corrected in the README and in `docs/EXPLAINER-Q2-001.md`; the Makefile says five; the comment says 837; `tests/test_docs.py`, three tests, each seen failing first |
 | **M16.4** | **Heads pinned** (F11 part 1; T03). `register/HEADS.toml` with path, count and head for the six stores; a test and a `tools/prepublish.py` check that fail on any mismatch; the review's forgery and truncation as tests | `test_committed_registers_match_pinned_heads`, `test_forged_and_rechained_register_fails_against_pin`, `test_truncated_register_fails_against_pinned_count`, `test_prepublish_checks_heads` green, each seen failing first · **DONE 2026-10-03:** `occams/register/heads.py`, `python -m occams register pin|check`, `register/HEADS.toml` pinning six stores — the three programme heads are the ones the closing statement cites; the loop moves a pinned store's pin after its appends; `tools/prepublish.py` fails on a mismatch; five tests in `tests/test_register_anchor.py` and one in `tests/test_prepublish.py`, each seen failing first |
 | **M16.5** | **The pinned heads attested, without a key** (replaces F11 parts 2 and 3; T04). A workflow that attests `register/HEADS.toml` on every change to it, the action pinned by commit, permissions on that job alone | The workflow run is green and `gh attestation verify register/HEADS.toml` succeeds against this repository; if the service refuses, the row is BLOCKED with the reason and the pin stands · **DONE 2026-10-03:** `.github/workflows/attest.yml`, run `37145059773` green; `gh attestation verify register/HEADS.toml` succeeds from this machine — the statement names the file by its digest, the workflow on `main` that made it, and a transparency-log time of 2026-10-03T19:40:14+01:00 |
-| **M16.6** | **Release 1.0.1.** Version, notes that say what was found and that no guard changed, tag, release, redeploy | `make check` and both CI jobs green on the tagged commit; the tag and the release exist; every link on the site's index answers |
+| **M16.6** | **Release 1.0.1.** Version, notes that say what was found and that no guard changed, tag, release, redeploy | `make check` and both CI jobs green on the tagged commit; the tag and the release exist; every link on the site's index answers · **DONE 2026-10-03:** version 1.0.1 on `c950335`, run `37145791775` with both jobs green; tag `v1.0.1` and its release, marked latest; the site redeployed (run `37146023101`), 118 pages, every link on the index answering 200 |
 
 **Release 1.1.0 — the apparatus measures itself. The guards still judge as before.**
 
 | # | Task (review ids) | Done when |
 |---|---|---|
 | **M16.7** | **The size-and-power table** (F23; T05). `occams/calibrate.py`, `make calibrate`, a `calibration` marker, a weekly scheduled workflow; the review's three probes as tests, 200 seeds for size and 100 for power, against the tolerance the review states | The table prints; the no-dependence control is green; the three known failures are strict expected failures naming M16.14 and M16.15; the scheduled workflow's first run is recorded |
-| **M16.8** | **p counted plus one; evidence for every check** (F03; T06). A `GuardEvidence` record per check, pass or fail, before each resolution; no readiness page prints a zero p | `test_mc_p_value_is_never_zero`, `test_resolution_records_evidence_for_passing_checks`, `test_readiness_prints_no_zero_p` green, each seen failing first; the new record's fields pass the S7 money check |
-| **M16.9** | **One inference module, shared probes** (F20; T07). `occams/inference.py`, `occams/engine/probes.py`, `occams/engine/common.py`; the survey's fifth check calls the guard's; **behaviour unchanged** | Every existing test green; the probes' numbers identical to the seed before and after; `test_survey_and_guard_share_fifth_check` and the no-private-imports check green; the engine code hash's change is recorded in the log |
+| **M16.8** | **p counted plus one; evidence for every check** (F03; T06). A `GuardEvidence` record per check, pass or fail, before each resolution; no readiness page prints a zero p | `test_mc_p_value_is_never_zero`, `test_resolution_records_evidence_for_passing_checks`, `test_readiness_prints_no_zero_p` green, each seen failing first; the new record's fields pass the S7 money check · **DONE 2026-10-03:** `occams/inference.py` holds the one p — (exceedances + 1) / (draws + 1) — and the guards, the readiness table and the size table read it; each guard has `evaluate`, returning its refusal or none and the numbers it judged, and `resolve_question` appends five `GuardEvidence` records before every resolution; the readiness renderer cannot print a zero p and the two committed readiness pages are restated plus-one from the same 4,000 draws, with a dated note; six tests in `tests/test_guard_evidence.py`, each seen failing first; the record's fields and every evidence key pass the S7 check. Conservative by at most one part in draws + 1: no control changed its answer |
+| **M16.9** | **One inference module, shared probes** (F20; T07). `occams/inference.py`, `occams/engine/probes.py`, `occams/engine/common.py`; the survey's fifth check calls the guard's; **behaviour unchanged** | Every existing test green; the probes' numbers identical to the seed before and after; `test_survey_and_guard_share_fifth_check` and the no-private-imports check green; the engine code hash's change is recorded in the log · **DONE 2026-10-03:** `occams/engine/common.py` (the two helpers both simulators share), `occams/engine/probes.py` (the passive and random-entry probes and the two distributions built from them, engine-dispatched) and `occams/inference.py` (the draws and the one exceedance test); both engines' `measure`, both Monte Carlo guards and the survey's readiness go through them. Six digests in `tests/test_probes_unchanged.py` — five Measurements at fixed seeds and the survey's readiness rows — captured before the refactor and identical after; `tests/test_inference_shared.py`, four tests, with the spy and the no-private-imports check. The engine code hash moved from `5e94b014ccc1a75a` to `d09ef9f3b77b9b68`: three files joined the list it covers, and the two engines changed text, not behaviour |
 | **M16.10** | **The engine identified by content** (F13; T08). A hash over the import closure inside `occams/`; dirtiness judged on code paths only; a measurement or a survey on dirty or unknown code is refused by name; the content hash stamped on measured, resolved and survey records | The four F13 tests green, each seen failing first; the vendored `core/archive.py` byte-identical (`make provenance`) |
 | **M16.11** | **Append locked and linear** (F12; T20) | `test_concurrent_appends_never_fork_chain`, `test_append_reads_file_at_most_once_after_warm_cache`, `test_shrinking_file_raises_truncated` green, each seen failing first |
 | **M16.12** | **Hygiene** (F19, F24, the `CLAUDE.md` half of F25; T30, T32). The set of vendored modules the lab imports pinned by test, with the four the review missed; `check` never imports the cloud SDK; lint widened as the review states with the three long entry points excused by name; strict zips in guards and engines; leave-one-out refuses a non-positive pooled score by name; `CLAUDE.md` under 5 KB with no line over 200 characters. The status log stays here | The named tests green; `make lint` green under the new selection; `test_claude_md_is_small` green |
@@ -5666,3 +5666,45 @@ and stays resolved. M5.0, M0.22 and M0.21(c) are unchanged.
 > workflow's own first run, `37145059773`, green. No Register changed; the
 > pinned heads say so.
 
+> **2026-10-03 — release 1.0.1 (M16.6).** The record corrected and nothing
+> else: seven ADRs, the review and its verification published, the known
+> limitations named in the README and `docs/INTEGRITY.md`, the Register heads
+> pinned and attested. No guard changed behaviour and the notes say so.
+>
+> **S1, S3, S10 — 2026-10-03, release 1.0.1 on the CI machine.** `c950335`:
+> run `37145791775`, `check` and the clean-machine `setup` both success, first
+> attempt; tag `v1.0.1` on that commit and the release marked latest; the
+> `pages` dispatch `37146023101` deployed 118 pages and every link on the
+> site's index answers 200. `make null` refused and `make signal` accepted on
+> both engines, as before.
+
+> **2026-10-03 — release 1.1.0 begun: M16.7 built, M16.8 and M16.9 done.**
+> **The size table as the code stands** (`make calibrate`; 200 seeds a row,
+> 2,000 draws, each guard alone, p counted plus one):
+>
+> | Engine | Guard | World | at 0.01 | at 0.05 | Tolerance | |
+> |---|---|---|---:|---:|---|---|
+> | day-boxed | beats-null | a martingale, independent names | 0.005 | 0.030 | 0.026, 0.086 | within |
+> | day-boxed | beats-null | a martingale, names sharing a market (ρ 0.5) | 0.095 | 0.200 | | over — M16.14 |
+> | position-boxed | beats-null | a martingale, independent names | 0.130 | 0.210 | | over — M16.14 |
+> | position-boxed | beats-null | a martingale, names sharing a market | 0.295 | 0.340 | | over — M16.14 |
+> | day-boxed | fifth check | an upward drift, shared market; long, no timing skill | 0.015 | 0.060 | | within |
+> | position-boxed | fifth check | a martingale; long, no skill | 0.055 | 0.165 | | over — M16.15 |
+> | day-boxed | fifth check | a falling market, entered by a coin flip | 0.960 | 0.985 | | over — M16.15 |
+>
+> Four of fourteen cells within tolerance. The review's three probes are
+> rows two, three and seven; rows four and six are this lab's additions —
+> both defects at once, and the fifth check's own copy of the first. The
+> coin-flip probe is on a falling market rather than on the null control's
+> driftless paths, where the defect shows in one seed in twenty-five: there
+> the baseline loses, the coin's short half gains, and the check that is
+> meant to attest the entry passes it 96 times in 100. Five rows are strict
+> expected failures naming M16.14 or M16.15; three tests are green.
+> **M16.8** changes one number by at most one part in draws + 1, toward
+> refusal (ADR-0047: conservative fixes first); `make null` and `make signal`
+> answer as before on both engines. **M16.9** changes no number: the digests
+> say so. Prototyped beside this, for M16.14: a calendar-day block bootstrap
+> of the winner jointly with its reference brings every row inside tolerance
+> but one — the multi-day engine under a shared market stays near 0.08 at
+> 0.05, a ratio statistic whose trade count rises after losses — and
+> studentising it is the form M16.14 builds.

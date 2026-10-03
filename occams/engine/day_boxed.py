@@ -31,8 +31,10 @@ import numpy as np
 
 from occams.core import execution as ex
 from occams.costs.auditors import Fill, check_fill, family_of
+from occams.engine import probes
+from occams.engine.common import cost as _cost, on_basis as _on_basis
 from occams.engine.regime_gate import admits, check_gate
-from occams.data.actions import ActionSeries, rebase
+from occams.data.actions import ActionSeries
 from occams.data.bars import Bars
 from occams.measurement import Cell, Measurement, Trade
 from occams.sizing import r_multiple
@@ -93,13 +95,6 @@ class Trades(tuple):
 # ---- signals: computed from bars strictly before the box ----------------
 
 NO_ACTIONS = ActionSeries()
-
-
-def _on_basis(bars: Bars, i: int, basis_day_index: int, actions: ActionSeries):
-    """Bar ``i``'s prices restated on the basis of bar ``basis_day_index``,
-    so a split inside a lookback window is an action, not a level (M4.2)."""
-    f = lambda p: rebase(p, name=bars.name, from_day=bars.day[i], to_day=bars.day[basis_day_index], series=actions)  # noqa: E731
-    return f(bars.open[i]), f(bars.high[i]), f(bars.low[i]), f(bars.close[i])
 
 
 def _atr(bars: Bars, end: int, lookback: int, actions: ActionSeries = NO_ACTIONS) -> float:
@@ -189,12 +184,6 @@ def limit_through_the_open(kind: str, side: Side, level, entry_px: float, bar_op
     if side is Side.SHORT and bar_open > level:
         return bar_open
     return entry_px
-
-
-def _cost(costs, cost_in_r: float, entry_px: float, dist: float) -> float:
-    if costs is None:
-        return cost_in_r
-    return costs.cost_in_r(entry_price=entry_px, stop_distance=dist)
 
 
 def simulate_box(compiled: CompiledStrategy, bars: Bars, first: int, last: int, *,
@@ -311,40 +300,30 @@ def box_outcomes(compiled: CompiledStrategy, bars_by_name: dict[str, Bars], *, c
     from the same gated boxes, so the null isolates the entry rule's
     contribution within the regime rather than crediting the regime's own
     drift to the Strategy."""
-    spec = compiled.spec
-    probe = to_engine(spec.replace(entries=(spec.entries[0].__class__(EntryKind.ALWAYS, Side.LONG),),
-                                   order_type=spec.order_type.__class__("market")))
-    probe_s = to_engine(spec.replace(entries=(spec.entries[0].__class__(EntryKind.ALWAYS, Side.SHORT),),
-                                     order_type=spec.order_type.__class__("market")))
-    longs = [t.net_r for t in run(probe, bars_by_name, seed=0, cost_in_r=cost_in_r, actions=actions, costs=costs, regime=regime)]
-    shorts = [t.net_r for t in run(probe_s, bars_by_name, seed=0, cost_in_r=cost_in_r, actions=actions, costs=costs, regime=regime)]
-    return np.asarray(longs, dtype=float), np.asarray(shorts, dtype=float)
+    longs, shorts = (probes.passive(compiled, bars_by_name, side=side, cost_in_r=cost_in_r, actions=actions, costs=costs, regime=regime)
+                     for side in (Side.LONG, Side.SHORT))
+    return np.asarray([t.net_r for t in longs], dtype=float), np.asarray([t.net_r for t in shorts], dtype=float)
 
 
 def null_distribution(compiled: CompiledStrategy, bars_by_name: dict[str, Bars], *, n_trades: int,
                       draws: int, seed: int, cost_in_r: float, actions: ActionSeries = NO_ACTIONS,
                       costs=None, regime=None) -> tuple[float, ...]:
     longs, shorts = box_outcomes(compiled, bars_by_name, cost_in_r=cost_in_r, actions=actions, costs=costs, regime=regime)
-    return _null_from(longs, shorts, n_trades=n_trades, draws=draws, seed=seed)
+    return _distribution(probes.random_entry_distribution, NAME, longs=longs, shorts=shorts, n_trades=n_trades, draws=draws, seed=seed)
 
 
-def _null_from(longs: np.ndarray, shorts: np.ndarray, *, n_trades: int, draws: int, seed: int) -> tuple[float, ...]:
-    if longs.size == 0:
-        raise EngineRefusal("no boxes to draw a null from")
-    rng = np.random.default_rng([int(seed), 7])
-    idx = rng.integers(0, longs.size, size=(draws, n_trades))
-    side = rng.random((draws, n_trades)) < 0.5
-    picked = np.where(side, longs[idx], shorts[idx])
-    return tuple(float(x) for x in picked.mean(axis=1))
+def _distribution(build, *args, **kwargs) -> tuple[float, ...]:
+    try:
+        return build(*args, **kwargs)
+    except probes.ProbeRefusal as e:
+        raise EngineRefusal(str(e)) from None
 
 
 def always_long_trades(compiled: CompiledStrategy, bars_by_name: dict[str, Bars], *, seed: int, cost_in_r: float,
                        actions: ActionSeries = NO_ACTIONS, costs=None, regime=None):
     """Always-long at this spec's geometry and gate: a market order on every box, long (ADR-0045)."""
-    spec = compiled.spec
-    probe = to_engine(spec.replace(entries=(spec.entries[0].__class__(EntryKind.ALWAYS, Side.LONG),),
-                                   order_type=spec.order_type.__class__("market")))
-    return run(probe, bars_by_name, seed=seed, cost_in_r=cost_in_r, actions=actions, costs=costs, regime=regime)
+    return probes.passive(compiled, bars_by_name, side=Side.LONG, seed=seed, cost_in_r=cost_in_r, actions=actions, costs=costs,
+                          regime=regime)
 
 
 def baseline_summary(trades) -> tuple[float | None, tuple[tuple[str, float, int], ...]]:
@@ -356,16 +335,6 @@ def baseline_summary(trades) -> tuple[float | None, tuple[tuple[str, float, int]
         return None, ()
     pooled = sum(v for vs in by.values() for v in vs) / sum(len(vs) for vs in by.values())
     return pooled, tuple((g, sum(vs) / len(vs), len(vs)) for g, vs in sorted(by.items()))
-
-
-def _baseline_from(longs: np.ndarray, *, n_trades: int, draws: int, seed: int) -> tuple[float, ...]:
-    """ADR-0043: always-long at the same geometry and gate — the long box
-    outcomes alone, resampled with the winner's trade count."""
-    if longs.size == 0:
-        raise EngineRefusal("no boxes to draw an always-long baseline from")
-    rng = np.random.default_rng([int(seed), 11])
-    idx = rng.integers(0, longs.size, size=(draws, n_trades))
-    return tuple(float(x) for x in longs[idx].mean(axis=1))
 
 
 # ---- the sweep -> Measurement -------------------------------------------
@@ -383,12 +352,14 @@ def measure(template: StrategySpec, axes: dict[str, list[float]],
     years = max(b.days for b in bars_by_name.values()) / 252.0
     cells: list[Cell] = []
     compiled_by_idx: dict[tuple[int, ...], CompiledStrategy] = {}
+    passive: dict[tuple[int, ...], Trades] = {}
     for idx in product(*(range(len(axes[a])) for a in names)):
         params = {a: float(axes[a][i]) for a, i in zip(names, idx)}
         c = to_engine(cell_spec(template, params))
         trades = run(c, bars_by_name, seed=seed, cost_in_r=cost_in_r, actions=actions, costs=costs, regime=regime)
-        base_ev, base_by = baseline_summary(always_long_trades(c, bars_by_name, seed=seed, cost_in_r=cost_in_r, actions=actions,
-                                                               costs=costs, regime=regime))                     # ADR-0045
+        passive[tuple(idx)] = always_long_trades(c, bars_by_name, seed=seed, cost_in_r=cost_in_r, actions=actions, costs=costs,
+                                                 regime=regime)
+        base_ev, base_by = baseline_summary(passive[tuple(idx)])                                                # ADR-0045
         cells.append(Cell(tuple(idx), tuple(sorted(params.items())), tuple(t.as_trade() for t in trades),
                           spec_hash=c.spec_hash, baseline_ev=base_ev, baseline_by_group=base_by))
         compiled_by_idx[tuple(idx)] = c
@@ -396,10 +367,13 @@ def measure(template: StrategySpec, axes: dict[str, list[float]],
         raise EngineRefusal("the sweep traded nothing in every cell — an instrument failure, never a verdict")
     winner = Measurement(spec_hash="", engine=NAME, engine_sha="", seed=seed, partition=partition, years=years,
                          cells=tuple(cells), null_ev=()).winner                                                 # the surface's winner
-    longs, shorts = box_outcomes(compiled_by_idx[winner.indices], bars_by_name, cost_in_r=cost_in_r, actions=actions,
-                                 costs=costs, regime=regime)
-    null = _null_from(longs, shorts, n_trades=max(winner.n, 1), draws=null_draws, seed=seed)
-    baseline = _baseline_from(longs, n_trades=max(winner.n, 1), draws=null_draws, seed=seed)   # ADR-0043
+    longs = passive[winner.indices]
+    shorts = probes.passive(compiled_by_idx[winner.indices], bars_by_name, side=Side.SHORT, cost_in_r=cost_in_r, actions=actions,
+                            costs=costs, regime=regime)
+    n = max(winner.n, 1)
+    null = _distribution(probes.random_entry_distribution, NAME, longs=[t.net_r for t in longs], shorts=[t.net_r for t in shorts],
+                         n_trades=n, draws=null_draws, seed=seed)
+    baseline = _distribution(probes.passive_distribution, NAME, longs, n_trades=n, draws=null_draws, seed=seed)   # ADR-0043
     any_compiled = next(iter(compiled_by_idx.values()))
     return Measurement(spec_hash=template.hash, engine=NAME, engine_sha=any_compiled.engine_sha, seed=seed,
                        partition=partition, years=years, cells=tuple(cells), null_ev=null,

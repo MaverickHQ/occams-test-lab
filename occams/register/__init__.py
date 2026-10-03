@@ -29,6 +29,7 @@ from occams.register.records import (  # noqa: F401
     CalendarFrozen,
     LabClosed,
     RefusalRecorded,
+    GuardEvidence,
     StrategyTransitioned,
     ReserveLook,
     ForwardWindowOpened,
@@ -68,6 +69,7 @@ class Register(Store):
     HypothesisMeasured = HypothesisMeasured
     HypothesisResolved = HypothesisResolved
     RefusalRecorded = RefusalRecorded
+    GuardEvidence = GuardEvidence
     StrategyTransitioned = StrategyTransitioned
     ReserveLook = ReserveLook
     ForwardWindowOpened = ForwardWindowOpened
@@ -102,6 +104,7 @@ __all__ = [
     "ForwardFill",
     "ForwardWindowOpened",
     "ForwardWindowResolved",
+    "GuardEvidence",
     "HypothesisMeasured",
     "HypothesisRegistered",
     "HypothesisResolved",

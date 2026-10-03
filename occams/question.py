@@ -332,10 +332,13 @@ def resolve_question(q: Question, m: Measurement, *, register: Register, archive
                      path_draws: int = 2000) -> tuple[Question, Verdict, Strategy | None]:
     """The template measures; the winner trades (ADR-0036)."""
     h = q.hypothesis
-    fired = forward.check(m, h) or ()
+    judged = forward.evaluations(m, h)                     # each check once: its refusal or None, and what it saw
+    fired = tuple(r for r, _ in judged if r is not None)
     winner = m.winner
     for r in fired:  # N6: every refusal is queryable, with its evidence, not only named in the Verdict
         register.append(register.RefusalRecorded(r.transition, r.reason, dict(r.evidence), winner.spec_hash, h.id))
+    for name, (r, seen) in zip(forward.CHECKS, judged):    # M16.8: and every check's numbers, passing or failing, before the resolution
+        register.append(register.GuardEvidence(h.id, winner.spec_hash, name, r is None, dict(seen)))
     winner_spec = apply_cell(q.template, dict(winner.params))
     assert winner_spec.hash == winner.spec_hash
     outcome = "supported" if not fired else "null"

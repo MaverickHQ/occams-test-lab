@@ -436,6 +436,12 @@ def summarise(p: dict) -> str:
                 f'· {esc(p.get("cost_basis", "unknown"))} · winner [{esc(cell)}] · {len(p["refusals"])} refusal{"" if len(p["refusals"]) == 1 else "s"}')
     if t == "RefusalRecorded":
         return f'{esc(p.get("hypothesis_id") or "—")} · refused at {esc(p["transition"])}: {esc(p["reason"])}'
+    if t == "GuardEvidence":
+        seen = p.get("evidence") or {}
+        key = next((k for k in ("p_null", "p_baseline", "gap", "ev_net_r", "weakest_score_without") if k in seen), None)
+        shown = f' · {esc(key.replace("_", " "))} {num(seen[key], 4)}' if key and isinstance(seen[key], (int, float)) else ""
+        return (f'{esc(p["hypothesis_id"])} · {esc(p["check"].replace("_", " "))} · <strong>{"passed" if p["passed"] else "refused"}</strong>'
+                f'{shown} · {short(p["spec_hash"])}')
     if t == "UniverseDeclared":
         return (f'{esc(p["name"])} · {len(p["members"])} names · {esc(p["instrument_class"])} · {esc(p["source_id"])} · '
                 f'{esc(p["rule"][:90])} · bias: {esc(p["bias"][:60])}')

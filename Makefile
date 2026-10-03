@@ -1,4 +1,4 @@
-.PHONY: prepublish-all site setup doctor test test-fast lint credscan provenance prepublish check quickstart null signal console console-offline survey programme reproduce-private reproduce-public
+.PHONY: prepublish-all site setup doctor test test-fast calibrate lint credscan provenance prepublish check quickstart null signal console console-offline survey programme reproduce-private reproduce-public
 
 QUESTION ?= Q-005
 REPRO_REGISTER ?= register/register.jsonl
@@ -19,7 +19,11 @@ test:
 	python3 -m pytest
 
 test-fast:                ## M14.1 — every test not marked slow; the fast cycle, never the proof
-	python3 -m pytest -m "not slow"
+	python3 -m pytest -m "not slow and not calibration"
+
+calibrate:                ## M16.7 / ADR-0047 — the size-and-power table: each Monte Carlo guard in isolation, hundreds of seeds, against the rate it declares
+	python3 -m occams.calibrate --save build/calibration.json
+	OCCAMS_CALIBRATION_CACHE=build/calibration.json python3 -m pytest -m calibration tests/test_apparatus_size.py
 
 lint:
 	python3 -m ruff check occams/ tests/ scripts/ tools/

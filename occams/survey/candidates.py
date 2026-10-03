@@ -34,6 +34,8 @@ from dataclasses import replace
 from pathlib import Path
 
 from occams.config import InformationAxis
+from occams import inference
+from occams.inference import format_p
 from occams.survey.grid import REGIME_NONE, Cell, Family, Grid, GridRefused, load as load_grid
 from occams.survey.page import MIN_TRADES, TIERS, family_of, geometry, mechanism_key, tier_of
 from occams.survey.run import INDEX_FILE, World, _engine_for, build_world, engine_code_sha
@@ -356,19 +358,14 @@ def fifth_check_readiness(cands: list[dict], index: dict, *, archive, register, 
     always-long in each definition era, which the survey's tiers pooled.
     A screen is not a verdict; this is the gate shown passable, or not,
     before alpha moves."""
-    import math
 
-    import numpy as np
 
     from occams.costs.equity import EquityCosts, InstrumentClass
     from occams.data.partitions import Partitions
-    from occams.engine.day_boxed import _baseline_from
-    from occams.engine.position_boxed import block_bootstrap_means, block_length
+    from occams.engine import probes
     from occams.engine.regime_gate import RegimeContext
-    from occams.guards.beats_always_long import DRAWS_PER_ALPHA
     from occams.proposers.regime import frozen
     from occams.spec.compile import to_engine
-    from occams.spec.spec import Horizon
     from occams.survey.grid import Cell
     from occams.survey.run import _eras, _mean, baseline_spec, gated_spec
 
@@ -397,26 +394,22 @@ def fifth_check_readiness(cands: list[dict], index: dict, *, archive, register, 
         eras_cell = list(row.get("eras") or [])
         eras_margin = [(a - b) if a is not None and b is not None else None for a, b in zip(eras_cell, eras_base)]
         alpha_c = float(cfg.alpha.axes[InformationAxis(row["axis"])].mechanism_test_alpha)
-        need = math.ceil(DRAWS_PER_ALPHA / alpha_c) if alpha_c > 0 else 10 ** 12
-        if not net:
-            dist = ()
-        elif spec.horizon is Horizon.MULTI_DAY:
-            x = np.asarray([t.net_r for t in sorted(trades, key=lambda t: (t.entry_index, t.name))], dtype=float)
-            dist = tuple(float(v) for v in block_bootstrap_means(x, block=block_length(x), draws=draws, seed=int(seed) + 11))
-        else:
-            dist = _baseline_from(np.asarray(net, dtype=float), n_trades=max(int(row["trades"]), 1), draws=draws, seed=seed)
         ev = float(row["ev_net"])
-        if len(dist) < need:
-            p_b, verdict = None, "thin"
-        else:
-            p_b = sum(1 for v in dist if v >= ev) / len(dist)
-            verdict = "pass" if p_b <= alpha_c else "refuse"
+        # M16.9: the engine's own always-long distribution and the guard's own test — neither re-implemented here
+        dist = probes.passive_distribution(engine.NAME, trades, n_trades=max(int(row["trades"]), 1), draws=draws, seed=seed) if net else ()
+        verdict, p_b, need = inference.exceedance(dist, ev, alpha_c)
         out.append({"cell": row["cell"], "universe": fam.universe, "tier": c["tier"], "family": fam.describe(), "ev_net": ev,
                     "baseline_survey": row.get("baseline_ev_net"), "baseline_now": base_now, "baseline_trades_now": len(trades),
                     "margin_now": (ev - base_now) if base_now is not None else None, "p_baseline": p_b, "alpha_corrected": alpha_c,
                     "draws": len(dist), "needed": need, "fifth_check": verdict, "eras_cell": eras_cell, "eras_baseline": eras_base,
                     "eras_margin": eras_margin, "sweep": c["sweep"], "alpha": c.get("alpha")})
     return out
+
+
+def readiness_p(dist, ev: float) -> float:
+    """The fifth check's p on the definition partition, as the guard counts it: plus one
+    (ADR-0048 §4). No draw reaching the cell is `at most one in draws + 1`, never zero."""
+    return inference.monte_carlo_p(dist, ev)
 
 
 def _f(x, places: int = 3) -> str:
@@ -453,7 +446,7 @@ def readiness_document(rows: list[dict], index: dict, record: dict, *, register,
     table = ["| # | Cell | Universe | Tier | EV | Always-long, survey → now | Margin now | p vs α | Fifth check | Margin by era | Sweep · alpha |",
              "|---:|---|---|---|---:|---|---:|---|---|---|---|"]
     for i, r in enumerate(rows, 1):
-        p = "—" if r["p_baseline"] is None else f"{r['p_baseline']:.4f} vs {r['alpha_corrected']:.4g}"
+        p = "—" if r["p_baseline"] is None else f"{format_p(r['p_baseline'])} vs {r['alpha_corrected']:.4g}"
         eras = " / ".join(_f(x) for x in r["eras_margin"])
         price = f"{r['sweep']} · {r['alpha']:.4g}" if r.get("alpha") is not None else f"{r['sweep']} · unpriced"
         table.append(f"| {i} | `{r['cell']}` | {r['universe']} | {r['tier']} | {_f(r['ev_net'])} | {_f(r['baseline_survey'])} → {_f(r['baseline_now'])} "
@@ -557,7 +550,7 @@ def main(argv: list[str] | None = None) -> int:
         print(f"beats-always-long on the definition partition (ADR-0043), {_n(a.draws)} draws, seed {seed} — the gate shown passable "
               f"before alpha moves; a screen is not a verdict:")
         for i, r in enumerate(rows, 1):
-            p = "thin" if r["p_baseline"] is None else f"p {r['p_baseline']:.4f} vs α {r['alpha_corrected']:.4g}"
+            p = "thin" if r["p_baseline"] is None else f"p {format_p(r['p_baseline'])} vs α {r['alpha_corrected']:.4g}"
             print(f"[{i:>2}] {r['cell']} · {r['universe']} · {r['tier']:<8} · EV {_f(r['ev_net'])} · always-long {_f(r['baseline_survey'])} "
                   f"(survey) → {_f(r['baseline_now'])} (now, {_n(r['baseline_trades_now'])} trades) · margin now {_f(r['margin_now'])} · "
                   f"{p} · {r['fifth_check'].upper()} · margin by era {' / '.join(_f(x) for x in r['eras_margin'])}")

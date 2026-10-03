@@ -1,7 +1,7 @@
 """The chain machinery of the lab's stores (M14.6, split from ``occams/register.py``):
 the money type the Register may never hold, the record decorators that refuse it at
 declaration time, the canonical serialisation, and ``Store`` — hash-chained, append-only
-JSONL. The twenty-one record types live in ``records.py``; the two stores that bind them, ``Register``
+JSONL. The twenty-three record types live in ``records.py``; the two stores that bind them, ``Register``
 and ``Operations``, in the package's ``__init__``. The chain hashes payloads, never code:
 nothing in any Register changed when this file was made.
 """

@@ -18,19 +18,21 @@ from __future__ import annotations
 from itertools import product
 from typing import Callable
 
-import numpy as np
 
 from occams.core import execution as ex
 from occams.costs.auditors import Fill, check_fill, family_of
 from occams.engine.regime_gate import admits, check_gate
 from occams.data.actions import ActionSeries, rebase
-from occams.engine.day_boxed import (NO_ACTIONS, Missed, TradeRecord, Trades, _cost, _on_basis, baseline_summary, limit_through_the_open,
+from occams.engine import probes
+from occams.engine.common import cost as _cost, on_basis as _on_basis
+from occams.engine.day_boxed import (NO_ACTIONS, Missed, TradeRecord, Trades, baseline_summary, limit_through_the_open,
                                      signal, stop_distance)
+from occams.inference import block_bootstrap_means, block_length  # noqa: F401 — the names this module has always offered
 from occams.data.bars import Bars
 from occams.measurement import Cell, Measurement
 from occams.sizing import r_multiple
 from occams.spec.compile import CompiledStrategy, to_engine
-from occams.spec.spec import EntryKind, ExitKind, Side, StrategySpec
+from occams.spec.spec import ExitKind, Side, StrategySpec
 
 NAME = "position_boxed"
 ORDER_KIND = {"market": ex.MARKET, "limit": ex.LIMIT, "stop": ex.STOP, "stop_limit": ex.STOP}
@@ -160,63 +162,32 @@ def run(compiled: CompiledStrategy, bars_by_name: dict[str, Bars], *, seed: int,
 
 # ---- the null: block bootstrap over positions in time order --------------
 
-def block_bootstrap_means(x: np.ndarray, *, block: int, draws: int, seed: int) -> np.ndarray:
-    """Moving-block bootstrap of the mean (M9.2). Blocks of ``block``
-    consecutive observations are drawn with replacement and concatenated to
-    the original length, so dependence inside a block survives resampling."""
-    x = np.asarray(x, dtype=float)
-    n = x.size
-    if n == 0:
-        raise ValueError("nothing to resample")
-    block = max(1, min(int(block), n))
-    rng = np.random.default_rng([int(seed), 11])
-    n_blocks = -(-n // block)
-    starts = rng.integers(0, n - block + 1, size=(draws, n_blocks))
-    idx = (starts[:, :, None] + np.arange(block)[None, None, :]).reshape(draws, -1)[:, :n]
-    return x[idx].mean(axis=1)
-
-
-def block_length(x: np.ndarray) -> int:
-    """The vendored rule (``stats.optimal_block_length``): grows with the
-    series' serial dependence and stays within sane bounds — the donor
-    pinned both properties by test."""
-    from occams.core import stats
-
-    return int(stats.optimal_block_length(np.asarray(x, dtype=float)))
+def _distribution(build, *args, **kwargs) -> tuple[float, ...]:
+    try:
+        return build(*args, **kwargs)
+    except probes.ProbeRefusal as e:
+        raise EngineRefusal(str(e)) from None
 
 
 def null_distribution(compiled: CompiledStrategy, bars_by_name: dict[str, Bars], *, draws: int, seed: int,
                       cost_in_r: float, actions: ActionSeries = NO_ACTIONS, costs=None, regime=None) -> tuple[float, ...]:
     """Random entry, same stop and exits, positions in time order, block
     bootstrap over them. Sides are a seeded coin per box."""
-    spec = compiled.spec
-    probe = to_engine(spec.replace(entries=(spec.entries[0].__class__(EntryKind.COIN_FLIP, Side.LONG, (("seed", seed),)),),
-                                   order_type=spec.order_type.__class__("market")))
-    trades = run(probe, bars_by_name, seed=seed, cost_in_r=cost_in_r, actions=actions, costs=costs, audit_fills=False, regime=regime)
-    if not trades:
-        raise EngineRefusal("random entry produced no positions to bootstrap")
-    ordered = sorted(trades, key=lambda t: (t.entry_index, t.name))
-    x = np.asarray([t.net_r for t in ordered], dtype=float)
-    return tuple(float(v) for v in block_bootstrap_means(x, block=block_length(x), draws=draws, seed=seed))
+    trades = probes.random_entry(compiled, bars_by_name, seed=seed, cost_in_r=cost_in_r, actions=actions, costs=costs, regime=regime)
+    return _distribution(probes.random_entry_distribution, NAME, positions=trades, n_trades=len(trades), draws=draws, seed=seed)
 
 
 def always_long_trades(compiled: CompiledStrategy, bars_by_name: dict[str, Bars], *, seed: int, cost_in_r: float,
                        actions: ActionSeries = NO_ACTIONS, costs=None, regime=None):
     """Always-long at this spec's geometry and gate — a market order on every
     box, long, the same exits, stop, horizon and regime gate (ADR-0043, ADR-0045)."""
-    spec = compiled.spec
-    probe = to_engine(spec.replace(entries=(spec.entries[0].__class__(EntryKind.ALWAYS, Side.LONG, ()),),
-                                   order_type=spec.order_type.__class__("market")))
-    return run(probe, bars_by_name, seed=seed, cost_in_r=cost_in_r, actions=actions, costs=costs, audit_fills=False, regime=regime)
+    return probes.passive(compiled, bars_by_name, side=Side.LONG, seed=seed, cost_in_r=cost_in_r, actions=actions, costs=costs,
+                          regime=regime)
 
 
 def baseline_distribution_of(trades, *, draws: int, seed: int) -> tuple[float, ...]:
     """ADR-0043: always-long's positions in time order, block bootstrap over them."""
-    if not trades:
-        raise EngineRefusal("always-long produced no positions to bootstrap")
-    ordered = sorted(trades, key=lambda t: (t.entry_index, t.name))
-    x = np.asarray([t.net_r for t in ordered], dtype=float)
-    return tuple(float(v) for v in block_bootstrap_means(x, block=block_length(x), draws=draws, seed=int(seed) + 11))
+    return _distribution(probes.passive_distribution, NAME, trades, n_trades=len(trades), draws=draws, seed=seed)
 
 
 def baseline_distribution(compiled: CompiledStrategy, bars_by_name: dict[str, Bars], *, draws: int, seed: int,
@@ -235,7 +206,7 @@ def measure(template: StrategySpec, axes: dict[str, list[float]],
     years = max(b.days for b in bars_by_name.values()) / 252.0
     cells: list[Cell] = []
     compiled_by_idx: dict[tuple[int, ...], CompiledStrategy] = {}
-    probes: dict[tuple[int, ...], object] = {}
+    passive: dict[tuple[int, ...], object] = {}
     for idx in product(*(range(len(axes[a])) for a in names)):
         params = {a: float(axes[a][i]) for a, i in zip(names, idx)}
         c = to_engine(cell_spec(template, params))
@@ -245,14 +216,14 @@ def measure(template: StrategySpec, axes: dict[str, list[float]],
         cells.append(Cell(tuple(idx), tuple(sorted(params.items())), tuple(t.as_trade() for t in trades),
                           spec_hash=c.spec_hash, baseline_ev=base_ev, baseline_by_group=base_by))
         compiled_by_idx[tuple(idx)] = c
-        probes[tuple(idx)] = probe
+        passive[tuple(idx)] = probe
     if not any(c.trades for c in cells):
         raise EngineRefusal("the sweep traded nothing in every cell — an instrument failure, never a verdict")
     winner = Measurement(spec_hash="", engine=NAME, engine_sha="", seed=seed, partition=partition, years=years,
                          cells=tuple(cells), null_ev=()).winner                                                 # the surface's winner
     null = null_distribution(compiled_by_idx[winner.indices], bars_by_name, draws=null_draws, seed=seed,
                              cost_in_r=cost_in_r, actions=actions, costs=costs, regime=regime)
-    baseline = baseline_distribution_of(probes[winner.indices], draws=null_draws, seed=seed)                     # ADR-0043
+    baseline = baseline_distribution_of(passive[winner.indices], draws=null_draws, seed=seed)                     # ADR-0043
     any_compiled = next(iter(compiled_by_idx.values()))
     return Measurement(spec_hash=template.hash, engine=NAME, engine_sha=any_compiled.engine_sha, seed=seed,
                        partition=partition, years=years, cells=tuple(cells), null_ev=null,

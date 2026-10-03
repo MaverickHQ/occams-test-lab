@@ -45,6 +45,7 @@ from occams.whatif import CELLS, FLOORS_WIDE, SIGMA_R
 ERAS = 3
 INDEX_FILE = "survey.json"
 ENGINE_FILES = ("occams/engine/day_boxed.py", "occams/engine/position_boxed.py", "occams/engine/regime_gate.py",
+                "occams/engine/common.py", "occams/engine/probes.py", "occams/inference.py",       # M16.9: code that moved stays covered
                 "occams/costs/auditors.py", "occams/costs/equity.py", "occams/data/actions.py", "occams/data/bars.py",
                 "occams/spec/spec.py", "occams/spec/compile.py", "occams/proposers/clustering.py", "occams/survey/run.py")
 

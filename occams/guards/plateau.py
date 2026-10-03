@@ -21,16 +21,23 @@ def neighbourhood(m, cell):
     return [c for c in m.cells if all(abs(a - b) <= 1 for a, b in zip(c.indices, cell.indices))]
 
 
-def check(m, gates) -> Refusal | None:
+def evaluate(m, gates) -> tuple[Refusal | None, dict]:
+    """The refusal, or None, and the numbers the check judged — the same on a pass (M16.8)."""
     w = m.winner
     neigh = neighbourhood(m, w)
+    size = {"neighbourhood": len(neigh), "plateau_cells": gates.plateau_cells, "winner": list(w.indices)}
     if len(neigh) < gates.plateau_cells:
-        return Refusal(T, "plateau: the winner's neighbourhood is too small to show a plateau",
-                       {"neighbourhood": len(neigh), "plateau_cells": gates.plateau_cells, "winner": list(w.indices)})
+        r = Refusal(T, "plateau: the winner's neighbourhood is too small to show a plateau", size)
+        return r, {**size, "reason": r.reason}
     score = m.score(w)
     med = median(m.score(c) for c in neigh if c.trades)
+    seen = {"winner_ev": w.ev, "winner_score": score, "surface": m.surface, "neighbourhood_median": med,
+            "plateau_slack": gates.plateau_slack, "winner": list(w.indices)}
     if score - med > gates.plateau_slack:
-        return Refusal(T, "plateau: lone spike — the winner exceeds its neighbourhood median by more than plateau_slack",
-                       {"winner_ev": w.ev, "winner_score": score, "surface": m.surface, "neighbourhood_median": med,
-                        "plateau_slack": gates.plateau_slack, "winner": list(w.indices)})
-    return None
+        r = Refusal(T, "plateau: lone spike — the winner exceeds its neighbourhood median by more than plateau_slack", seen)
+        return r, {**size, **seen, "gap": score - med, "reason": r.reason}
+    return None, {**size, **seen, "gap": score - med}
+
+
+def check(m, gates) -> Refusal | None:
+    return evaluate(m, gates)[0]

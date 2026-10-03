@@ -28,12 +28,16 @@ testpaths = ["tests"]
 pythonpath = ["."]
 # M14.1: the fast cycle is every test not marked slow (`make test-fast`);
 # `make check` and CI run the whole suite.
-markers = ["slow: a test that takes seconds, not milliseconds — skipped by `make test-fast`, never by `make check`"]
+markers = [
+  "slow: a test that takes seconds, not milliseconds — skipped by `make test-fast`, never by `make check`",
+  "calibration: a row of the size-and-power table, minutes over hundreds of seeds — run by `make calibrate` and a scheduled workflow, never by `make check` (M16.7)",
+]
 # One vendored case asserts that pyarrow is a declared dependency — true of
 # the donor's derived bar layer, not of this repository, which has none.
 # Deselected here BY NAME so the exclusion is visible in one place; the test
 # file itself is byte-identical to the donor's up to PROVENANCE.md's rules.
-addopts = "-q --strict-markers --deselect tests/core/test_archive.py::test_the_query_layer_needs_no_engine"
+# M16.7: the calibration rows are deselected here by marker; `make calibrate` selects them.
+addopts = "-q --strict-markers -m 'not calibration' --deselect tests/core/test_archive.py::test_the_query_layer_needs_no_engine"
 
 [tool.ruff]
 line-length = 88

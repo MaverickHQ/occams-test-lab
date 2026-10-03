@@ -8,25 +8,29 @@ exists to refuse.
 
 from __future__ import annotations
 
-import math
-
+from occams import inference
 from occams.guards import Refusal
 
 T = "MEASURED->FORWARD"
-DRAWS_PER_ALPHA = 20  # at least this many expected exceedances under the null
+DRAWS_PER_ALPHA = inference.DRAWS_PER_ALPHA  # at least this many expected exceedances, or the distribution cannot say no
+
+
+def evaluate(m, plan, search_space_size: int) -> tuple[Refusal | None, dict]:
+    """The refusal, or None, and the numbers the check judged — the same on a pass (M16.8)."""
+    w = m.winner
+    alpha_c = plan.alpha / search_space_size
+    dist = m.null_ev
+    state, p, need = inference.exceedance(dist, w.ev, alpha_c)      # counted plus one (ADR-0048 §4): never zero
+    if state == "thin":
+        seen = {"draws": len(dist), "needed": need, "alpha_corrected": alpha_c}
+        r = Refusal(T, "beats-null: the null distribution is too thin to say no at the corrected alpha", seen)
+        return r, {**seen, "reason": r.reason}
+    seen = {"p_null": p, "alpha_corrected": alpha_c, "winner_ev": w.ev, "null_mean": sum(dist) / len(dist), "draws": len(dist)}
+    if state == "refuse":
+        r = Refusal(T, "beats-null: random entry under the same geometry does as well", seen)
+        return r, {**seen, "needed": need, "reason": r.reason}
+    return None, {**seen, "needed": need}
 
 
 def check(m, plan, search_space_size: int) -> Refusal | None:
-    w = m.winner
-    alpha_c = plan.alpha / search_space_size
-    need = math.ceil(DRAWS_PER_ALPHA / alpha_c)
-    if len(m.null_ev) < need:
-        return Refusal(T, "beats-null: the null distribution is too thin to say no at the corrected alpha",
-                       {"draws": len(m.null_ev), "needed": need, "alpha_corrected": alpha_c})
-    exceed = sum(1 for x in m.null_ev if x >= w.ev)
-    p = exceed / len(m.null_ev)
-    if p > alpha_c:
-        return Refusal(T, "beats-null: random entry under the same geometry does as well",
-                       {"p_null": p, "alpha_corrected": alpha_c, "winner_ev": w.ev,
-                        "null_mean": sum(m.null_ev) / len(m.null_ev), "draws": len(m.null_ev)})
-    return None
+    return evaluate(m, plan, search_space_size)[0]

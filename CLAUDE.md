@@ -1,7 +1,7 @@
 # Occams — project context
 
 **State on 2026-10-03: published; M16 is open.** `MaverickHQ/occams-test-lab`
-is public and begins at a single snapshot commit; the release is `v1.0.0`; the
+is public and begins at a single snapshot commit; the release is `v1.0.1`; the
 pages are live at `https://maverickhq.github.io/occams-test-lab/`; three
 programmes are run, stopped by record and concluded; M0–M15 are closed or
 closed by decision. **M16 (`TASKS-v4.md`)**: an external review of the
