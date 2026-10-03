@@ -93,6 +93,12 @@ class Measurement:
     # ADR-0043: Monte Carlo EVs of always-long at the same geometry and gate; empty is refused by the fifth check, never passed
     baseline_ev: tuple[float, ...] = ()
     engine_code_sha: str = ""             # ADR-0055: the content hash of what measured it — the import closure of the modules that measure
+    # ADR-0048: the count each distribution's draws are means at — both Monte Carlo guards refuse one drawn at any other than the
+    # winner's — and what was drawn beside the draws: the method, the reference's EV, the standard errors, the block, the days
+    null_n: int = 0
+    baseline_n: int = 0
+    null_stats: tuple[tuple[str, float | int | str], ...] = ()
+    baseline_stats: tuple[tuple[str, float | int | str], ...] = ()
 
     @property
     def surface(self) -> str:

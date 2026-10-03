@@ -17,6 +17,7 @@ from collections.abc import Callable
 
 import numpy as np
 
+from occams.inference import INDEPENDENT
 from occams.measurement import Cell, Measurement, Trade
 
 NAME = "synthetic"
@@ -74,6 +75,11 @@ def measure(*, spec_hash: str, seed: int, axes: dict[str, list[float]], groups: 
     null = (-cost_in_r + sigma_r * rng.standard_normal((null_draws, n_total)).mean(axis=1))
     # ADR-0043: always-long at the same geometry — under a driftless law it is the null's own distribution, drawn again
     baseline = (-cost_in_r + sigma_r * rng.standard_normal((null_draws, n_total)).mean(axis=1))
+    # ADR-0048: the law draws every trade independently, so its null is independent draws at the cell's own count — the
+    # standard error beside it is the law's, sigma over root n
+    stats = (("method", INDEPENDENT), ("reference", float(-cost_in_r)), ("se", float(sigma_r / n_total ** 0.5)),
+             ("se_cluster", float(sigma_r / n_total ** 0.5)), ("block", 1), ("days", days))
     return Measurement(spec_hash=spec_hash, engine=NAME, engine_sha=engine_sha(), seed=seed,
                        partition=partition, years=float(years), cells=tuple(cells),
-                       null_ev=tuple(float(x) for x in null), baseline_ev=tuple(float(x) for x in baseline))
+                       null_ev=tuple(float(x) for x in null), baseline_ev=tuple(float(x) for x in baseline),
+                       null_n=n_total, baseline_n=n_total, null_stats=stats, baseline_stats=stats)

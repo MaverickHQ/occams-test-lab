@@ -12,6 +12,12 @@ numbers, compared to one part in a hundred million.
 
 A row of the task list that changes what a guard draws (M16.14, M16.15) changes these on
 purpose: it replaces the fingerprint in the same commit and says so there.
+
+**M16.14 (ADR-0048) replaced the null's fingerprints, and only the null's.** Every cell,
+every winner, every always-long distribution and the survey's readiness rows are the numbers
+they were. The null's spread is what moved: 0.0074 to 0.0131 on the day-boxed world whose
+names share a market and 0.0096 to 0.0281 on the multi-day one — and within a few per cent
+of what it was on the three worlds whose names are independent, where the old null was right.
 """
 
 from __future__ import annotations

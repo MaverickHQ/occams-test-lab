@@ -305,13 +305,6 @@ def box_outcomes(compiled: CompiledStrategy, bars_by_name: dict[str, Bars], *, c
     return np.asarray([t.net_r for t in longs], dtype=float), np.asarray([t.net_r for t in shorts], dtype=float)
 
 
-def null_distribution(compiled: CompiledStrategy, bars_by_name: dict[str, Bars], *, n_trades: int,
-                      draws: int, seed: int, cost_in_r: float, actions: ActionSeries = NO_ACTIONS,
-                      costs=None, regime=None) -> tuple[float, ...]:
-    longs, shorts = box_outcomes(compiled, bars_by_name, cost_in_r=cost_in_r, actions=actions, costs=costs, regime=regime)
-    return _distribution(probes.random_entry_distribution, NAME, longs=longs, shorts=shorts, n_trades=n_trades, draws=draws, seed=seed)
-
-
 def _distribution(build, *args, **kwargs) -> tuple[float, ...]:
     try:
         return build(*args, **kwargs)
@@ -346,8 +339,9 @@ def measure(template: StrategySpec, axes: dict[str, list[float]],
             partition_bounds: tuple[int, int] | None = None,
             split: tuple[float, float, float] | None = None, costs=None, regime=None) -> Measurement:
     """Compile and run one spec per cell of the declared sweep; the null is
-    drawn under the winner's geometry with the winner's trade count. The
-    partition and its bounds are stamped into the result (M4.6)."""
+    drawn under the winner's geometry at the winner's trade count, by
+    calendar day (ADR-0048). The partition and its bounds are stamped into
+    the result (M4.6)."""
     names = list(axes)
     years = max(b.days for b in bars_by_name.values()) / 252.0
     cells: list[Cell] = []
@@ -371,11 +365,12 @@ def measure(template: StrategySpec, axes: dict[str, list[float]],
     shorts = probes.passive(compiled_by_idx[winner.indices], bars_by_name, side=Side.SHORT, cost_in_r=cost_in_r, actions=actions,
                             costs=costs, regime=regime)
     n = max(winner.n, 1)
-    null = _distribution(probes.random_entry_distribution, NAME, longs=[t.net_r for t in longs], shorts=[t.net_r for t in shorts],
-                         n_trades=n, draws=null_draws, seed=seed)
+    against = _distribution(probes.against_random_entry, compiled_by_idx[winner.indices], bars_by_name, winner.trades, longs=longs,
+                            shorts=shorts, draws=null_draws, seed=seed)                                         # ADR-0048
     baseline = _distribution(probes.passive_distribution, NAME, longs, n_trades=n, draws=null_draws, seed=seed)   # ADR-0043
     any_compiled = next(iter(compiled_by_idx.values()))
     return Measurement(spec_hash=template.hash, engine=NAME, engine_sha=any_compiled.engine_sha, seed=seed,
-                       partition=partition, years=years, cells=tuple(cells), null_ev=null,
+                       partition=partition, years=years, cells=tuple(cells), null_ev=against.draws,
                        partition_bounds=partition_bounds, split=split,
-                       cost_basis=(costs.basis if costs is not None else "declared"), baseline_ev=baseline)
+                       cost_basis=(costs.basis if costs is not None else "declared"), baseline_ev=baseline,
+                       null_n=against.n, null_stats=against.stats(), baseline_n=n)

@@ -1,8 +1,9 @@
 """The position-boxed simulator (M9.1, F5, D6): the resampling unit is the
 position. A position opens on a signal box and runs across bars until its
 stop, its target, its time exit or the end of the data — so days are not
-independent, and the null is drawn by **block bootstrap over positions in
-time order** (M9.2), never by shuffling days (A5, H2).
+independent, and the null is drawn by **block bootstrap over calendar days**
+(M9.2; since ADR-0048 the winner and its reference together, at the winner's
+count), never by shuffling days (A5, H2).
 
 Fills come from the vendored ``execution`` module as in the day-boxed
 engine. A bar that opens through the stop fills at the open, and so does a
@@ -169,14 +170,6 @@ def _distribution(build, *args, **kwargs) -> tuple[float, ...]:
         raise EngineRefusal(str(e)) from None
 
 
-def null_distribution(compiled: CompiledStrategy, bars_by_name: dict[str, Bars], *, draws: int, seed: int,
-                      cost_in_r: float, actions: ActionSeries = NO_ACTIONS, costs=None, regime=None) -> tuple[float, ...]:
-    """Random entry, same stop and exits, positions in time order, block
-    bootstrap over them. Sides are a seeded coin per box."""
-    trades = probes.random_entry(compiled, bars_by_name, seed=seed, cost_in_r=cost_in_r, actions=actions, costs=costs, regime=regime)
-    return _distribution(probes.random_entry_distribution, NAME, positions=trades, n_trades=len(trades), draws=draws, seed=seed)
-
-
 def always_long_trades(compiled: CompiledStrategy, bars_by_name: dict[str, Bars], *, seed: int, cost_in_r: float,
                        actions: ActionSeries = NO_ACTIONS, costs=None, regime=None):
     """Always-long at this spec's geometry and gate — a market order on every
@@ -221,11 +214,15 @@ def measure(template: StrategySpec, axes: dict[str, list[float]],
         raise EngineRefusal("the sweep traded nothing in every cell — an instrument failure, never a verdict")
     winner = Measurement(spec_hash="", engine=NAME, engine_sha="", seed=seed, partition=partition, years=years,
                          cells=tuple(cells), null_ev=()).winner                                                 # the surface's winner
-    null = null_distribution(compiled_by_idx[winner.indices], bars_by_name, draws=null_draws, seed=seed,
-                             cost_in_r=cost_in_r, actions=actions, costs=costs, regime=regime)
+    longs = passive[winner.indices]
+    shorts = probes.passive(compiled_by_idx[winner.indices], bars_by_name, side=Side.SHORT, seed=seed, cost_in_r=cost_in_r,
+                            actions=actions, costs=costs, regime=regime)
+    against = _distribution(probes.against_random_entry, compiled_by_idx[winner.indices], bars_by_name, winner.trades, longs=longs,
+                            shorts=shorts, draws=null_draws, seed=seed)                                         # ADR-0048
     baseline = baseline_distribution_of(passive[winner.indices], draws=null_draws, seed=seed)                     # ADR-0043
     any_compiled = next(iter(compiled_by_idx.values()))
     return Measurement(spec_hash=template.hash, engine=NAME, engine_sha=any_compiled.engine_sha, seed=seed,
-                       partition=partition, years=years, cells=tuple(cells), null_ev=null,
+                       partition=partition, years=years, cells=tuple(cells), null_ev=against.draws,
                        partition_bounds=partition_bounds, split=split,
-                       cost_basis=(costs.basis if costs is not None else "declared"), baseline_ev=baseline)
+                       cost_basis=(costs.basis if costs is not None else "declared"), baseline_ev=baseline,
+                       null_n=against.n, null_stats=against.stats(), baseline_n=len(longs))

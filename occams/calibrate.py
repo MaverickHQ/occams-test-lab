@@ -30,7 +30,7 @@ import numpy as np
 
 from occams.config import InformationAxis
 from occams.data.bars import Bars
-from occams.inference import monte_carlo_p
+from occams.inference import guard_p, monte_carlo_p
 from occams.spec import (Capability, Entry, EntryKind, Exit, ExitKind, Horizon, OrderType, Side, Sizing, Stop,
                          StopKind, StrategySpec, UniverseRule)
 
@@ -102,6 +102,7 @@ class Row:
 
 
 DOWN_DRIFT = -0.001       # log return a day: a market that falls, so being long loses and a coin's short half gains
+FAR_STOP = 60.0           # per cent: thirteen standard deviations of a five-day move, so it never binds and long mirrors short exactly
 UP_DRIFT = 0.0005
 
 
@@ -116,7 +117,7 @@ def _measure(world: str, seed: int):
     coin = Entry(EntryKind.COIN_FLIP, Side.LONG, (("seed", seed),)) if entry == ["coin"] else None
     if engine == "position_boxed":
         bars = common_factor_world(seed, names=8, rho=rho, drift=drift)
-        spec = _spec(coin or _down_run(3), horizon=Horizon.MULTI_DAY, hold=5, stop_percent=10.0)
+        spec = _spec(coin or _down_run(3), horizon=Horizon.MULTI_DAY, hold=5, stop_percent=FAR_STOP if "farstop" in paths else 10.0)
         return position_boxed.measure(spec, {"hold": [5.0]}, lambda t, p: t, bars, seed=seed, cost_in_r=0.0, null_draws=DRAWS)
     bars = common_factor_world(seed, names=10, rho=rho, drift=drift)
     spec = _spec(coin or _down_run(2), horizon=Horizon.INTRADAY, hold=1, stop_percent=5.0)
@@ -129,18 +130,22 @@ def p_values(task: tuple[str, int]) -> tuple[float, float]:
     world, seed = task
     m = _measure(world, seed)
     w = m.winner
-    return monte_carlo_p(m.null_ev, w.ev), monte_carlo_p(m.baseline_ev, w.ev)
+    # beats-null acts on the larger of its two p-values (ADR-0048 §5); the fifth check on its bootstrap's until M16.15
+    return guard_p(monte_carlo_p(m.null_ev, w.ev), m.null_stats, w), monte_carlo_p(m.baseline_ev, w.ev)
 
+
+RESIDUAL = "an open residual at 0.05: ADR-0048, as built"
 
 ROWS: tuple[Row, ...] = (
     # beats-null: an entry with no skill on a martingale must pass at most at alpha
     Row("day_boxed:martingale-rho0.0", "day_boxed", "a martingale, independent names", "beats_null", "size", SIZE_SEEDS),
-    Row("day_boxed:martingale-rho0.5", "day_boxed", "a martingale, names sharing a market (rho 0.5)", "beats_null", "size", SIZE_SEEDS,
-        fixed_by="M16.14"),
-    Row("position_boxed:martingale-rho0.0", "position_boxed", "a martingale, independent names", "beats_null", "size", SIZE_SEEDS,
-        fixed_by="M16.14"),
-    Row("position_boxed:martingale-rho0.5", "position_boxed", "a martingale, names sharing a market (rho 0.5)", "beats_null", "size",
-        SIZE_SEEDS, fixed_by="M16.14"),
+    Row("day_boxed:martingale-rho0.5", "day_boxed", "a martingale, names sharing a market (rho 0.5)", "beats_null", "size", SIZE_SEEDS),
+    Row("position_boxed:martingale-rho0.0", "position_boxed", "a martingale, independent names", "beats_null", "size", SIZE_SEEDS),
+    # the multi-day engine on a shared market: at its declared rate at 0.01, on the edge of tolerance at 0.05 (ADR-0048, as built)
+    Row("position_boxed:martingale-rho0.5-farstop", "position_boxed", "a martingale, names sharing a market, a stop too far to bind",
+        "beats_null", "size", SIZE_SEEDS, fixed_by=RESIDUAL),
+    Row("position_boxed:martingale-rho0.5", "position_boxed", "a martingale, names sharing a market, a stop that binds", "beats_null", "size",
+        SIZE_SEEDS, fixed_by=RESIDUAL),
     # beats-always-long: an entry that adds nothing over the passive alternative must pass at most at alpha
     Row("day_boxed:updrift-rho0.5", "day_boxed", "an upward drift, names sharing a market; long with no timing skill",
         "beats_always_long", "size", SIZE_SEEDS),
@@ -236,7 +241,8 @@ def main(argv: list[str] | None = None) -> int:
     out_of = 0
     for r in rows:
         mark = "ok" if r["within"] else "OVER" if r["kind"] == "size" else "UNDER"
-        note = "" if r["within"] or not r["fixed_by"] else f"  (a known defect: {r['fixed_by']} fixes it)"
+        known = r["fixed_by"]
+        note = "" if r["within"] or not known else f"  ({known})" if known == RESIDUAL else f"  (a known defect: {known} fixes it)"
         out_of += 0 if r["within"] else 1
         print(f"{r['engine']:15s} {r['guard']:18s} {r['alpha']:5.2f} {r['measured']:8.3f} {r['bound']:6.3f}  {mark:6s} "
               f"{r['world']} [{r['seeds']} seeds]{note}")

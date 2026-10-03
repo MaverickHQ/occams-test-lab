@@ -122,7 +122,16 @@ must pass:
    `plateau_cells` members and a median within `plateau_slack` of the winner.
    Ported from `search.py:96-115`, the strongest single piece of the donor.
 2. **Beats the null** — random entry, Monte Carlo, same costs and geometry,
-   **resampling unit matched to the horizon** (D6).
+   **resampling unit matched to the horizon** (D6). *Since ADR-0048
+   (2026-10-03): the unit is the calendar day for both simulators. The winner
+   and random entry — a coin's side on every box the gate admits — are summed
+   by day and resampled together in blocks of consecutive days, at least two
+   holds long, so every draw is at the winner's own count, trades that share
+   a date stay together and overlapping positions stay together; the draw is
+   studentised; a standard error clustered by date is read beside it and the
+   check refuses when the two disagree at the corrected alpha. Verdicts
+   before it were judged on an independent or a position-ordered null and say
+   so.*
 3. **Clears its declared floor** — the **pair**: EV per trade in net R, and
    the minimum frequency. Not a floor computed afterwards.
 4. **Leave-one-out robustness** — the pooled effect must not be carried by a
@@ -408,7 +417,11 @@ restatement, and it fails silently across venues.
 **H2 — The resampling unit** (D6, A5). The donor Monte Carlo is correct only
 because days are independent. Multi-day holds overlap; the honest unit is the
 position with a block bootstrap. **No test would catch this** — everything
-passes and the null is simply wrong.
+passes and the null is simply wrong. *It was wrong, and a test now catches
+it: the size table (`make calibrate`, M16.7) measured the position-boxed null
+passing a world with nothing in it fourteen times in a hundred at a declared
+one, and the day-boxed one nine times under a shared market. The unit is the
+calendar day since ADR-0048.*
 
 **H3 — Survivorship** (D8). Twenty liquid names picked today and backtested
 ten years measures a portfolio of known winners.

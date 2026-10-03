@@ -85,4 +85,5 @@ def test_the_engines_and_the_survey_draw_through_the_shared_modules():
         assert "default_rng" not in source.replace("np.random.default_rng([int(seed), zlib.crc32", ""), rel   # the coin's own stream stays
         assert ">= w.ev" not in source and "/ len(dist)" not in source.replace("sum(dist) / len(dist)", ""), rel
     probes = (ROOT / "occams/engine/probes.py").read_text(encoding="utf-8")
-    assert "inference.block_bootstrap_means" in probes and "inference.coin_sided_means" in probes and "inference.resampled_means" in probes
+    assert "inference.compare_by_day" in probes                      # beats-null, since M16.14 (ADR-0048)
+    assert "inference.block_bootstrap_means" in probes and "inference.resampled_means" in probes   # the fifth check, until M16.15
