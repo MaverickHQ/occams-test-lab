@@ -5745,3 +5745,8 @@ and stays resolved. M5.0, M0.22 and M0.21(c) are unchanged.
 > `make check` and the CI job now run the whole-tree scan, and the scan reads
 > untracked files that are not ignored, so it sees what a commit would add
 > before the commit is made (`tests/test_prepublish.py`).
+
+> **2026-10-03 — release 1.1.0 prepared (M16.13).** Version 1.1.0; the
+> README's *Known limitations* marks what this release fixed and carries the
+> size table as measured; `docs/INTEGRITY.md` says what 1.1.0 built and that
+> it changed no judgement but one, toward refusal. The notes print the table.

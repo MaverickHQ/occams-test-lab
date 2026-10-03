@@ -59,6 +59,14 @@ each finding, what was measured, and the release that fixes it or the reason
 it is left to the successor lab. The size of every guard is now a number the
 build measures (`make calibrate`), not a property the table asserts.
 
+Release 1.1.0 built the instruments and changed no judgement: the size table
+and its tests; a Monte Carlo p counted with the observed value in it, so it is
+never zero; a record of what every check saw, written before each resolution,
+pass or fail; one module that draws every null, so a correction is made once;
+the engine identified by a hash of everything a measurement imports, with
+dirty or unknown code refused; an exclusive lock on every append. Release
+2.0.0 changes what the guards judge, by ADR, for records made after it.
+
 ## Reading the evidence yourself
 
 ```bash

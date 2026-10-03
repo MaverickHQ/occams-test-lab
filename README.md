@@ -128,14 +128,37 @@ from it; the one supported verdict is where it bites.
 | Power is planned at one cell's dispersion while any cell may win | Q2-001 planned at 2.22 R and won where its sibling measures 4.09 R | 2.0.0, ADR-0050 |
 | The plateau keeps the winner in its own median, with a slack in absolute R | — | 2.0.0, ADR-0051 |
 | The Register's chain carries no key | a forged and re-chained copy verifies; so does a truncated one | 1.0.1, ADR-0054: the heads are pinned and attested |
-| The engine is identified by a commit that can read `-dirty` and a hand-kept file list | every programme 2 verdict reads `-dirty` | 1.1.0, ADR-0055 |
-| The controls show that a coin flip is refused once, not how often a guard errs | — | 1.1.0: a size-and-power table |
+| The engine is identified by a commit that can read `-dirty` and a hand-kept file list | every programme 2 verdict reads `-dirty` | **fixed in 1.1.0**, ADR-0055: the content hash covers everything a measurement imports, only code can make the tree dirty, and dirty or unknown code does not measure |
+| The controls show that a coin flip is refused once, not how often a guard errs | — | **built in 1.1.0**: `make calibrate`, the table below |
+| A Monte Carlo p left out the observed value, and a check that passed recorded nothing | a readiness table printed `0.0000` | **fixed in 1.1.0**: p counted plus one; every resolution records what each of the five checks saw |
+| Append read the tail and then wrote, with nothing held between | two appenders could fork the chain | **fixed in 1.1.0**: an exclusive lock, and the verified records re-checked by a digest of their bytes |
 | The commits the verdicts stamp are not in this repository | by the publication decision | 2.0.0: their hashes, with the sources kept beside the private archive |
 | A survey's readiness table tests its own top twenty at an uncorrected alpha | twenty of twenty pass, in both surveys | not here: it needs every cell run again; the successor lab's |
 | A second look at one partition passes on a sentence, or on a change of axis | Q2-002 re-measured Q2-001's mechanism on the same days | not here: no registration runs in this lab again |
 | Each programme declares its own alpha total | 1.20 declared across three programmes, 0.55 spent | not here, for the same reason |
 | The single-name universes are today's members measured on earlier history | named on every universe record, never corrected | not here: data the declared budget does not buy |
 | Costs are a declared bound, never measured, and a stop fills at its level | — | not here: nothing trades (ADR-0044) |
+
+**How often each Monte Carlo guard errs, as release 1.1.0 measures it.**
+`make calibrate` runs each guard alone over 200 seeds on a world whose truth
+is known, and prints the rate at which it lets that world through beside the
+rate it declares. Release 1.1.0 changes no guard, so this is the lab as its
+verdicts were reached; release 2.0.0 is what brings the rows inside tolerance.
+
+| Engine | Guard | A world with nothing to find | Passed at a declared 0.01 | at 0.05 | |
+|---|---|---|---:|---:|---|
+| day-boxed | beats-null | a martingale, independent names | 0.005 | 0.030 | within tolerance |
+| day-boxed | beats-null | a martingale, names sharing a market | 0.095 | 0.200 | over |
+| multi-day | beats-null | a martingale, independent names | 0.130 | 0.210 | over |
+| multi-day | beats-null | a martingale, names sharing a market | 0.295 | 0.340 | over |
+| day-boxed | fifth check | a rising market; long, with no timing skill | 0.015 | 0.060 | within tolerance |
+| multi-day | fifth check | a martingale; long, with no skill | 0.055 | 0.165 | over |
+| day-boxed | fifth check | a falling market, entered by a coin flip | 0.960 | 0.985 | over |
+
+Tolerance is the declared rate plus 2.33 standard errors at 200 seeds: 0.026
+and 0.086. The rows over it are tests that are expected to fail, each naming
+the task that fixes it; the day one is fixed its test passes and the
+expectation must be removed.
 
 What the corrected rules would have said of each of the six questions is
 recorded beside the record, never in its place, as a diagnostic re-score

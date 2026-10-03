@@ -4,7 +4,7 @@
 `https://maverickhq.github.io/occams-test-lab/`). Three programmes are run,
 stopped by record and concluded; M0–M15 are closed. **M16 is open**: an
 external review of the inference, verified by rerun, fixed in three releases —
-1.0.1 (released), 1.1.0, 2.0.0. `TASKS-v4.md` holds every row, its *Rules of
+1.0.1 and 1.1.0 (released), 2.0.0. `TASKS-v4.md` holds every row, its *Rules of
 the run*, and the dated status log: read the last entries before any change.
 This file's long form, as it stood before M16.12, is `git show b838479:CLAUDE.md`.
 
