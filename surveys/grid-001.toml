@@ -1,0 +1,98 @@
+# surveys/grid-001.toml — the first survey grid of programme 2 (M12.2).
+#
+# This file's sha256 is the grid's identity; `python -m occams survey show surveys/grid-001.toml
+# --register register/programme-2.jsonl` prints it with the cell count before anything runs.
+# A grid is never edited: a change is grid-002, naming what it supersedes.
+#
+# A cell is one point — universe × regime × mechanism (kind, fixed params, order, horizon)
+# × hold × stop × target. Its hypothesis is the proposer's mechanism sentence with the
+# cell's numbers and the universe's subject filled in. A family is the cells that share
+# everything but the swept geometry (hold, stop, target): the sweep a question registered
+# from the survey would carry (M12.5), so the plateau guard is applied to it at load.
+# Nothing here runs. The runner (M12.3) reads the definition partition and nothing else.
+
+[grid]
+name = "grid-001"
+programme = 2
+declared_on = "2026-09-12"
+partition = "definition"       # the only partition a survey may read (D13); anything else is refused
+side = "long"                  # the templates are long-only; a short side is a new template by ADR
+baseline = "always_long"       # per cell, at the same geometry, on the same partition (M12.3)
+supersedes = ""
+
+# Every universe is a UniverseDeclared record in programme 2's Register (M12.1), or the grid is refused.
+# `subject` fills the mechanism sentence; `regime_index` is the series a frozen classifier labels
+# for the gated cells — one classifier on the broad market for all four, so a regime means one thing.
+[universes.index_etfs]
+subject = "a liquid US index ETF"
+regime_index = "SPY"
+[universes.sector_etfs]
+subject = "a US sector ETF"
+regime_index = "SPY"
+[universes.dow_30]
+subject = "a Dow 30 constituent as listed on 2026-09-12"
+regime_index = "SPY"
+[universes.sp_100]
+subject = "an S&P 100 constituent as listed on 2026-09-12"
+regime_index = "SPY"
+
+[regimes]
+labels = ["none", "up", "down", "ranging"]   # none: no gate (price_daily axis); the rest are the regime axis (F11)
+
+[horizons]
+default = "multi_day"          # the position-boxed simulator; the hold is a count of bars
+[horizons.intraday]
+holds = [1]                    # the day-boxed simulator ends at the close of the entry day: hold 1 only
+targets = [2, 3]               # with the hold fixed, the time exit alone would leave a one-axis sweep (three stops),
+                               # which cannot hold a plateau of four (Q-004): intraday cells carry a target, as DRAFT-003 did
+
+[geometry]
+holds = [1, 3, 5, 10, 20]
+targets = [0, 2, 3]            # multiples of R; 0 = no target, the time exit alone (a separate family)
+[[geometry.stops]]
+kind = "percent"
+values = [2, 3, 5]
+[[geometry.stops]]
+kind = "atr"
+values = [1.5, 2, 3]
+lookback = 14
+
+# Mechanisms — every kind on the closed entry enum that carries a mechanism sentence (ADR-0037).
+# `order` is the entry geometry the compiler allows: a level above the market rests as a stop,
+# a level below rests as a limit (the v1.8 defect is a stop below the market); no level: market.
+[[mechanisms]]
+kind = "breakout_high"         # lookback 1 is the closed programme's prior-day break, never run there
+order = "stop"
+horizons = ["multi_day", "intraday"]
+params = [{ lookback = 1 }, { lookback = 5 }, { lookback = 20 }, { lookback = 50 }]
+
+[[mechanisms]]
+kind = "breakout_low"          # the same levels bought on a resting limit: reversal at a new low
+order = "limit"
+horizons = ["multi_day", "intraday"]
+params = [{ lookback = 1 }, { lookback = 5 }, { lookback = 20 }, { lookback = 50 }]
+
+[[mechanisms]]
+kind = "close_above_ma"
+order = "market"
+params = [{ lookback = 10 }, { lookback = 20 }, { lookback = 50 }, { lookback = 200 }]
+
+[[mechanisms]]
+kind = "close_below_ma"
+order = "market"
+params = [{ lookback = 10 }, { lookback = 20 }, { lookback = 50 }, { lookback = 200 }]
+
+[[mechanisms]]
+kind = "down_run"
+order = "market"
+params = [{ runs = 2 }, { runs = 3 }, { runs = 4 }]
+
+[[mechanisms]]
+kind = "return_below"          # lookback 1 is the extreme-move fade; the percents are round numbers
+order = "market"               # spanning a common and a rare move at each lookback — the survey says which fire
+params = [{ lookback = 1, percent = 2 }, { lookback = 1, percent = 3 }, { lookback = 5, percent = 5 }, { lookback = 10, percent = 8 }]
+
+[[mechanisms]]
+kind = "pullback_in_trend"
+order = "market"
+params = [{ short = 5, long = 50 }, { short = 10, long = 100 }, { short = 20, long = 200 }]

@@ -1,0 +1,15 @@
+occams
+Copyright 2026 MaverickHQ
+
+Licensed under the Apache License, Version 2.0. See LICENSE.
+
+This repository vendors twelve source modules and twelve test files from
+prop-challenge-lab (https://github.com/MaverickHQ/prop-challenge-lab),
+Copyright 2026 MaverickHQ, Apache License 2.0, under occams/core/ and
+tests/core/. PROVENANCE.md records the donor commit and per-file hashes.
+
+No market data, credentials, account identifiers or broker terms are
+distributed with this repository. occams.toml is git-ignored and carries
+the author's capital, alpha and falsifier figures; it is never committed.
+
+Nothing in this repository constitutes financial advice.

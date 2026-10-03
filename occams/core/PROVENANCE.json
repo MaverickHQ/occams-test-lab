@@ -1,0 +1,219 @@
+{
+ "donor": "https://github.com/MaverickHQ/prop-challenge-lab",
+ "donor_commit": "cfc5af873b8d88ac2309a9232a2b3458679017a0",
+ "date": "2026-09-10",
+ "rules": [
+  "R1 import paths occams.X -> occams.core.X for the vendored set",
+  "R2 ROOT = Path(__file__).resolve().parent.parent -> one more .parent",
+  "R3 tests only: string literals 'occams.X.' -> 'occams.core.X.' for the vendored set"
+ ],
+ "files": [
+  {
+   "kind": "module",
+   "file": "occams/core/stats.py",
+   "donor_file": "occams/stats.py",
+   "donor_sha256": "38a48cf596c148bb92c692fe2443267b361bda6002c2c5684df32e319cf0c354",
+   "vendored_sha256": "054ed60f59129ce221a1f103d8fce330c5ac0898b418d9df06461e0b9f241b5c",
+   "loc": 400,
+   "transformed": true
+  },
+  {
+   "kind": "module",
+   "file": "occams/core/estimators.py",
+   "donor_file": "occams/estimators.py",
+   "donor_sha256": "e56cddac80e73beae2b71164089a87710750c6ce86fc175e858eedd02b02bd33",
+   "vendored_sha256": "8ca2d37e16e4d9cca48ddc92a952a51c2c2125e9bf59a5067cb4763b98bbf083",
+   "loc": 211,
+   "transformed": true
+  },
+  {
+   "kind": "module",
+   "file": "occams/core/power.py",
+   "donor_file": "occams/power.py",
+   "donor_sha256": "fcd54566022fc7048d8785bdb6730902a77f14a3bbe7ea9bedea9a1131ab14e2",
+   "vendored_sha256": "fcd54566022fc7048d8785bdb6730902a77f14a3bbe7ea9bedea9a1131ab14e2",
+   "loc": 177,
+   "transformed": false
+  },
+  {
+   "kind": "module",
+   "file": "occams/core/calibration.py",
+   "donor_file": "occams/calibration.py",
+   "donor_sha256": "b61cbcd45686bb97c675e1c666dc5dfe543ae8c0ea7d7d507f797d6b622f9d87",
+   "vendored_sha256": "e16765b128e6d70de4ee66a5a17ddb72cc42549a46f08c28225e26638601cf48",
+   "loc": 308,
+   "transformed": true
+  },
+  {
+   "kind": "module",
+   "file": "occams/core/result.py",
+   "donor_file": "occams/result.py",
+   "donor_sha256": "73078c1f4b383e4121e399576caa55982d8dc8eddbba7b5708472489e23b6218",
+   "vendored_sha256": "73078c1f4b383e4121e399576caa55982d8dc8eddbba7b5708472489e23b6218",
+   "loc": 169,
+   "transformed": false
+  },
+  {
+   "kind": "module",
+   "file": "occams/core/archive.py",
+   "donor_file": "occams/archive.py",
+   "donor_sha256": "db76b971b4d392d3be0a256545169b764058449974168c3d42011cb2ac4935c4",
+   "vendored_sha256": "c6924c57859d24e05c2b8625b47f396db723f84883458d4820f00cc913f5d9ab",
+   "loc": 447,
+   "transformed": true
+  },
+  {
+   "kind": "module",
+   "file": "occams/core/audit.py",
+   "donor_file": "occams/audit.py",
+   "donor_sha256": "90f403d76c001f41d5adf0318afb37b81ea1db64b764c37a912ee96e282ea3ac",
+   "vendored_sha256": "d3e8db41a2131c5e7883e0177faa2113c4025e4cbc8f066d9917210e81268d1f",
+   "loc": 129,
+   "transformed": true
+  },
+  {
+   "kind": "module",
+   "file": "occams/core/experiment.py",
+   "donor_file": "occams/experiment.py",
+   "donor_sha256": "2ff09a20c4c513692ff37d3560ddc63376ad0e77c41f6b5a35aaf53ab04bf712",
+   "vendored_sha256": "117c20d0f150eaf5c7bc0d19c7093c4b5bc530351e81d1bc147b5fe6e9a6eb99",
+   "loc": 203,
+   "transformed": true
+  },
+  {
+   "kind": "module",
+   "file": "occams/core/backfill.py",
+   "donor_file": "occams/backfill.py",
+   "donor_sha256": "1eeac37d1c4612eb4e3730b6fc2aee70c61de736a264af5c4705b599652aa5b4",
+   "vendored_sha256": "1eeac37d1c4612eb4e3730b6fc2aee70c61de736a264af5c4705b599652aa5b4",
+   "loc": 158,
+   "transformed": false
+  },
+  {
+   "kind": "module",
+   "file": "occams/core/privacy.py",
+   "donor_file": "occams/privacy.py",
+   "donor_sha256": "5c61c4d2859bbe6061964965a0df7bed6c1c576eddfafb29e02372f9182daf52",
+   "vendored_sha256": "5c61c4d2859bbe6061964965a0df7bed6c1c576eddfafb29e02372f9182daf52",
+   "loc": 78,
+   "transformed": false
+  },
+  {
+   "kind": "module",
+   "file": "occams/core/charset.py",
+   "donor_file": "occams/charset.py",
+   "donor_sha256": "5972ece17b303b0321fdbf5f560e1ca724c7d9336a1717b0b83715374f418a3e",
+   "vendored_sha256": "5972ece17b303b0321fdbf5f560e1ca724c7d9336a1717b0b83715374f418a3e",
+   "loc": 132,
+   "transformed": false
+  },
+  {
+   "kind": "module",
+   "file": "occams/core/execution.py",
+   "donor_file": "occams/execution.py",
+   "donor_sha256": "60f25f55bf87db8d71a268854ca4ecc4031dc1dbd514d98bb2885f36fc2677f9",
+   "vendored_sha256": "60f25f55bf87db8d71a268854ca4ecc4031dc1dbd514d98bb2885f36fc2677f9",
+   "loc": 202,
+   "transformed": false
+  },
+  {
+   "kind": "test",
+   "file": "tests/core/test_stats.py",
+   "donor_file": "tests/test_stats.py",
+   "donor_sha256": "b7172abceb4ae0d1159cead70b43d51d7b6872d08aeeb01c2ba1a0eebd6d1bdb",
+   "vendored_sha256": "509c2e5c2dc1a5f590f3b552bfcb8573ee3212f4ca04c73c86fdc72b738b73f9",
+   "loc": 280,
+   "transformed": true
+  },
+  {
+   "kind": "test",
+   "file": "tests/core/test_estimators.py",
+   "donor_file": "tests/test_estimators.py",
+   "donor_sha256": "920b7d1c51a8523deb7da2f067433a3ec925d8b05c95be00dc154db551ba3ba6",
+   "vendored_sha256": "27a7b8cdb5a6fb619d1043300bb479a3d6a01f0b2ea5d7b6a953b7a75a8e4525",
+   "loc": 246,
+   "transformed": true
+  },
+  {
+   "kind": "test",
+   "file": "tests/core/test_power.py",
+   "donor_file": "tests/test_power.py",
+   "donor_sha256": "48bfa98801f2941f120545b99b6066f0cbb559cb55930a28386127f302be938a",
+   "vendored_sha256": "3866ce6e6ce34b775ce56f8d0884713a985225fc8bce5262d6c12c221b636715",
+   "loc": 134,
+   "transformed": true
+  },
+  {
+   "kind": "test",
+   "file": "tests/core/test_calibration.py",
+   "donor_file": "tests/test_calibration.py",
+   "donor_sha256": "6ec7c6317de35302e8309e282feca76743639ae8080a31562327a639e47cc75e",
+   "vendored_sha256": "1a4cccef975e766dc247f4954cbeae9f5b7dcf04a07d84f22f435b3703f98d5d",
+   "loc": 156,
+   "transformed": true
+  },
+  {
+   "kind": "test",
+   "file": "tests/core/test_archive.py",
+   "donor_file": "tests/test_archive.py",
+   "donor_sha256": "b66a10ae3b95f21d18c845a7106d1070b68848d015b74dd50d248d1d8739aec2",
+   "vendored_sha256": "b3f2377d84934c6d72d9f48a98c2d6fc798cb3b4370e6f8cf902878c5c6e748f",
+   "loc": 152,
+   "transformed": true
+  },
+  {
+   "kind": "test",
+   "file": "tests/core/test_backfill.py",
+   "donor_file": "tests/test_backfill.py",
+   "donor_sha256": "69e3953c0bbd79d3277de5249cf70577a9bf91fa0e12bd7166f50b34aa13dd5c",
+   "vendored_sha256": "2af4ed566945b0e6291de792bdb249d75f0acab7e6c7e193002da7373f3efd5d",
+   "loc": 88,
+   "transformed": true
+  },
+  {
+   "kind": "test",
+   "file": "tests/core/test_experiment_sop.py",
+   "donor_file": "tests/test_experiment_sop.py",
+   "donor_sha256": "c81515373c1b6aba1c23661808e43c1fcb0b2951c2a0f59a23651ea742a580b7",
+   "vendored_sha256": "6331eaf3f1bf8e96f9561a24e303b735e4426cae27c0fd0701cf6d9df93f3fe3",
+   "loc": 68,
+   "transformed": true
+  },
+  {
+   "kind": "test",
+   "file": "tests/core/test_result.py",
+   "donor_file": "tests/test_result.py",
+   "donor_sha256": "039b5fbdfd4328e68e2bbf423241fa8acf72d5925f95d3fcd8b0f464e57a3358",
+   "vendored_sha256": "caf88e9b160346e491c5d5f61739a0d6df2292425f1d52adc11f6977bc782565",
+   "loc": 206,
+   "transformed": true
+  },
+  {
+   "kind": "test",
+   "file": "tests/core/test_charset.py",
+   "donor_file": "tests/test_charset.py",
+   "donor_sha256": "fb39649deabf9abdf4cad1ea69a9d5dc817d92aa4ed60fb0c4677a99757a37a0",
+   "vendored_sha256": "6401fec31ea3e7c614e76d002ff15dd68835119520d575975b4456e54a79f833",
+   "loc": 79,
+   "transformed": true
+  },
+  {
+   "kind": "test",
+   "file": "tests/core/test_privacy.py",
+   "donor_file": "tests/test_privacy.py",
+   "donor_sha256": "f33c1d170336f4197352dbb945316642d63cd10e09041c47fa8d7a9dc002f593",
+   "vendored_sha256": "dfbfa1afac1c9bcdb1735e53c2e635227d4d8158d5f9a5d7449d7d1d31e098dc",
+   "loc": 29,
+   "transformed": true
+  },
+  {
+   "kind": "test",
+   "file": "tests/core/test_block_bootstrap.py",
+   "donor_file": "tests/test_block_bootstrap.py",
+   "donor_sha256": "3ba68bc5ec7fabfecb06b2f8125130ba3b9d7fd9fd206e539ae8e83868bbff3e",
+   "vendored_sha256": "77e7713e6cfaf3e6e68353442c571175b1515de586bfe7ba7e25ac9d80969d68",
+   "loc": 137,
+   "transformed": true
+  }
+ ]
+}

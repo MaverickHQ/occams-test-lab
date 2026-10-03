@@ -1,0 +1,13 @@
+# Dependabot: the actions the workflows pin by commit, and the Python
+# dependencies of pyproject.toml. Weekly, one pull request each; `make check`
+# in CI decides whether a bump merges (pre-publication audit, 2026-09-27).
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+  - package-ecosystem: pip
+    directory: /
+    schedule:
+      interval: weekly

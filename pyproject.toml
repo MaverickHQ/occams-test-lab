@@ -1,0 +1,59 @@
+[project]
+name = "occams"
+version = "1.0.0"
+description = "A falsification lab for retail trading hypotheses: register before measuring, five guards, a hash-chained Register; nothing places an order"
+readme = "README.md"
+requires-python = ">=3.12"
+license = "Apache-2.0"
+license-files = ["LICENSE", "NOTICE"]
+# numpy is the vendored core's only third-party import (F1). pandas is
+# admitted by the M1.3 closure test but not yet required by anything.
+dependencies = ["numpy>=1.26"]
+
+[project.optional-dependencies]
+# scipy is a TEST-ONLY oracle for occams/core/stats.py, as in the donor:
+# testing our implementation against scipy pins OUR numbers. ruff is PINNED,
+# not floored — the donor watched two machines disagree about the rules.
+dev = ["pytest>=8.0", "ruff==0.15.12", "scipy>=1.11"]
+
+[project.urls]
+Homepage = "https://maverickhq.github.io/occams-test-lab/"
+Repository = "https://github.com/MaverickHQ/occams-test-lab"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+# M14.0: twenty test files import `from tests.…`; `python -m pytest` puts the
+# repo root on the path and a bare `pytest` does not — this line makes both
+# collect. Not `tests/__init__.py`, which renames every module.
+pythonpath = ["."]
+# M14.1: the fast cycle is every test not marked slow (`make test-fast`);
+# `make check` and CI run the whole suite.
+markers = ["slow: a test that takes seconds, not milliseconds — skipped by `make test-fast`, never by `make check`"]
+# One vendored case asserts that pyarrow is a declared dependency — true of
+# the donor's derived bar layer, not of this repository, which has none.
+# Deselected here BY NAME so the exclusion is visible in one place; the test
+# file itself is byte-identical to the donor's up to PROVENANCE.md's rules.
+addopts = "-q --strict-markers --deselect tests/core/test_archive.py::test_the_query_layer_needs_no_engine"
+
+[tool.ruff]
+line-length = 88
+target-version = "py312"
+# The vendored core and its tests are the DONOR's code at a recorded hash
+# (PROVENANCE.md). Linting them here would either fail on rules the donor
+# never adopted or invite the edit that breaks the hash test. Excluded
+# deliberately; they are linted in the donor.
+extend-exclude = ["occams/core/", "tests/core/"]
+
+[tool.ruff.lint]
+# STATED, not inherited (see the donor's pyproject for the story).
+select = ["E4", "E7", "E9", "F"]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["occams*"]
+
+[tool.setuptools.package-data]
+"occams.core" = ["PROVENANCE.json"]

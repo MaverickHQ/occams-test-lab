@@ -1,0 +1,195 @@
+# tools/publication-decisions.toml — every hit of `python tools/prepublish.py --all` kept in the tree by the
+# author's recorded decision (M15.3). A hit not listed here is a refusal; nothing is excused silently.
+# Decided 2026-09-26 by the author ("apply the recommended set"); the classes are the task list's log of 2026-09-25.
+
+[[keep]]
+file = "docs/M0-ANSWERS.md"
+check = "money figure"
+match = "*"
+by = "MaverickHQ"
+date = "2026-09-26"
+reason = "vendor and venue list prices, fee schedules, the donor fixture's public prices and example prices — public and dated (class 3) and the author's budget figures (class 4)"
+
+[[keep]]
+file = "TASKS-v4.md"
+check = "money figure"
+match = "*"
+by = "MaverickHQ"
+date = "2026-09-26"
+reason = "vendor and venue list prices, fee schedules, the donor fixture's public prices and example prices — public and dated (class 3) and the author's budget figures (class 4)"
+
+[[keep]]
+file = "docs/adr/0004-unadjusted-prices-with-a-corporate-actions-series.md"
+check = "money figure"
+match = "*"
+by = "MaverickHQ"
+date = "2026-09-26"
+reason = "vendor and venue list prices, fee schedules, the donor fixture's public prices and example prices — public and dated (class 3)"
+
+[[keep]]
+file = "docs/adr/0020-time-is-an-instant-never-a-date.md"
+check = "money figure"
+match = "*"
+by = "MaverickHQ"
+date = "2026-09-26"
+reason = "vendor and venue list prices, fee schedules, the donor fixture's public prices and example prices — public and dated (class 3)"
+
+[[keep]]
+file = "docs/adr/0025-the-universe-is-a-point-in-time-rule.md"
+check = "money figure"
+match = "*"
+by = "MaverickHQ"
+date = "2026-09-26"
+reason = "vendor and venue list prices, fee schedules, the donor fixture's public prices and example prices — public and dated (class 3)"
+
+[[keep]]
+file = "docs/adr/0028-the-data-budget-chooses-the-instrument-class.md"
+check = "money figure"
+match = "*"
+by = "MaverickHQ"
+date = "2026-09-26"
+reason = "vendor and venue list prices, fee schedules, the donor fixture's public prices and example prices — public and dated (class 3)"
+
+[[keep]]
+file = "docs/adr/0030-the-execution-host-is-a-durable-process.md"
+check = "money figure"
+match = "*"
+by = "MaverickHQ"
+date = "2026-09-26"
+reason = "vendor and venue list prices, fee schedules, the donor fixture's public prices and example prices — public and dated (class 3)"
+
+[[keep]]
+file = "tests/fixtures/donor-register-cache.json"
+check = "money figure"
+match = "*"
+by = "MaverickHQ"
+date = "2026-09-26"
+reason = "vendor and venue list prices, fee schedules, the donor fixture's public prices and example prices — public and dated (class 3)"
+
+[[keep]]
+file = "tests/core/test_charset.py"
+check = "money figure"
+match = "*"
+by = "MaverickHQ"
+date = "2026-09-26"
+reason = "vendor and venue list prices, fee schedules, the donor fixture's public prices and example prices — public and dated (class 3)"
+
+[[keep]]
+file = "scripts/quickstart.py"
+check = "money figure"
+match = "*"
+by = "MaverickHQ"
+date = "2026-09-26"
+reason = "vendor and venue list prices, fee schedules, the donor fixture's public prices and example prices — public and dated (class 3)"
+
+[[keep]]
+file = "docs/PROGRAMME-CONCLUSION.md"
+check = "money figure"
+match = "*"
+by = "MaverickHQ"
+date = "2026-09-26"
+reason = "vendor and venue list prices, fee schedules, the donor fixture's public prices and example prices — public and dated (class 3)"
+
+[[keep]]
+file = "docs/SETUP.md"
+check = "money figure"
+match = "*"
+by = "MaverickHQ"
+date = "2026-09-26"
+reason = "vendor and venue list prices, fee schedules, the donor fixture's public prices and example prices — public and dated (class 3)"
+
+[[keep]]
+file = "docs/drafts/DRAFT-002-high-conviction-disclosure-drift.md"
+check = "money figure"
+match = "*"
+by = "MaverickHQ"
+date = "2026-09-26"
+reason = "vendor and venue list prices, fee schedules, the donor fixture's public prices and example prices — public and dated (class 3)"
+
+[[keep]]
+file = "docs/drafts/DRAFT-005-reversal-after-a-streak.md"
+check = "money figure"
+match = "*"
+by = "MaverickHQ"
+date = "2026-09-26"
+reason = "vendor and venue list prices, fee schedules, the donor fixture's public prices and example prices — public and dated (class 3)"
+
+[[keep]]
+file = "occams/costs/equity.py"
+check = "money figure"
+match = "*"
+by = "MaverickHQ"
+date = "2026-09-26"
+reason = "vendor and venue list prices, fee schedules, the donor fixture's public prices and example prices — public and dated (class 3)"
+
+[[keep]]
+file = "CLAUDE.md"
+check = "money figure"
+match = "*"
+by = "MaverickHQ"
+date = "2026-09-26"
+reason = "the author's tooling cap, the go figure recorded at M0.14 and the burst's spend — a research budget, not R9's capital, drawdown or risk (class 4)"
+
+[[keep]]
+file = "README.md"
+check = "money figure"
+match = "*"
+by = "MaverickHQ"
+date = "2026-09-26"
+reason = "the author's tooling cap, the go figure recorded at M0.14 and the burst's spend — a research budget, not R9's capital, drawdown or risk (class 4)"
+
+[[keep]]
+file = "REQUIREMENTS-v4.md"
+check = "money figure"
+match = "*"
+by = "MaverickHQ"
+date = "2026-09-26"
+reason = "the author's tooling cap, the go figure recorded at M0.14 and the burst's spend — a research budget, not R9's capital, drawdown or risk (class 4)"
+
+[[keep]]
+file = "DESIGN-v4.md"
+check = "money figure"
+match = "*"
+by = "MaverickHQ"
+date = "2026-09-26"
+reason = "the author's tooling cap, the go figure recorded at M0.14 and the burst's spend — a research budget, not R9's capital, drawdown or risk (class 4)"
+
+[[keep]]
+file = "ALIGNMENT-v4.md"
+check = "money figure"
+match = "*"
+by = "MaverickHQ"
+date = "2026-09-26"
+reason = "the author's tooling cap, the go figure recorded at M0.14 and the burst's spend — a research budget, not R9's capital, drawdown or risk (class 4)"
+
+[[keep]]
+file = "docs/M0-ANSWERS.md"
+check = "broker term (R6)"
+match = "*"
+by = "MaverickHQ"
+date = "2026-09-26"
+reason = "dated evidence of what M0 compared, on what date; the code and the requirements no longer name the venue (class 2)"
+
+[[keep]]
+file = "TASKS-v4.md"
+check = "broker term (R6)"
+match = "*"
+by = "MaverickHQ"
+date = "2026-09-26"
+reason = "dated evidence of what M0 compared, on what date; the code and the requirements no longer name the venue (class 2)"
+
+[[keep]]
+file = "TASKS-v4.md"
+check = "private path"
+match = "*"
+by = "MaverickHQ"
+date = "2026-09-26"
+reason = "the task list's dated rows keep their wording; the vault path itself is removed everywhere (class 5)"
+
+[[keep]]
+file = "docs/M0-ANSWERS.md"
+check = "account identifier"
+match = "360007081637"
+by = "MaverickHQ"
+date = "2026-09-26"
+reason = "a help-centre article id quoted as provenance in dated evidence, not an account (class 6)"

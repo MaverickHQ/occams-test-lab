@@ -1,0 +1,45 @@
+# The two apparatus tests (ADR-0029): `make null` must be REFUSED, `make signal`
+# must be ACCEPTED, both through the same pipeline. These are configuration,
+# not constants (M2.7b) — and they are NOT the author's numbers: no money, no
+# alpha, no falsifier lives here. Both controls register at alpha 0.
+
+[floor]                      # the control Hypothesis' declared floor, the pair (D5)
+ev_net_r = 0.15
+min_trades_per_year = 50
+
+[power]                      # the control Hypothesis' power plan (R3)
+sigma_r = 1.2
+alpha = 0.05
+power = 0.80
+
+[world]                      # the synthetic law the engine draws from
+groups = ["A", "B", "C", "D", "E"]
+years = 10
+trades_per_group_year = 20   # 5 x 10 x 20 = 1,000 per cell, above the 834 the plan requires at 9 cells
+cost_in_r = 0.05             # random entry loses the spread: the null's mean is -cost
+seed = 20260910
+
+[signal]                     # planted at or just above the floor — sensitivity at the boundary
+planted_ev_net_r = 0.165
+
+[sweep]                      # 3 x 3 = 9 cells -> search_space_size = 9, Bonferroni alpha 0.05 / 9
+stop = [1.0, 2.0, 3.0]
+hold = [1.0, 2.0, 3.0]
+
+[gates]                      # the MEASURED -> FORWARD thresholds the control Hypothesis declares
+plateau_cells = 4
+plateau_slack = 0.10
+loo_min_fraction = 0.5
+null_draws = 4000
+
+[day_boxed]                  # the same two controls through the REAL engine (S3, S10 on day_boxed)
+groups = ["A", "B", "C", "D", "E"]
+days = 1260                  # five years of daily bars per name
+sigma_daily = 0.03
+cost_in_r = 0.05
+seed = 20260910
+sigma_r = 0.6                # sigma_daily / stop fraction at the 5 % cell; the plan declares it
+stop_percent = [4.0, 5.0, 6.0]
+target_multiple = [2.0, 3.0, 4.0]
+planted_return_daily = 0.0100  # (0.15R floor + 0.05R spread) x 5 % stop: the planted effect at the boundary after costs, in bar terms — on the day after `planted_runs` lower closes only (ADR-0043); a drift on every day is what the fifth check refuses
+planted_runs = 2                 # the entry the signal control uses, DOWN_RUN(runs): always-long rides the planted day one day in four; the entry catches every one

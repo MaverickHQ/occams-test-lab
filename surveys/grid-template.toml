@@ -1,0 +1,43 @@
+# surveys/grid-template.toml — a grid to start from (M15.10). Copy it to surveys/grid-NNN.toml, name it,
+# and declare it; a grid is committed and hashed, never edited, and `python -m occams survey show GRID
+# --register R` prints its hash and cell count before anything runs. Every universe named here must be a
+# UniverseDeclared record in the Register the grid loads against, or the grid is refused by name.
+# This template loads against a Register that declares `index_etfs` with SPY as the regime index.
+
+[grid]
+name = "grid-template"
+programme = 0                  # the programme this grid belongs to; 0 marks the template, which no programme runs
+declared_on = "2026-09-26"
+partition = "definition"       # the only partition a survey may read (D13)
+side = "long"
+baseline = "always_long"       # every cell beside always-long at the same geometry and gate (ADR-0045)
+supersedes = ""
+
+[universes.index_etfs]
+subject = "a liquid US index ETF"
+regime_index = "SPY"
+
+[regimes]
+labels = ["none", "up"]        # none: no gate (price_daily axis); up: the regime axis (F11)
+
+[horizons]
+default = "multi_day"
+
+[geometry]
+holds = [5, 20]
+targets = [0]                  # 0 = no target: the time exit alone
+[[geometry.stops]]
+kind = "percent"
+values = [2, 3]
+
+# One mechanism per kind you want screened. The kind must be on the closed entry enum (occams/spec/spec.py),
+# carry a mechanism sentence (occams/proposers/price.py) and belong to an auditor family
+# (occams/costs/auditors.py) — a kind is added by ADR, never discovered; docs/EXTENDING.md is the path.
+[[mechanisms]]
+kind = "down_run"
+order = "market"
+params = [{ runs = 3 }]
+[[mechanisms]]
+kind = "close_above_ma"
+order = "market"
+params = [{ lookback = 20 }]

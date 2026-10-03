@@ -1,0 +1,32 @@
+.DS_Store
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
+.env.*
+!.env.example
+.pytest_cache/
+.ruff_cache/
+occams.toml
+.privacy-terms
+*.egg-info/
+dist/
+build/
+.coverage
+.*-calcs.json
+.*-output.txt
+configs/
+*.local.toml
+*.local.*
+archive/
+
+# the desktop app's session directory — never content, never added (M14.3)
+.clu/
+
+# the burst's local variables (M15.4); the example is committed
+tools/aws/burst.env
+
+# an agent client's configuration, local to a machine — never committed
+.mcp.json
+.claude/settings.local.json
