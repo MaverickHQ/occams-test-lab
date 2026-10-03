@@ -5346,3 +5346,28 @@ and stays resolved. M5.0, M0.22 and M0.21(c) are unchanged.
 > the new repository: run `37125612092`, both jobs — `check` and the
 > clean-machine `setup` — every step success, first attempt. No Register
 > changed.
+
+> **2026-10-03 — published.** The author set `MaverickHQ/occams-test-lab`
+> public; the archive `MaverickHQ/occams-test-lab-history` stays private and
+> answers nothing to an anonymous request. On the author's word the settings
+> the audit listed were applied and read back: secret scanning with push
+> protection; Dependabot alerts and security updates; private vulnerability
+> reporting; three rulesets — no force-push and no deletion on `main` for
+> anyone, the `check` and `setup` checks before a merge with the admin's
+> bypass for direct pushes, and a release tag never moved or deleted; an
+> Actions policy of GitHub-owned and verified actions only, the default token
+> read-only; the Pages source set to GitHub Actions. The `pages` workflow was
+> dispatched (run `37126438066`, build and deploy green): the site is live at
+> `https://maverickhq.github.io/occams-test-lab/`, all 109 links on its index
+> answer, no page carries a script, and every address in the README answers.
+> The scanners' first report: no secret-scanning alert, no Dependabot alert.
+> Dependabot opened five pull requests within minutes — four action bumps and
+> `ruff` — each green on both checks and each the author's to review; the
+> `ruff` pin is pinned on purpose (the donor's lesson) and the two Pages
+> actions are exercised only by a dispatch. The lab is done by its own
+> definition and the decision to publish is carried out.
+
+> **S1, S3, S10 — 2026-10-03, the published line on the CI machine.** The
+> verdict on `55f4233`, the commit the release names: run `37125861444`, both
+> jobs — `check` and the clean-machine `setup` — every step success, first
+> attempt. No Register changed.
