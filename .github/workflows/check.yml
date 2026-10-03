@@ -56,6 +56,10 @@ jobs:
         # Every committed page and Register, and the offline console just built:
         # no script, no network, no credential shape, no broker term, no raw bars, no money key.
         run: python tools/prepublish.py
+      - name: Publication gate, the whole tree (M15.3)
+        # Every committed text file: broker terms, money figures, private paths, e-mail shapes, account ids.
+        # A hit is removed or kept by a recorded decision; an unresolved one fails the run.
+        run: python tools/prepublish.py --all | tail -3
 
   # M15.4 — the setup path on a clean machine: a fresh runner is one. `make setup`,
   # the skeleton from `init`, then the configuration filled with the TEST FIXTURE's

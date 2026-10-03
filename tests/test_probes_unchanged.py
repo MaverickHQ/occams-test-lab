@@ -1,39 +1,40 @@
 """M16.9 (the review's F20) — the probes and the distributions built from them moved into
-one place; nothing they compute may move with them. Each digest below is a Measurement at
-a fixed seed — every cell, the null, the always-long distribution, the winner — or the
-survey's readiness rows, captured on the code **before** the refactor and compared after.
+one place; nothing they compute may move with them. Each fingerprint below is a Measurement
+at a fixed seed — every cell, the winner, and the null and always-long distributions by
+their moments and quantiles — or the survey's readiness rows.
+
+They were first held as digests of every number to ten significant digits, captured on the
+code **before** the refactor and identical after it, on this machine and on the CI machine
+twice. A third CI run, on another processor, differed in one of them: the signal control's
+walk is built by a scalar loop whose last bit depends on the processor, and a digest of
+numbers near nil has no tolerance for a last bit. So the same numbers are held here as
+numbers, compared to one part in a hundred million.
 
 A row of the task list that changes what a guard draws (M16.14, M16.15) changes these on
-purpose: it replaces the digest in the same commit and says so there.
+purpose: it replaces the fingerprint in the same commit and says so there.
 """
 
 from __future__ import annotations
 
-import hashlib
 import json
+from pathlib import Path
 
+import numpy as np
 import pytest
 
-GOLDEN = {
-    "day_boxed:martingale-rho0.5@3": "9dbb09aa7d9b5e04",
-    "position_boxed:martingale-rho0.5@3": "d07189098829b68c",
-    "day_boxed:downdrift-rho0.0:coin@3": "bef4ba75c8d28eb6",
-    "controls:null@7": "36e3b59f7fcc0836",
-    "controls:signal@7": "f01a9e4e790ec859",
-    "survey:readiness@7": "9e1bccd7058212e7",
-}
+GOLDEN = json.loads((Path(__file__).parent / "fixtures" / "probes-unchanged.json").read_text(encoding="utf-8"))
+TOLERANCE = 1e-8
 
 
-def _f(x) -> str:
-    return "None" if x is None else f"{float(x):.9e}"          # ten significant digits: the numbers, not the platform's last bit
+def _moments(xs) -> list[float]:
+    x = np.asarray(xs, dtype=float)
+    return [float(len(x)), float(x.mean()), float(x.std()), *(float(q) for q in np.quantile(x, [0.0, 0.01, 0.5, 0.99, 1.0]))]
 
 
-def digest(m) -> str:
-    blob = json.dumps({"null": [_f(x) for x in m.null_ev], "base": [_f(x) for x in m.baseline_ev],
-                       "cells": [[list(c.indices), c.n, _f(c.ev), _f(c.baseline_ev), [[g, _f(ev), n] for g, ev, n in c.baseline_by_group]]
-                                 for c in m.cells],
-                       "winner": list(m.winner.indices)}, sort_keys=True)
-    return hashlib.sha256(blob.encode()).hexdigest()[:16]
+def fingerprint(m) -> dict:
+    return {"winner": list(m.winner.indices),
+            "cells": [[c.n, c.ev, c.baseline_ev] + [v for _g, ev, n in c.baseline_by_group for v in (ev, float(n))] for c in m.cells],
+            "null": _moments(m.null_ev), "baseline": _moments(m.baseline_ev)}
 
 
 def _measurement(key: str):
@@ -47,13 +48,21 @@ def _measurement(key: str):
     return _measure(world, int(seed))
 
 
+def _same(got, want) -> None:
+    assert got["winner"] == want["winner"]
+    assert len(got["cells"]) == len(want["cells"])
+    for a, b in zip(got["cells"], want["cells"], strict=True):
+        assert a == pytest.approx(b, abs=TOLERANCE)
+    assert got["null"] == pytest.approx(want["null"], abs=TOLERANCE) and got["baseline"] == pytest.approx(want["baseline"], abs=TOLERANCE)
+
+
 @pytest.mark.slow
 @pytest.mark.parametrize("key", [k for k in GOLDEN if not k.startswith("survey:")])
 def test_a_measurement_is_what_it_was_before_the_probes_moved(key):
-    assert digest(_measurement(key)) == GOLDEN[key]
+    _same(fingerprint(_measurement(key)), GOLDEN[key])
 
 
-def readiness_digest(tmp_path) -> str:
+def readiness_rows(tmp_path) -> list[list]:
     import tests.test_survey_candidates as fixture
     from occams.ledger.alpha_budget import AlphaBudget
     from occams.survey.candidates import candidates, fifth_check_readiness
@@ -63,11 +72,12 @@ def readiness_digest(tmp_path) -> str:
     index = json.loads((out / "survey.json").read_text())
     cands = candidates(index, grid, budget=AlphaBudget(cfg, reg, config_sha=config_sha(cfg)))
     rows = fifth_check_readiness(cands, index, archive=a, register=reg, cfg=cfg, seed=7, draws=600)
-    blob = json.dumps([[r["cell"], _f(r["baseline_now"]), r["draws"], r["needed"], r["fifth_check"], _f(r["p_baseline"]),
-                        [_f(x) for x in r["eras_margin"]]] for r in rows], sort_keys=True)
-    return hashlib.sha256(blob.encode()).hexdigest()[:16]
+    return [[r["cell"], r["fifth_check"], r["draws"], r["needed"], r["baseline_now"], r["p_baseline"], *r["eras_margin"]] for r in rows]
 
 
 @pytest.mark.slow
 def test_the_surveys_readiness_rows_are_what_they_were(tmp_path):
-    assert readiness_digest(tmp_path) == GOLDEN["survey:readiness@7"]
+    got, want = readiness_rows(tmp_path), GOLDEN["survey:readiness@7"]
+    assert len(got) == len(want)
+    for a, b in zip(got, want, strict=True):
+        assert a[:4] == b[:4] and a[4:] == pytest.approx(b[4:], abs=TOLERANCE)

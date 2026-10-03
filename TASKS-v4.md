@@ -5708,3 +5708,40 @@ and stays resolved. M5.0, M0.22 and M0.21(c) are unchanged.
 > but one — the multi-day engine under a shared market stays near 0.08 at
 > 0.05, a ratio statistic whose trade count rises after losses — and
 > studentising it is the form M16.14 builds.
+
+> **2026-10-03 — M16.7–M16.12 on the CI machine, and two slips of this run,
+> recorded as they happened.**
+>
+> **S1, S3, S10.** `fe47d46` (M16.7–M16.9): run `37148591459`, `check` and
+> `setup` success. `681753f` (M16.10): run `37149121690`, both success.
+> `b838479` (M16.11): run `37149529638`, `setup` success and **`check`
+> failed** — one test, below. `63d8a6c` (M16.12): its run is superseded by
+> the commit that carries this entry. The calibration workflow's first run,
+> `37148594033`, success: the same fourteen numbers as this machine.
+> `make null` refused and `make signal` accepted on both engines at every
+> commit.
+>
+> **Slip one: a test that held on two processors and not on a third.**
+> M16.9's proof that nothing moved was six digests of every number to ten
+> significant digits. They matched before and after the refactor here and on
+> the CI machine twice; on `b838479` the runner was another processor and the
+> signal control's digest differed. That control's walk is built by a scalar
+> loop whose last bit depends on the processor, and a digest of numbers near
+> nil tolerates no last bit. The code under test had not changed — M16.11
+> touches the Register store, not an engine. The same numbers are now held
+> as numbers (`tests/fixtures/probes-unchanged.json`: every cell, the winner,
+> each distribution's moments and quantiles) and compared to one part in a
+> hundred million. No guard and no engine changed to make it pass.
+>
+> **Slip two: the whole-tree publication scan was not run on three commits.**
+> `make check` ran the gate on the pages and the Registers only; the scan of
+> every committed text file was a separate target, and it read tracked files
+> only, so a new file was first scanned after it was committed. M16.10's
+> test of the engine's identity gave its scratch repository a placeholder
+> address — a single letter at `example.invalid`, a reserved name that is no
+> one's — and that shape sat in `681753f`, `b838479` and `63d8a6c` unscanned.
+> Nothing private was published; history is not rewritten, so the three
+> commits stand. Removed; and the gate is closed where it was open:
+> `make check` and the CI job now run the whole-tree scan, and the scan reads
+> untracked files that are not ignored, so it sees what a commit would add
+> before the commit is made (`tests/test_prepublish.py`).

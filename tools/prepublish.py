@@ -125,8 +125,10 @@ DECISIONS = ROOT / "tools" / "publication-decisions.toml"
 def committed_text_files(root: Path = ROOT) -> list[Path]:
     import subprocess
 
-    out = subprocess.run(["git", "ls-files", "-z"], cwd=root, capture_output=True, text=True, check=True).stdout
-    files = [root / f for f in out.split("\0") if f]
+    # tracked files and untracked ones that are not ignored: what a commit would hold, scanned before it is made (M16.12)
+    out = subprocess.run(["git", "ls-files", "-z", "--cached", "--others", "--exclude-standard"], cwd=root, capture_output=True,
+                         text=True, check=True).stdout
+    files = [root / f for f in out.split("\0") if f and (root / f).is_file()]
     return [f for f in files if f.suffix in TREE_TEXT_SUFFIXES or f.name in ("Makefile", "LICENSE", "NOTICE")]
 
 

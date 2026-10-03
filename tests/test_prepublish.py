@@ -108,3 +108,26 @@ def test_prepublish_checks_heads(tmp_path, capsys):
     problems = pp.heads_problems(root=tmp_path)
     assert problems and "truncated" in problems[0]
 
+
+
+def test_the_whole_tree_scan_reads_what_a_commit_would_add_not_only_what_is_tracked(tmp_path):
+    """M16.12's slip, 2026-10-03: the whole-tree scan listed tracked files only, so a new file was first scanned after it
+    was committed — and it was not part of `make check` at all. It reads untracked files that are not ignored, too."""
+    import subprocess
+
+    pp = _load()
+
+    def git(*args):
+        subprocess.run(["git", "-c", "user.name=t", "-c", "user.email=none", "-c", "commit.gpgsign=false", *args], cwd=tmp_path,
+                       check=True, capture_output=True)
+
+    git("init", "-q")
+    (tmp_path / ".gitignore").write_text("ignored.py\n")
+    (tmp_path / "tracked.py").write_text("X = 1\n")
+    git("add", "-A")
+    git("commit", "-q", "-m", "c")
+    (tmp_path / "new.py").write_text("X = 2\n")
+    (tmp_path / "ignored.py").write_text("X = 3\n")
+    names = sorted(p.name for p in pp.committed_text_files(tmp_path))
+    assert names == ["new.py", "tracked.py"]
+    assert "prepublish-all" in next(ln for ln in (ROOT / "Makefile").read_text().splitlines() if ln.startswith("check:"))

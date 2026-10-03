@@ -51,7 +51,7 @@ def test_code_closure_sha_covers_fills(tmp_path):
 
 
 def _git(root: Path, *args: str) -> str:
-    return subprocess.run(["git", "-c", "user.name=t", "-c", "user.email=t@example.invalid", "-c", "commit.gpgsign=false", *args],
+    return subprocess.run(["git", "-c", "user.name=t", "-c", "user.email=none", "-c", "commit.gpgsign=false", *args],
                           cwd=root, capture_output=True, text=True, check=True).stdout.strip()
 
 

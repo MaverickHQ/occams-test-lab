@@ -40,7 +40,7 @@ prepublish:               ## M11.7 / R7 — the publication gate's check on ever
 prepublish-all:           ## M15.3 — every committed text file: broker terms, money figures, private paths, e-mail, account ids; hits kept only by recorded decision
 	python3 tools/prepublish.py --all
 
-check: test lint credscan provenance prepublish null signal
+check: test lint credscan provenance prepublish prepublish-all null signal
 
 quickstart:               ## S2 — $0, no data, no keys, no network, under ten seconds
 	python3 scripts/quickstart.py

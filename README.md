@@ -290,7 +290,7 @@ python -m occams doctor    # what is missing, by name; never a secret
 make quickstart      # $0, no data, no keys, no network, under ten seconds
 make null            # a coin flip through the whole pipeline is REFUSED, naming why (S3)
 make signal          # a planted effect at the floor is ACCEPTED, naming all five checks (S10, ADR-0043)
-make check           # tests · lint · credential scan · provenance · null · signal
+make check           # tests · lint · credential scan · provenance · the publication gate on the pages and on the whole tree · null · signal
 make test-fast       # every test not marked slow — the fast cycle, never the proof (M14.1)
 make calibrate       # the size-and-power table: each Monte Carlo guard alone, 200 seeds, against the rate it declares — minutes, never part of `make check` (M16.7)
 python -m occams --schema   # every required config key, no values
