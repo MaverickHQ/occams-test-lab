@@ -1,6 +1,6 @@
 [project]
 name = "occams"
-version = "1.0.0"
+version = "1.0.1"
 description = "A falsification lab for retail trading hypotheses: register before measuring, five guards, a hash-chained Register; nothing places an order"
 readme = "README.md"
 requires-python = ">=3.12"
