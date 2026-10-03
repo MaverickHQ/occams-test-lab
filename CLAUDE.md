@@ -1,9 +1,19 @@
 # Occams — project context
 
-**State on 2026-10-03: published and complete.** `MaverickHQ/occams-test-lab`
+**State on 2026-10-03: published; M16 is open.** `MaverickHQ/occams-test-lab`
 is public and begins at a single snapshot commit; the release is `v1.0.0`; the
 pages are live at `https://maverickhq.github.io/occams-test-lab/`; three
-programmes are run, stopped by record and concluded; M0–M15 are closed or closed by decision; nothing is open. The rest
+programmes are run, stopped by record and concluded; M0–M15 are closed or
+closed by decision. **M16 (`TASKS-v4.md`)**: an external review of the
+inference, verified by rerun, found the guards looser than they claim — the
+position-boxed null fires at fourteen times its declared rate on an empty
+world, a coin flip passes the fifth check on the day-boxed control, the floor
+is judged on a point estimate, the survey's readiness is blind to selection,
+the Register's chain is keyless. No null verdict is at risk; Q2-001 is. M16
+builds the fixes in three releases (1.0.1, 1.1.0, 2.0.0) whose rows run end to
+end on the author's one instruction and stop for nothing; read its *Rules of
+the run* and *What the author's instruction adopts* before touching a row.
+The redesigns belong to the successor lab. The rest
 of this file is how it got here, in order, and the rules that bind any further
 change: *Standing rules*, *Naming*, and the status-log entry of 2026-10-03 in
 `TASKS-v4.md` headed *where it stands, for the next context*, which says how a

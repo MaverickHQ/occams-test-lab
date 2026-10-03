@@ -1,7 +1,7 @@
 ---
 title: "Occams — tasks (v4)"
 type: tasks
-status: "PUBLISHED AND COMPLETE (2026-10-03): `MaverickHQ/occams-test-lab` is public from a single snapshot commit, release `v1.0.0`, the pages live at https://maverickhq.github.io/occams-test-lab/; the private history is archived; nothing is open. Earlier: DONE by its own definition (2026-09-26): three programmes run, concluded and adopted; every milestone closed or closed by decision; the publication decision recorded — publish; the `pages` workflow waits on the author's two GitHub settings (visibility, Pages source), which the API did not yet show at the last check. Earlier: three programmes run, concluded and adopted (2026-09-20, 2026-09-22); the third (M13, ADR-0046) — configured, surveyed (grid-002, record #9), readiness done, Q3-001 registered and refused at measurement (863 trades against 1,068 required), its alpha spent; stopped by the author 2026-09-22 (#13) with no verdict, the conclusion adopted the same day — M13 closed; three programmes run, concluded and adopted. M14 (operational maturity from an external review): M14.0–M14.6 done, M14.7 built with its box-level proof waiting for the next burst; M13.9 built 2026-09-23; the lab's closing statement adopted 2026-09-24; M15 — the lab for others — closed 2026-09-26 with the publication decision recorded: publish; the lab is done by its own definition; the definition of done and the path to it are written after the milestone table. M0–M9 closed; M10 deferred with the execution host and M11.1–M11.3 not built (ADR-0044); M11.4–M11.7 done; M12 closed at the author's stop (#36) — see Milestone state"
+status: "PUBLISHED; M16 OPEN (2026-10-03): an external review of the inference, verified by rerun, found the guards looser than they claim; M16 builds the fixes in three releases that run end to end on the author's one instruction, the redesigns left to the successor lab. Earlier: PUBLISHED AND COMPLETE (2026-10-03): `MaverickHQ/occams-test-lab` is public from a single snapshot commit, release `v1.0.0`, the pages live at https://maverickhq.github.io/occams-test-lab/; the private history is archived; nothing is open. Earlier: DONE by its own definition (2026-09-26): three programmes run, concluded and adopted; every milestone closed or closed by decision; the publication decision recorded — publish; the `pages` workflow waits on the author's two GitHub settings (visibility, Pages source), which the API did not yet show at the last check. Earlier: three programmes run, concluded and adopted (2026-09-20, 2026-09-22); the third (M13, ADR-0046) — configured, surveyed (grid-002, record #9), readiness done, Q3-001 registered and refused at measurement (863 trades against 1,068 required), its alpha spent; stopped by the author 2026-09-22 (#13) with no verdict, the conclusion adopted the same day — M13 closed; three programmes run, concluded and adopted. M14 (operational maturity from an external review): M14.0–M14.6 done, M14.7 built with its box-level proof waiting for the next burst; M13.9 built 2026-09-23; the lab's closing statement adopted 2026-09-24; M15 — the lab for others — closed 2026-09-26 with the publication decision recorded: publish; the lab is done by its own definition; the definition of done and the path to it are written after the milestone table. M0–M9 closed; M10 deferred with the execution host and M11.1–M11.3 not built (ADR-0044); M11.4–M11.7 done; M12 closed at the author's stop (#36) — see Milestone state"
 created: 2026-08-31
 updated: 2026-10-03
 supersedes: "TASKS-v3.md. Earlier versions remain unedited."
@@ -65,6 +65,7 @@ record.
 | **M13** | **open 2026-09-20 (ADR-0046)** — the third programme: whether a margin the screen finds transfers, on its own Register and numbers; M13.0–M13.4 done, readiness done, twenty Drafts; a first attempt refused underpowered before any spend; **Q3-001 registered by the author (#10–#11) and refused by the guard at measurement (#12): the winning cell holds 863 trades against 1,068 required — no verdict, 0.15 alpha spent, regime 0.05 left**; **stopped by the author 2026-09-22 (#13), no verdict; the conclusion adopted the same day — M13 closed** | `docs/PROGRAMME-3-CONCLUSION.md` | M13.9 built 2026-09-23; the closing statement and the publication decision, the author's |
 | **M14** | **open 2026-09-20** — operational maturity, from an external review verified claim by claim: seven items owed, five findings rejected on the facts and recorded so they are not rediscovered; **M14.0–M14.5 done 2026-09-21; M14.6 done and M14.7 built 2026-09-23** (M14.7's box-level proof waits for the next burst) | — | nothing owed in M14; the burst proof when a burst next runs |
 | **M15** | **open 2026-09-24** — the lab for others: what a hedge fund, a prop firm, an independent quant and a retail trader each need from it, and what a stranger needs to clone, configure and run it, burst included; the publication decision (R7) closes it | — | **closed 2026-09-26** — M15.0–M15.5 and M15.9–M15.11 done, M15.6–M15.8 closed by the author's decision, M15.12 decided: publish · **published 2026-10-03** (M15.13–M15.16) |
+| **M16** | **open 2026-10-03** — the inference review of 2026-10-03: twenty-five fixes, verified by rerun, then built in three releases (1.0.1 the record corrected, 1.1.0 the apparatus measures itself, 2.0.0 the guards corrected) that run end to end on the author's one instruction; the redesigns go to the successor lab | — | **open** — M16.0 done (verified 2026-10-03); M16.1–M16.20 owed; no row stops for the author |
 
 **Standing checks at the last green run (`34482191071`):** S1 ✓ · S2 ✓ (0.02 s)
 · S3 ✓ both engines · S5 ✓ · S6 ✓ (no `pytest.skip` anywhere, vendored
@@ -125,6 +126,12 @@ single snapshot without the earlier history; the amendment appended to
 The settings are applied and read back, the `pages` workflow has deployed
 the site at `https://maverickhq.github.io/occams-test-lab/`, and the release is `v1.0.0`. Nothing remains after
 this file.
+
+**Reopened by M16, 2026-10-03.** An external review of the inference, verified
+by rerun the same day, found the guards looser than they claim. The three
+programmes stay stopped and concluded and no verdict is edited; the lab is
+done again when M16's three releases are tagged, or its remaining rows are
+closed by the author's decision.
 
 ## M0 — Answer the questions. Nothing is built.
 
@@ -664,6 +671,147 @@ verdict; every feature that changes a rule is an ADR first.
 | **M15.14** | **The front door and the release**: the site's address and a table of where to find things in the README, the package's version, a tag, a GitHub release, the About | Every README link resolves; a tag and a release exist; the About says what the lab is · **DONE 2026-09-30:** forty-seven relative links, none broken; the package at 1.0.0 with the engine code hash unchanged; `v1.0.0` and its release; a description, the site as homepage, twelve topics |
 | **M15.15** | **Publication without history** (the author's decision of 2026-10-03): the address on two early commits never goes public; the public line is a single snapshot in a repository that has never held the earlier commits; the private history stays whole | No object in the public repository carries the address; the earlier commits are unreachable there; the checks pass on the snapshot alone · **DONE 2026-10-03:** snapshot `d14ad4b` in a fresh `MaverickHQ/occams-test-lab`; the repository that carried the history renamed `MaverickHQ/occams-test-lab-history`, private, archived; `v1.0.0` and the release on the published line; a local guard refuses the history to `origin`; `docs/PUBLICATION.md` amended |
 | **M15.16** | **Published, and kept**: the visibility (the author's act), the settings the audit listed, the site deployed, the first dependency updates | The repository public; each setting read back; every link on the site answers; CI green on the final commit · **DONE 2026-10-03:** secret scanning with push protection, Dependabot alerts and security updates, private vulnerability reporting, three rulesets, a restricted Actions policy, the Pages source; the site live; five Dependabot bumps merged in this checkout under the noreply identity and the site redeployed on the bumped actions |
+
+## M16 — The inference review of 2026-10-03: verified, then fixed in three releases that run without the author
+
+**Opened 2026-10-03 by the author** ("review the tasks and ensure that they
+can run without human intervention"). An external review of the published
+lab at `2e86d58` — written as the defect catalogue of the successor lab —
+lists twenty-five fixes (`OTL-F01`–`OTL-F25`) and thirty-three tasks
+(`OTL-T01`–`OTL-T33`) under thirteen proposed ADRs. Its central finding: the
+guards are looser than they claim, which biases toward false positives, so
+every null verdict is robust and the one supported verdict is the soft spot.
+This milestone verifies the review, then builds what belongs in this lab in
+three releases. No closed Register gains or loses a record; no verdict is
+edited; no number is chosen.
+
+**The review verified by rerun (M16.0), on `2e86d58`.** Every code claim read
+at its file and line holds. Its probes, rerun independently:
+
+| Claim (review id) | The review's figure | Rerun here |
+|---|---|---|
+| position-boxed beats-null on an empty world, false positives at 0.01 and 0.05 (F01) | 0.140, 0.225 | 0.140, 0.225 (200 seeds) |
+| the same null resampled at the winner's trade count | 0.015, 0.100 | 0.015, 0.100 |
+| the fifth check on that world | 0.065, 0.135 | 0.065, 0.135 |
+| day-boxed beats-null under a common factor of 0.5 (F02) | 0.090, 0.200 | 0.093, 0.213 (150 seeds) |
+| the same with no common factor | 0.010, 0.050 | 0.000, 0.020 |
+| a coin flip passes the fifth check on the day-boxed null control (F04) | passes | passes — `make null --engine=day_boxed` has printed it since ADR-0043 |
+| a forged and re-chained Register verifies; a truncated one verifies (F11) | 37, 20 | 37, 20 |
+| the power arithmetic of its appendix | — | matches; one figure differs by one |
+
+Three corrections to the review, found while verifying: a survey cell file
+holds summaries and no per-date series, so its readiness tables cannot be
+recomputed from recorded results; the lab does import the vendored `audit`,
+`result`, `privacy` and `charset` modules; and its rule "refuse when two
+p-values differ by more than a factor of two" misfires at very small values.
+
+**Where the review's plan stops for a human, and what this milestone does
+instead.** As written, its tasks halt at ten points. Each is removed, replaced
+by something a machine does, or set aside as an act that blocks nothing:
+
+| The review's plan needs | M16 does |
+|---|---|
+| the author to adopt thirteen ADRs, one by one | the author's one instruction to run M16 adopts six — 0047, 0048, 0049, 0051, 0054, 0055 — and each records that instruction as its adoption; ADR-0050 is written as *proposed* and built only if the instruction names it; the rest are not written here |
+| seven new required numbers | none is chosen or defaulted. The two this lab's code needs are declared per question at registration, and no registration runs; the controls use apparatus numbers in `controls.toml`; the re-score judges only rules whose numbers the registered question already carries and reports the rest as statistics |
+| a signing key and an external timestamp for the pinned heads | a keyless attestation made in CI — no key to hold, verifiable by anyone, dated by a public transparency log. A signature by the author's own key stays an optional act |
+| the private history, the licensed archive and the configurations | all three are in this checkout; the re-score runs here. A missing input is recorded as `reproduced=False` with its reason and the run goes on |
+| the burst, for survey-wide inference | not used: that fix is the successor's |
+| the author to adopt a note in the lab's closing statement | the run writes a diagnostic report with no standing and leaves `docs/LAB-CONCLUSION.md` untouched; adoption is the author's, later |
+| new publication decisions for new files | every new file is written to pass the whole-tree scan with no new entry in `tools/publication-decisions.toml`; the review is committed with one sentence reworded where the gate requires, and marked |
+| a human to tag, release and deploy | covered by the instruction to run: three new tags, three releases, a redeploy of the pages after each |
+| source snapshots of the stamped commits, published | hashes only are committed; the snapshots stay in the private archive, because those trees hold what M15.3 removed |
+| the status log moved out of this file | not done: the kept decisions are keyed to this file's name. Only `CLAUDE.md` is cut down |
+
+**What the author's instruction to run M16 adopts — nothing else is implied.**
+(1) ADR-0047, 0048, 0049, 0051, 0054 and 0055 as M16.1 drafts them, binding
+from the next registration and re-judging nothing. (2) The review committed
+to this repository. (3) Three releases — `v1.0.1`, `v1.1.0`, `v2.0.0` — with
+their notes and a redeploy each. (4) A diagnostic re-score on this machine:
+the measurement partitions of the closed programmes read again, at no alpha,
+written only to a new store beside the Registers. **Not adopted by it:**
+ADR-0050 (the floor judged on a lower confidence bound redefines *supported*
+and needs a number that is the author's); anything on the successor's list
+below; any number; any edit to an adopted document; any key.
+
+**Rules of the run.**
+- A row closes only when its *Done when* check runs and passes; its dated
+  marker is appended to its row, and the next context resumes at the first
+  row without one. The run survives a change of context.
+- A new test that must fail before its fix is committed as a strict expected
+  failure naming the row that fixes it, so `main` stays green and the test
+  flips loudly; the fix removes the mark.
+- The size-and-power tests carry their own marker and run from
+  `make calibrate` and a scheduled workflow, never from `make check`.
+- After every row: `make check`, push, both CI jobs green, the S1, S3, S10
+  entry. `make null` must refuse and `make signal` must accept; if either
+  changes without a row saying it will, the release stops until the guards
+  are fixed (S3, S10).
+- A row that fails its check twice is marked **BLOCKED** with the reason;
+  rows that do not depend on it go on; a release whose rows are blocked is
+  not tagged.
+- Never: an append to a closed Register (M16.4's test enforces it), a
+  force-push, a moved tag, a merge on GitHub's side, a push of the private
+  history, an author's number, a key generated, AWS, an edit to
+  `occams/core/`.
+
+**Release 1.0.1 — the record corrected. No guard changes behaviour.**
+
+| # | Task (review ids) | Done when |
+|---|---|---|
+| **M16.0** | **The review verified by rerun** (appendix A) | The table above · **DONE 2026-10-03** |
+| **M16.1** | **The ADRs.** ADR-0047 (fixes bind forward; a re-score is a diagnostic, never a verdict; conservative fixes land before non-conservative ones), ADR-0048 (nulls at the winner's count, by calendar date, p counted plus one), ADR-0049 (the fifth check side-matched and dependence-aware), ADR-0051 (plateau), ADR-0054 (heads pinned and attested), ADR-0055 (engine identified by content), each recording the author's instruction as its adoption; ADR-0050 written as *proposed*; ADR-0047 lists the numbers the review reserves and this lab leaves unused | Seven files under `docs/adr/`; the ADR counts in `README.md` and `CLAUDE.md` match; `make site` builds them; the whole-tree scan clean |
+| **M16.2** | **The review, published** as `docs/reviews/2026-10-03-inference-review.md` with the verification beside it; one sentence reworded where the publication gate requires, and marked as reworded | The file is in the tree and on the site; `make prepublish-all` reports no new unresolved hit and no new kept one |
+| **M16.3** | **Known limitations, and the wording** (F22; the wording half of F08). `README.md` and `docs/INTEGRITY.md` gain a section naming each P0 and P1 finding with its measured rate and the release that fixes it or the reason it is the successor's; "calibration half" becomes "the definition partition, the oldest 30 %" and "the half no one looked at" becomes "the measurement partition, the next 50 %"; the Makefile says five checks; the `controls.toml` comment says the computed count | `tests/test_docs.py`: no "calibration half" in the README, the Makefile's sentence names five, the comment's integer equals the computed `required_n` — each seen failing first |
+| **M16.4** | **Heads pinned** (F11 part 1; T03). `register/HEADS.toml` with path, count and head for the six stores; a test and a `tools/prepublish.py` check that fail on any mismatch; the review's forgery and truncation as tests | `test_committed_registers_match_pinned_heads`, `test_forged_and_rechained_register_fails_against_pin`, `test_truncated_register_fails_against_pinned_count`, `test_prepublish_checks_heads` green, each seen failing first |
+| **M16.5** | **The pinned heads attested, without a key** (replaces F11 parts 2 and 3; T04). A workflow that attests `register/HEADS.toml` on every change to it, the action pinned by commit, permissions on that job alone | The workflow run is green and `gh attestation verify register/HEADS.toml` succeeds against this repository; if the service refuses, the row is BLOCKED with the reason and the pin stands |
+| **M16.6** | **Release 1.0.1.** Version, notes that say what was found and that no guard changed, tag, release, redeploy | `make check` and both CI jobs green on the tagged commit; the tag and the release exist; every link on the site's index answers |
+
+**Release 1.1.0 — the apparatus measures itself. The guards still judge as before.**
+
+| # | Task (review ids) | Done when |
+|---|---|---|
+| **M16.7** | **The size-and-power table** (F23; T05). `occams/calibrate.py`, `make calibrate`, a `calibration` marker, a weekly scheduled workflow; the review's three probes as tests, 200 seeds for size and 100 for power, against the tolerance the review states | The table prints; the no-dependence control is green; the three known failures are strict expected failures naming M16.14 and M16.15; the scheduled workflow's first run is recorded |
+| **M16.8** | **p counted plus one; evidence for every check** (F03; T06). A `GuardEvidence` record per check, pass or fail, before each resolution; no readiness page prints a zero p | `test_mc_p_value_is_never_zero`, `test_resolution_records_evidence_for_passing_checks`, `test_readiness_prints_no_zero_p` green, each seen failing first; the new record's fields pass the S7 money check |
+| **M16.9** | **One inference module, shared probes** (F20; T07). `occams/inference.py`, `occams/engine/probes.py`, `occams/engine/common.py`; the survey's fifth check calls the guard's; **behaviour unchanged** | Every existing test green; the probes' numbers identical to the seed before and after; `test_survey_and_guard_share_fifth_check` and the no-private-imports check green; the engine code hash's change is recorded in the log |
+| **M16.10** | **The engine identified by content** (F13; T08). A hash over the import closure inside `occams/`; dirtiness judged on code paths only; a measurement or a survey on dirty or unknown code is refused by name; the content hash stamped on measured, resolved and survey records | The four F13 tests green, each seen failing first; the vendored `core/archive.py` byte-identical (`make provenance`) |
+| **M16.11** | **Append locked and linear** (F12; T20) | `test_concurrent_appends_never_fork_chain`, `test_append_reads_file_at_most_once_after_warm_cache`, `test_shrinking_file_raises_truncated` green, each seen failing first |
+| **M16.12** | **Hygiene** (F19, F24, the `CLAUDE.md` half of F25; T30, T32). The set of vendored modules the lab imports pinned by test, with the four the review missed; `check` never imports the cloud SDK; lint widened as the review states with the three long entry points excused by name; strict zips in guards and engines; leave-one-out refuses a non-positive pooled score by name; `CLAUDE.md` under 5 KB with no line over 200 characters. The status log stays here | The named tests green; `make lint` green under the new selection; `test_claude_md_is_small` green |
+| **M16.13** | **Release 1.1.0.** | As M16.6; the notes say the guards judge as before and print the size table that shows why they must change |
+
+**Release 2.0.0 — the guards corrected, by ADR, forward only; then the record re-scored beside itself.**
+
+| # | Task (review ids) | Done when |
+|---|---|---|
+| **M16.14** | **ADR-0048 built** (F01, F02; T09, T10). Both engines' nulls drawn at the winner's trade count; blocks ordered by calendar day; a date-clustered block bootstrap that clusters as the winner clusters; a cluster-robust standard error recorded beside it, and a refusal when the two fall on opposite sides of the corrected alpha — this lab's form of the review's cross-check | The F01 and F02 unit tests green; the strict expected-failure marks for the position-boxed and common-factor size tests removed and the tests green within tolerance; the no-dependence control still green; `make null` refuses and `make signal` accepts on both engines |
+| **M16.15** | **ADR-0049 built** (F04; T11). The baseline takes the winner's side mix; the margin splits into selection and execution, both recorded; the surface and the guard use one number | `test_fifth_check_refuses_coin_flip_on_drifting_paths` green and its mark removed; `make null --engine=day_boxed` now lists beats-always-long among the refusals — the one expected change to S3's output, recorded; the planted reversal accepted at the rate the review states |
+| **M16.16** | **ADR-0051 built, and power at the winner's own dispersion** (F07, F06; T13, part of T12). The winner leaves its own median; a slack in standard errors is required of new registrations and read as absent on old ones; a survey registration plans on its widest cell's dispersion; at measurement a winner too dispersed for its count is refused, on the formula the question registered with | The F07 and F06 tests green, each seen failing first |
+| **M16.17** | **Sources addressable without the history** (F14; T21). `SOURCES.toml`: each stamped commit's tree hash and content hash, computed from the private history; `reproduce private --at-source`; the snapshots written to the private archive and never committed | `test_every_resolved_names_a_known_source` and the loud-refusal test green; no snapshot in `git ls-files` |
+| **M16.18** | **The diagnostic re-score** (ADR-0047; T02, T22, T23). A `register/diagnostics.jsonl` store with one record kind; for each of the six questions an exact reproduction at its stamped source first, then one record under ADR-0048, 0049 and 0051 naming its full rule set, with every number passing or failing. The floor's lower confidence bound and the plateau gap in standard errors are recorded as statistics and not judged. The heads are re-pinned | Six records, or a record with `reproduced=False` and its reason for any that cannot be reproduced; the three programme Registers' pinned heads unchanged; the falsifier's count and every alpha balance unchanged |
+| **M16.19** | **The pages and the report** (T14; T25 in part). The console and the programme page show each diagnostic beside the verdict it annotates, never in its place; `docs/RESCORE-2026-10.md` is written from the diagnostics alone and says it has no standing; the README's verdict table gains the re-scored reading | `make console`, `make programme`, `make prepublish` and `make site` clean; `docs/LAB-CONCLUSION.md` byte-identical |
+| **M16.20** | **Release 2.0.0.** A major version because what a verdict attests changes | As M16.6; the notes name the six ADRs, state that no recorded outcome changed, and give the re-scored reading of each question |
+
+**Built only if the author's instruction names it.**
+
+| # | Task (review ids) | Done when |
+|---|---|---|
+| **M16.21** | **ADR-0050: the floor cleared by a lower confidence bound, power planned against a declared alternative** (F05; the rest of T12). The alternative is declared per question at registration and has no default; the controls plant at an apparatus alternative; the re-score then judges the floor too | The F05 tests green; `make signal` accepted on both engines at the apparatus alternative; `--schema` prints the key and never a value |
+
+**Not built here: the successor lab closes these by construction.** Each is
+named in M16.3's known limitations with this reason.
+
+| Review id | What | Why not here |
+|---|---|---|
+| F08, F18 | survey-wide inference, a validate split, baseline instability | needs every cell re-run on the burst and two new numbers; no survey runs in this lab again |
+| F09, F10 | structural overlap, a lab-wide alpha ceiling | reopens the R4.9 design and needs two new numbers; no registration runs here again |
+| F15 | point-in-time universes | needs data the declared budget does not buy (ADR-0028) |
+| F16 | measured costs, stop slippage | reopens M5.0, closed by decision; nothing trades (ADR-0044) |
+| F17 | calibration as a precondition of measurement | M16.7 builds the table; the gate binds a lab that still measures |
+| F21 | entry kinds as a registry | a refactor with no reader left here |
+| F25, in part | the status log moved out of this file | the kept publication decisions are keyed to this file |
+
+**The author's acts, none of which blocks a row:** adopting a note on the
+re-score into the closing statement; signing the pinned heads with a key of
+their own; deciding ADR-0050; any of the numbers a new programme would need.
 
 ## Explicitly parked
 
@@ -5453,3 +5601,33 @@ and stays resolved. M5.0, M0.22 and M0.21(c) are unchanged.
 > tag are refused by GitHub for anyone. **What stays parked** is what
 > *Explicitly parked* names, with its reasons; the three sets of numbers
 > remain the author's alone.
+
+> **S1, S3, S10 — 2026-10-03, the documents brought to the published state,
+> on the CI machine.** `2e86d58`: run `37132264870`, both jobs — `check` and
+> the clean-machine `setup` — every step success, first attempt. No Register
+> changed.
+
+> **2026-10-03 — an external review of the inference, verified by rerun; M16
+> opened.** The review reads the published lab at `2e86d58` and finds the
+> guards looser than they claim. Verified here before anything was planned:
+> the position-boxed beats-null fires at 0.140 on an empty world against a
+> declared 0.01, because its null is resampled at the pool's size and not the
+> winner's; the day-boxed null fires at 0.093 under a common factor; a coin
+> flip passes the fifth check on the day-boxed null control, a line every
+> `make null` has printed since ADR-0043 and nobody read as a defect,
+> including the agent that ran it; the floor is judged on the winner's point
+> estimate; the survey's readiness tests its own top twenty at an uncorrected
+> alpha; a forged and re-chained Register verifies, and since the public line
+> carries no history nothing outside the file dates it. The README's
+> "calibration half" is wrong — the split is 30, 50, 20 — and that wording was
+> the agent's. What the review does not change: every null verdict stands
+> under every conservative fix, and the lab's finding, nothing found, is
+> strengthened; the one supported verdict is the soft spot. **M16** builds
+> what belongs here in three releases and leaves the redesigns to the
+> successor lab, which takes these as its defect catalogue. On the author's
+> instruction the review's thirty-three tasks were reworked so that none
+> stops for the author: ten such points are listed in M16 with what replaces
+> each, and the one instruction to run M16 is written out as exactly what it
+> adopts. This supersedes "nothing is open" in the entry above; how a change
+> is made is unchanged.
+
