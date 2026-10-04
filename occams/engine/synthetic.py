@@ -12,6 +12,7 @@ Every number it needs is passed in; it holds no constants of its own.
 
 from __future__ import annotations
 
+from dataclasses import replace
 from itertools import product
 from collections.abc import Callable
 
@@ -79,7 +80,10 @@ def measure(*, spec_hash: str, seed: int, axes: dict[str, list[float]], groups: 
     # standard error beside it is the law's, sigma over root n
     stats = (("method", INDEPENDENT), ("reference", float(-cost_in_r)), ("se", float(sigma_r / n_total ** 0.5)),
              ("se_cluster", float(sigma_r / n_total ** 0.5)), ("block", 1), ("days", days))
-    return Measurement(spec_hash=spec_hash, engine=NAME, engine_sha=engine_sha(), seed=seed,
-                       partition=partition, years=float(years), cells=tuple(cells),
-                       null_ev=tuple(float(x) for x in null), baseline_ev=tuple(float(x) for x in baseline),
-                       null_n=n_total, baseline_n=n_total, null_stats=stats, baseline_stats=stats)
+    m = Measurement(spec_hash=spec_hash, engine=NAME, engine_sha=engine_sha(), seed=seed,
+                    partition=partition, years=float(years), cells=tuple(cells),
+                    null_ev=tuple(float(x) for x in null), baseline_ev=tuple(float(x) for x in baseline),
+                    null_n=n_total, baseline_n=n_total, null_stats=stats, baseline_stats=stats)
+    w = m.winner
+    sd = float(np.std([t.net_r for t in w.trades])) if w.trades else 0.0
+    return replace(m, winner_stats=(("sd", sd), ("se_cluster", sd / max(w.n, 1) ** 0.5), ("n_eff", float(w.n)), ("block", 1)))

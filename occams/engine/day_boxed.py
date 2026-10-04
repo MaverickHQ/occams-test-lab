@@ -361,4 +361,5 @@ def measure(template: StrategySpec, axes: dict[str, list[float]],
                        partition=partition, years=years, cells=tuple(cells), null_ev=against.draws,
                        partition_bounds=partition_bounds, split=split,
                        cost_basis=(costs.basis if costs is not None else "declared"), baseline_ev=baseline,
-                       null_n=against.n, null_stats=against.stats(), baseline_n=baseline_n, baseline_stats=baseline_stats)
+                       null_n=against.n, null_stats=against.stats(), baseline_n=baseline_n, baseline_stats=baseline_stats,
+                       winner_stats=probes.winner_stats(compiled, bars_by_name, records))

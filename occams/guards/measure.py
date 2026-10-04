@@ -25,6 +25,18 @@ def check(h, m) -> Refusal | None:
     if m.winner.n < need:
         return Refusal(T, "the winning cell holds fewer trades than the power plan requires",
                        {"required_n": need, "n": m.winner.n})
+    stats = dict(getattr(m, "winner_stats", ()) or ())
+    if stats.get("sd") is not None and stats.get("n_eff") is not None:
+        # ADR-0050 §4: the plan promised power at one dispersion and any cell of the sweep may win. Recomputed on the
+        # formula the question registered with, at the winner's own. It reads the measurement partition and can only refuse.
+        from dataclasses import replace
+
+        need_w = replace(h.power_plan, sigma_r=max(float(stats["sd"]), 1e-12)).required_n(h.floor, h.search_space_size)
+        if float(stats["n_eff"]) < need_w:
+            return Refusal(T, "underpowered at the winning cell's own dispersion (ADR-0050)",
+                           {"winner_sd": stats["sd"], "plan_sigma_r": h.power_plan.sigma_r, "required_n": need,
+                            "required_n_at_winner_sd": need_w, "n": m.winner.n, "n_eff": stats["n_eff"],
+                            "se_cluster": stats.get("se_cluster")})
     if not m.spec_hash:
         return Refusal(T, "measurement carries no spec hash", {})
     return None

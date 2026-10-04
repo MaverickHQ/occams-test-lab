@@ -145,7 +145,7 @@ def run(kind: str, cfg: dict, register_dir: Path, *, seed: int | None = None, en
         power_plan=PowerPlan(float(cfg["power"]["sigma_r"]), float(cfg["power"]["alpha"]),
                              float(cfg["power"]["power"]), available),
         gates=Gates(int(cfg["gates"]["plateau_cells"]), float(cfg["gates"]["plateau_slack"]),
-                    float(cfg["gates"]["loo_min_fraction"])),
+                    float(cfg["gates"]["loo_min_fraction"]), float(cfg["gates"]["plateau_slack_se"])),
         search_space_size=cells, capability=True)
     h = register(h, confirmation=Confirmation(by="apparatus", human=False), parent=None, register=reg)
 
@@ -178,7 +178,7 @@ def run_day_boxed(kind: str, cfg: dict, register_dir: Path, *, seed: int | None 
     available = int(d["days"]) * len(d["groups"])
     floor = Floor(float(cfg["floor"]["ev_net_r"]), float(cfg["floor"]["min_trades_per_year"]))
     gates = Gates(int(cfg["gates"]["plateau_cells"]), float(cfg["gates"]["plateau_slack"]),
-                  float(cfg["gates"]["loo_min_fraction"]))
+                  float(cfg["gates"]["loo_min_fraction"]), float(cfg["gates"]["plateau_slack_se"]))
     h = Hypothesis(
         id=f"CONTROL-{kind.upper()}-DAY-BOXED", tier=Tier.MECHANISM, axis=InformationAxis.PRICE_DAILY,
         mechanism="apparatus test through the day-boxed engine: " + (

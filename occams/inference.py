@@ -128,6 +128,37 @@ def by_day(calendar: np.ndarray, *, days, values, weight: float = 1.0) -> tuple[
     return weight * s, weight * k
 
 
+def block_of(u: np.ndarray, hold: int) -> int:
+    """Consecutive calendar days per block: ``BLOCK_HOLDS`` holds, or the vendored rule's length for
+    the daily series if that is longer, and never so long that fewer than ``MIN_BLOCKS`` remain."""
+    days_n = int(u.size)
+    block = max(BLOCK_HOLDS * max(int(hold), 1), block_length(u))
+    return max(1, min(block, days_n // MIN_BLOCKS)) if days_n >= MIN_BLOCKS else 1
+
+
+def clustered_se(u: np.ndarray, block: int) -> float:
+    """The standard error of a sum of daily influences ``u``: clustered by date, with a Bartlett
+    correction across dates out to the block length (ADR-0048 §5)."""
+    v = float(u @ u)
+    for lag in range(1, block):
+        v += 2.0 * (1.0 - lag / block) * float(u[lag:] @ u[:-lag])
+    return math.sqrt(v) if v > 0 else 0.0
+
+
+def mean_by_day(calendar, *, days, values, hold: int) -> tuple[float, float, int]:
+    """(mean per trade, its standard error clustered by date, the block) for one set of trades —
+    the same standard error the comparisons use, for a mean alone: what the floor's lower
+    confidence bound and the plateau's slack in standard errors read (ADR-0050, ADR-0051)."""
+    s, k = by_day(calendar, days=days, values=values)
+    n = float(k.sum())
+    if n <= 0:
+        raise ValueError("nothing to average: no trades")
+    mean = float(s.sum()) / n
+    u = (s - mean * k) / n
+    block = block_of(u, hold)
+    return mean, clustered_se(u, block), block
+
+
 def _block_sums(x: np.ndarray, block: int) -> np.ndarray:
     """The sum over every run of ``block`` consecutive days: one entry per possible start."""
     c = np.concatenate(([0.0], np.cumsum(x)))
@@ -165,15 +196,10 @@ def compare_by_day(calendar, *, winner, reference, hold: int, draws: int, seed: 
     mw, mr = float(sw.sum()) / nw, float(sr.sum()) / nr
     t_obs = mw - mr
     u = (sw - mw * kw) / nw - (sr - mr * kr) / nr                    # each day's influence on the difference
-    block = max(BLOCK_HOLDS * max(int(hold), 1), block_length(u))
-    block = max(1, min(block, days_n // MIN_BLOCKS)) if days_n >= MIN_BLOCKS else 1
+    block = block_of(u, hold)
     n_blocks = -(-days_n // block)
 
-    # the clustered standard error: by date, Bartlett across dates out to the block length
-    v = float(u @ u)
-    for lag in range(1, block):
-        v += 2.0 * (1.0 - lag / block) * float(u[lag:] @ u[:-lag])
-    se_cluster = math.sqrt(v) if v > 0 else 0.0
+    se_cluster = clustered_se(u, block)
 
     b_sw, b_kw, b_sr, b_kr = (_block_sums(x, block) for x in (sw, kw, sr, kr))
     u_blocks = (b_sw - mw * b_kw) / nw - (b_sr - mr * b_kr) / nr

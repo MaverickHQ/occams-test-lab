@@ -451,6 +451,8 @@ def main(argv=None) -> int:
         p.add_argument("--distinction", default=None, help="the stated difference from an overlapping resolved question (R4.9)")
         p.add_argument("--plateau-cells", type=int, default=4)
         p.add_argument("--plateau-slack", type=float, default=0.10)
+        p.add_argument("--plateau-slack-se", type=float, default=None,
+                       help="the plateau's slack in the winner's own standard errors (ADR-0051): the author's, declared here, no default")
         p.add_argument("--loo-min-fraction", type=float, default=0.5)
         p.add_argument("--seed", type=int, default=1)
         if name == "register":
@@ -499,7 +501,7 @@ def main(argv=None) -> int:
     from occams.proposers.regime import axis_sensitivity
     sens = axis_sensitivity(template, sweep, pre["definition_bars"], ctx=pre["context"], seed=a.seed)
     inert = [ax for ax, v in sens.items() if v == 0.0]
-    gates = Gates(a.plateau_cells, a.plateau_slack, a.loo_min_fraction)
+    gates = Gates(a.plateau_cells, a.plateau_slack, a.loo_min_fraction, a.plateau_slack_se)
     from occams.proposers.base import DraftQueue, Sandbox
     sb = Sandbox.build(reg, DraftQueue(Path(a.queue or a.register).with_name("drafts.jsonl")))
     if a.axis == "regime":

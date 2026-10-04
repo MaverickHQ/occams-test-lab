@@ -103,6 +103,9 @@ class Measurement:
     baseline_n: int = 0
     null_stats: tuple[tuple[str, float | int | str], ...] = ()
     baseline_stats: tuple[tuple[str, float | int | str], ...] = ()
+    # ADR-0050, ADR-0051: the winner's own dispersion, the standard error of its EV clustered by date, and the count of
+    # independent trades that standard error is worth
+    winner_stats: tuple[tuple[str, float | int | str], ...] = ()
 
     @property
     def surface(self) -> str:

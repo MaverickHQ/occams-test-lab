@@ -18,6 +18,12 @@ def check(h, *, confirmation, parent, budget=None, declared=None) -> Refusal | N
                        {"missing": missing})
     if h.floor.ev_net_r <= 0 or h.floor.min_trades_per_year <= 0:
         return Refusal(T, "declared floor must be a positive pair", {"floor": [h.floor.ev_net_r, h.floor.min_trades_per_year]})
+    slack_se = getattr(h.gates, "plateau_slack_se", None)
+    if slack_se is None:
+        return Refusal(T, "a registration declares plateau_slack_se — the slack, in the winner's own standard errors, beyond which "
+                          "the plateau check refuses (ADR-0051); it has no default", {"gates": "plateau_slack_se"})
+    if not slack_se > 0:
+        return Refusal(T, "plateau_slack_se must be positive", {"plateau_slack_se": slack_se})
     if h.search_space_size < 1:
         return Refusal(T, "search_space_size must be at least 1", {"search_space_size": h.search_space_size})
     p = h.power_plan

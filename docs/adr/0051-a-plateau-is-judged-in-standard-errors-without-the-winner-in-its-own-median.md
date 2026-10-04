@@ -40,3 +40,25 @@ and whatever the winner's own sampling error.
   not matter in R.
 - **A fixed number of standard errors.** Rejected: it is a number, and the
   question's author declares its gates.
+
+## As built (M16.16, 2026-10-04)
+
+- **The standard error is the score's.** On the margin surface it is the
+  standard error of the winner's margin over its passive alternative — the
+  fifth check's comparison (ADR-0049) — and on the EV surface the winner's
+  own, both clustered by date (ADR-0048). The engine supplies them in the
+  Measurement; the guard reads nothing else.
+- **A nil standard error is a standard error.** A winner that *is* its
+  baseline has a margin of exactly nil and no error in it; its gap is nil
+  and the check passes. A question that declared the slack and a measurement
+  that carries no standard error at all is refused by name.
+- **A single cell has no neighbours** to be a spike above, and passes; the
+  neighbourhood's size is still counted with the winner in it.
+- **Registration refuses without it.** `--plateau-slack-se` on both
+  registration commands, no default; `prepare` says *UNDECLARED* and is not
+  clean. The apparatus controls declare four, an apparatus number: the best
+  of nine cells drawn alike sits a standard error or two above its
+  neighbours' median by chance.
+- **Every plateau evidence record carries the gap in standard errors**
+  whenever a standard error exists, whether or not the question declared
+  the slack — which is what the re-score reports for the six questions.

@@ -82,6 +82,9 @@ class Gates:
     plateau_cells: int
     plateau_slack: float
     loo_min_fraction: float
+    # ADR-0051: the slack in the winner's own standard errors. Declared at registration, with no default; ``None`` only on a
+    # question registered before the rule, for which that half of the plateau check is absent
+    plateau_slack_se: float | None = None
 
 
 @dataclass(frozen=True)

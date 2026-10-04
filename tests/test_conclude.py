@@ -115,7 +115,7 @@ def test_an_authors_stop_needs_a_reason_and_a_yes_and_then_nothing_registers_sur
     assert rec["kind"] == "author" and rec["reason"] == "the second grid is a new programme" and rec["alpha_remaining"]["regime"] == 0.1
     # registration is refused by the Register, by name, and the refusal is itself recorded
     h = Hypothesis(id="Q2-002", tier=Tier.MECHANISM, axis=InformationAxis.PRICE_DAILY, mechanism="m", if_true="t", if_false="f",
-                   falsifier="x", floor=Floor(0.15, 50), power_plan=PowerPlan(1.2, 0.05, 0.8, 1000), gates=Gates(4, 0.1, 0.5),
+                   falsifier="x", floor=Floor(0.15, 50), power_plan=PowerPlan(1.2, 0.05, 0.8, 1000), gates=Gates(4, 0.1, 0.5, 50.0),
                    search_space_size=1, capability=True)
     with pytest.raises(Refused, match="the programme is stopped"):
         register_h(h, confirmation=Confirmation("apparatus", human=False), parent=None, register=reg)

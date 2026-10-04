@@ -28,7 +28,7 @@ def cfg():
 
 def hyp(**kw) -> Hypothesis:
     base = dict(id="H-1", tier=Tier.MECHANISM, axis=InformationAxis.REGIME, mechanism="m", if_true="t", if_false="f",
-                falsifier="x", floor=Floor(0.15, 50), power_plan=PowerPlan(1.2, 0.5, 0.8, 1000), gates=Gates(4, 0.1, 0.5),
+                falsifier="x", floor=Floor(0.15, 50), power_plan=PowerPlan(1.2, 0.5, 0.8, 1000), gates=Gates(4, 0.1, 0.5, 50.0),
                 search_space_size=1)
     base.update(kw)
     return Hypothesis(**base)

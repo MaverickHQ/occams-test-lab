@@ -23,7 +23,7 @@ from occams.proposers.regime import (GRID, ClusterLevel, NonCausal, OutsideDefin
 from occams.register import Register
 
 ROOT = Path(__file__).resolve().parent.parent
-GATES = Gates(4, 0.10, 0.5)
+GATES = Gates(4, 0.10, 0.5, 50.0)
 SWEEP = Sweep((("stop", (2.0, 3.0, 4.0)), ("hold", (1.0, 2.0, 3.0))))
 
 

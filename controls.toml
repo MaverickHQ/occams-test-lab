@@ -29,6 +29,7 @@ hold = [1.0, 2.0, 3.0]
 [gates]                      # the MEASURED -> FORWARD thresholds the control Hypothesis declares
 plateau_cells = 4
 plateau_slack = 0.10
+plateau_slack_se = 4.0       # ADR-0051, an apparatus number: the best of nine cells drawn alike sits a standard error or two above its neighbours' median by chance; four is a spike
 loo_min_fraction = 0.5
 null_draws = 4000
 

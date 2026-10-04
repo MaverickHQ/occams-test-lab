@@ -314,17 +314,29 @@ def bound_by_thinnest_cell(pre: dict, kin: list[dict]) -> dict:
             "thinnest_cell": {"geometry": geometry(thin), "definition_trades": int(thin["trades"]), "available_n": scaled}}
 
 
+def widest_sigma(row: dict, kin: list[dict]) -> tuple[float | None, dict]:
+    """The largest dispersion among the family's cells that the survey measured and did not refuse, and the cell it
+    belongs to (ADR-0050 §3): the winner may be any cell of the sweep, so the plan is made for the widest."""
+    cells = [r for r in [row, *kin] if not r.get("refused") and r.get("sigma_net")]
+    if not cells:
+        return row.get("sigma_net"), row
+    wide = max(cells, key=lambda r: r["sigma_net"])
+    return wide["sigma_net"], wide
+
+
 def question_from_cell(row: dict, fam: Family, *, qid: str, index: dict, record: dict, template, pre: dict, budget,
-                       floor, sigma: float | None, power: float, gates):
+                       floor, sigma: float | None, power: float, gates, kin: list[dict] | None = None):
     from occams.measurement import Floor
     from occams.proposers.base import Draft
     from occams.question import from_draft
 
-    s = sigma if sigma is not None else row.get("sigma_net")
+    s, wide = (sigma, row) if sigma is not None else widest_sigma(row, kin or [])
     if s is None or s <= 0:
         raise ValueError(f"cell {row['cell']} has no σ on the definition partition (fewer than two trades); pass --sigma with its provenance")
-    provenance = (f"σ of net R over {row['trades']} definition-partition trades of survey cell {row['cell']} "
-                  f"(record #{record['seq']}, {index['grid']} seed {index['seed']})" if sigma is None else "declared with --sigma")
+    provenance = "declared with --sigma" if sigma is not None else (
+        f"σ of net R over {wide['trades']} definition-partition trades of survey cell {wide['cell']}, the family's widest cell "
+        f"({geometry(wide)}; ADR-0050) — the cell registered from is {row['cell']} "
+        f"(record #{record['seq']}, {index['grid']} seed {index['seed']})")
     sentence = grid_sentence(fam, row)
     d = Draft(proposer="survey", axis=InformationAxis(fam.axis), mechanism=sentence,
               if_true="the winner cell clears the declared floor and beats random entry at the corrected alpha on the measurement "
@@ -619,6 +631,8 @@ def register_main(argv: list[str]) -> int:  # noqa: C901 — the author's comman
     ap.add_argument("--power", type=float, default=0.8)
     ap.add_argument("--plateau-cells", type=int, default=4)
     ap.add_argument("--plateau-slack", type=float, default=0.10)
+    ap.add_argument("--plateau-slack-se", type=float, default=None,
+                    help="the plateau's slack in the winner's own standard errors (ADR-0051): the author's, declared here, no default")
     ap.add_argument("--loo-min-fraction", type=float, default=0.5)
     ap.add_argument("--seed", type=int, default=1)
     ap.add_argument("--id-prefix", default=None, help="question ids; derived from the Register's name when not given (programme-N.jsonl -> QN-)")
@@ -703,7 +717,7 @@ def register_main(argv: list[str]) -> int:  # noqa: C901 — the author's comman
         print(f"REFUSED: {a.register} does not name its programme (register.jsonl, or programme-N.jsonl); pass --id-prefix so its "
               f"questions are numbered as this programme's and never another's")
         return 1
-    gates = Gates(a.plateau_cells, a.plateau_slack, a.loo_min_fraction)
+    gates = Gates(a.plateau_cells, a.plateau_slack, a.loo_min_fraction, a.plateau_slack_se)
     print(f"survey {index['grid']} · seed {index['seed']} · record #{record['seq']} · {_n(index['cell_count'])} cells screened · "
           f"{engine_note(index, a.from_survey)}")
     prepared = []
@@ -714,10 +728,11 @@ def register_main(argv: list[str]) -> int:  # noqa: C901 — the author's comman
         template = family_template(fam, classifier_hash)
         world = worlds[fam.universe]
         pre = precommit_on(template, world, ctx=ctx, seed=a.seed)
-        pre = bound_by_thinnest_cell(pre, [r for r in index["cells"] if family_of(grid, r) is fam])
+        family_cells = [r for r in index["cells"] if family_of(grid, r) is fam]
+        pre = bound_by_thinnest_cell(pre, family_cells)
         try:
             q = question_from_cell(row, fam, qid=qid, index=index, record=record, template=template, pre=pre, budget=budget,
-                                   floor=(a.floor_ev, a.floor_frequency), sigma=a.sigma, power=a.power, gates=gates)
+                                   floor=(a.floor_ev, a.floor_frequency), sigma=a.sigma, power=a.power, gates=gates, kin=family_cells)
         except ValueError as e:
             print(f"REFUSED: {e}")
             return 1
@@ -758,7 +773,11 @@ def register_main(argv: list[str]) -> int:  # noqa: C901 — the author's comman
                   f"≈{_n(tc['available_n'])} on the measurement partition, against {_n(pre['template_available_n'])} from the template's signals; "
                   f"available_n is the lesser, because the guard at measurement counts the winner's own trades (M8.2)")
         print(f"    required_n per cell {h.required_n} at per-cell alpha {budget.rate(h.axis, h.tier):.4g}; floor {a.floor_ev:g} R at "
-              f"{a.floor_frequency:g}/year; σ {h.power_plan.sigma_r:.3f} ({'declared' if a.sigma is not None else 'the cell'})")
+              f"{a.floor_frequency:g}/year; σ {h.power_plan.sigma_r:.4f} ({'declared' if a.sigma is not None else 'the family'})")
+        if a.sigma is None:
+            _s, wide = widest_sigma(row, family_cells)
+            print(f"    σ {h.power_plan.sigma_r:.4f} is the family's widest cell's, {wide['cell']} ({geometry(wide)}), not the chosen cell's "
+                  f"{row.get('sigma_net') or float('nan'):.4f}: any cell of the sweep may win, and the plan is made for the widest (ADR-0050)")
         print(f"    spend {budget.spend_for(h.axis, h.tier, h.search_space_size):.4g} of {budget.remaining(h.axis):.4g} remaining on {h.axis.value}"
               + (f" — REFUSED: {alpha_refusal.reason}" if alpha_refusal is not None else ""))
         print("    " + ("POWERED" if powered else "UNDERPOWERED — registration would be refused (M8.2)"))
@@ -772,7 +791,11 @@ def register_main(argv: list[str]) -> int:  # noqa: C901 — the author's comman
             print(f"    INERT AXIS — {inert}: every cell along it produces the same trades; k charges for cells that are not distinct questions")
         if overlap is not None:
             print(f"    OVERLAP — {overlap.reason}")
-        clean = powered and supportable and plateau_ok and not inert and overlap is None and alpha_refusal is None
+        if h.gates.plateau_slack_se is None:
+            print("    UNDECLARED — plateau_slack_se: the plateau's slack in the winner's own standard errors is declared at "
+                  "registration (--plateau-slack-se) and has no default (ADR-0051); registration would be refused")
+        clean = (powered and supportable and plateau_ok and not inert and overlap is None and alpha_refusal is None
+                 and h.gates.plateau_slack_se is not None)
         all_clean = all_clean and clean
         prepared.append((q, declared, pre))
     if cmd == "prepare":

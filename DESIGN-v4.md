@@ -121,6 +121,12 @@ must pass:
 1. **Plateau** — a lone maximum is noise. Chebyshev-1 neighbourhood must have
    `plateau_cells` members and a median within `plateau_slack` of the winner.
    Ported from `search.py:96-115`, the strongest single piece of the donor.
+   *Since ADR-0051 (2026-10-03): the median is the neighbours' — with the
+   winner in it, one of four cells is one of the two middle values and pulls
+   the median toward itself — and a registration declares a second slack,
+   `plateau_slack_se`, in the winner's own standard errors, with no default.
+   Either slack exceeded is a refusal. A question registered before the rule
+   carries none; for it the gap in standard errors is recorded, not judged.*
 2. **Beats the null** — random entry, Monte Carlo, same costs and geometry,
    **resampling unit matched to the horizon** (D6). *Since ADR-0048
    (2026-10-03): the unit is the calendar day for both simulators. The winner

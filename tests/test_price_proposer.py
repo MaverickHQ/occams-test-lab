@@ -64,7 +64,7 @@ def test_the_proposer_emits_a_draft_with_both_interpretations_and_no_alpha(tmp_p
     reg = Register(tmp_path / "r.jsonl")
     sb = Sandbox.build(reg, DraftQueue(tmp_path / "d.jsonl"))
     p = PriceProposer(entry=EntryKind.CLOSE_BELOW_MA, lookback=10, hold_bars=3, floor=Floor(0.15, 50), sigma_r=1.2,
-                      sigma_provenance="fixture", power=0.8, gates=Gates(4, 0.10, 0.5),
+                      sigma_provenance="fixture", power=0.8, gates=Gates(4, 0.10, 0.5, 50.0),
                       sweep=Sweep((("stop", (3.0, 5.0)), ("hold", (3.0, 5.0)))))
     (d,) = p.propose(sb)
     validate_draft(d)
@@ -91,7 +91,7 @@ def test_a_price_question_builds_from_the_draft_on_its_own_axis(world, tmp_path)
     c = cfg()
     t = price_template(EntryKind.CLOSE_ABOVE_MA, lookback=20, hold_bars=5)
     p = PriceProposer(entry=EntryKind.CLOSE_ABOVE_MA, lookback=20, hold_bars=5, floor=Floor(0.15, 50), sigma_r=1.2,
-                      sigma_provenance="fixture", power=0.8, gates=Gates(4, 0.10, 0.5),
+                      sigma_provenance="fixture", power=0.8, gates=Gates(4, 0.10, 0.5, 50.0),
                       sweep=Sweep((("stop", (3.0, 5.0)), ("hold", (5.0, 10.0)))))
     (d,) = p.propose(Sandbox.build(reg, DraftQueue(tmp_path / "d.jsonl")))
     q = from_draft(d, id="Q-p", template=t, budget=AlphaBudget(c, reg, config_sha="fixture"), available_n=900)

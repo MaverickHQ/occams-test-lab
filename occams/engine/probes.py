@@ -198,3 +198,17 @@ def fifth_check(compiled: CompiledStrategy, bars_by_name: dict, records, baselin
     execution = execution_part(compiled, bars_by_name, records, cost_in_r=cost_in_r, actions=actions, costs=costs, regime=regime)
     stats = cmp.stats() + (("long_share", baseline.share), ("selection", cmp.difference - execution), ("execution", execution))
     return cmp.draws, cmp.n, stats
+
+
+def winner_stats(compiled: CompiledStrategy, bars_by_name: dict, records) -> tuple:
+    """The winner's own dispersion, the standard error of its EV clustered by date, and its
+    *effective* count — how many independent trades that standard error is worth, never more
+    than it holds (ADR-0050 §4, ADR-0051 §2)."""
+    records = list(records)
+    values = [t.net_r for t in records]
+    n = len(values)
+    sd = float(np.std(values)) if n else 0.0
+    _mean, se, block = inference.mean_by_day(calendar_of(bars_by_name), days=[t.day for t in records], values=values,
+                                             hold=hold_of(compiled, records))
+    n_eff = float(min(n, (sd / se) ** 2)) if se > 0 else float(n)
+    return (("sd", sd), ("se_cluster", se), ("n_eff", n_eff), ("block", block))

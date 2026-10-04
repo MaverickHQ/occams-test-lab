@@ -63,3 +63,20 @@ adopted it by name.
 - **A separate winner's-curse correction.** Rejected: the simultaneous bound
   already covers selection among the k cells.
 - **A default alternative.** Rejected: a default is a recommendation (R9).
+
+## As built: the dispersion half (M16.16, 2026-10-04)
+
+- **§3, the widest cell.** A question registered from a survey takes its
+  plan's dispersion from the largest among its family's cells that the
+  survey measured and did not refuse, and its provenance names that cell.
+  `prepare` prints both numbers. On the test fixture the chosen cell
+  measures 0.49 R and the family's widest 1.02 R, and a floor that was
+  powered at the first is refused as underpowered at the second.
+- **§4, the winner's own dispersion.** The engines put the winner's standard
+  deviation, the standard error of its EV clustered by date, and its
+  effective count — the count of independent trades that standard error is
+  worth, never more than it holds — in the Measurement. At
+  REGISTERED → MEASURED the required count is recomputed on the question's
+  own formula at the winner's standard deviation and refused as
+  *underpowered at the winning cell's own dispersion* when the effective
+  count is below it. It reads the measurement partition and can only refuse.

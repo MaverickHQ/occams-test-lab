@@ -142,9 +142,12 @@ def test_register_from_survey_is_the_authors_yes_naming_the_ids_and_stamps_the_c
     cands = candidates(index, grid, budget=budget)
     top = cands[0]
     assert budget.check(InformationAxis(top["row"]["axis"]), Tier.MECHANISM, top["sweep"]) is None
-    cid, floor = top["cell"], top["row"]["lowest_affordable_floor"]["4"]
+    # the survey's own lowest affordable floor is computed at the chosen cell's dispersion; the plan is made at the family's
+    # widest cell's since ADR-0050, where 0.1 R is underpowered and 0.15 R is not
+    cid, floor = top["cell"], "0.15"
+    assert top["row"]["lowest_affordable_floor"]["4"] == "0.1"
     common = ["--from-survey", str(out), "--grid", str(grid_path), "--archive", str(tmp_path / "archive"), "--register", str(reg_path),
-              "--config", str(cfg_path), "--floor-ev", floor, "--floor-frequency", "1", "--seed", "3", "--id-prefix", "Q2-"]
+              "--config", str(cfg_path), "--floor-ev", floor, "--floor-frequency", "1", "--seed", "3", "--id-prefix", "Q2-", "--plateau-slack-se", "50"]
     # prepare shows every number and spends nothing
     assert question_main(["prepare", *common, "--ids", cid]) == 0
     text = capsys.readouterr().out
@@ -295,11 +298,11 @@ def test_the_claim_registered_is_the_grids_sentence_and_the_cell_files_wording_i
     doc = draft_document(top, index, survey_record(reg, index), out=out, grid_path=grid_path)
     assert grid_sentence(fam, row) in doc and "cell file recorded" in doc and stale in doc
     common = ["--from-survey", str(out), "--grid", str(grid_path), "--archive", str(tmp_path / "archive"), "--register", str(reg_path),
-              "--config", str(cfg_path), "--floor-ev", row["lowest_affordable_floor"]["4"], "--floor-frequency", "1", "--seed", "3"]
+              "--config", str(cfg_path), "--floor-ev", "0.15", "--floor-frequency", "1", "--seed", "3", "--plateau-slack-se", "50"]
     # a Register whose name does not say which programme it is gets no prefix by default: refused, not numbered as another's
     assert question_main(["prepare", *common, "--ids", cid]) == 1
     assert "does not name its programme" in capsys.readouterr().out
-    common += ["--id-prefix", "Q2-"]
+    common += ["--id-prefix", "Q2-", "--plateau-slack-se", "50"]
     assert question_main(["prepare", *common, "--ids", cid]) == 0
     text = capsys.readouterr().out
     assert f"the R4.9 distinction): {grid_sentence(fam, row)} — on etfs" in text and "cell file recorded it as" in text and stale in text

@@ -136,7 +136,7 @@ def test_measure_question_reads_the_frozen_classifier_from_the_register(tmp_path
     gated = spec(gate=RegimeGate(clf.frozen_hash, Regime.UP, "SPY"))
     d = Draft(proposer="t", axis=InformationAxis.REGIME, mechanism="m", if_true="t", if_false="f", falsifier="x",
               floor=Floor(0.5, 20), sweep=Sweep((("stop", (2.0, 3.0)),)), sigma_r=1.2, sigma_provenance="fixture",
-              power=0.8, gates=Gates(2, 0.3, 0.5))
+              power=0.8, gates=Gates(2, 0.3, 0.5, 50.0))
     b = AlphaBudget(c, reg, config_sha="x")
     q = from_draft(d, id="Q-G", template=gated, budget=b, available_n=2000)
     q = register_question(q, confirmation=Confirmation("author", True), budget=b, register=reg, declared=None)

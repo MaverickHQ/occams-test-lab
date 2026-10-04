@@ -51,7 +51,7 @@ def template(axis=InformationAxis.REGIME):
 def draft(sweep=Sweep((("stop", (2.0, 3.0)), ("target", (3.0, 4.0)))), floor=Floor(0.15, 20)):
     return Draft(proposer="t", axis=InformationAxis.REGIME, mechanism="continuation after the open", if_true="t",
                  if_false="f", falsifier="x", floor=floor, sweep=sweep, sigma_r=1.2, sigma_provenance="fixture",
-                 power=0.8, gates=Gates(2, 0.30, 0.5))
+                 power=0.8, gates=Gates(2, 0.30, 0.5, 50.0))
 
 
 def world_archive(tmp_path, *, drift: float, days=600, names=("A", "B", "C")) -> BarArchive:
@@ -274,12 +274,12 @@ def test_a_plateau_the_sweep_cannot_hold_is_refused_at_registration_and_spends_n
     assert max_plateau_neighbourhood(Sweep((("stop", (2.0, 3.0)), ("target", (2.0, 3.0))))) == 4
     assert max_plateau_neighbourhood(Sweep((("stop", (1.0, 2.0, 3.0, 4.0)), ("hold", (1.0, 2.0, 3.0))))) == 9
     narrow = draft(sweep=Sweep((("stop", (2.0, 3.0)),)))
-    narrow = replace(narrow, gates=Gates(4, 0.30, 0.5))
+    narrow = replace(narrow, gates=Gates(4, 0.30, 0.5, 50.0))
     q = from_draft(narrow, id="Q-narrow", template=template(), budget=budget, available_n=900)
     with pytest.raises(Refused, match="plateau of 4 cells cannot fit a 2 sweep"):
         register_question(q, confirmation=HUMAN, budget=budget, register=reg, declared=None)
     assert budget.remaining(InformationAxis.REGIME) == pytest.approx(0.5)
     assert reg.records()[-1]["type"] == "RefusalRecorded"
-    wide = replace(draft(), gates=Gates(4, 0.30, 0.5))     # 2 x 2 holds exactly four
+    wide = replace(draft(), gates=Gates(4, 0.30, 0.5, 50.0))     # 2 x 2 holds exactly four
     q = from_draft(wide, id="Q-wide", template=template(), budget=budget, available_n=900)
     assert register_question(q, confirmation=HUMAN, budget=budget, register=reg, declared=None).hypothesis.state is HypothesisState.REGISTERED
