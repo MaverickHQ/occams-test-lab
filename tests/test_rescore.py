@@ -163,3 +163,38 @@ def test_every_number_in_a_record_is_a_number():
     """Evidence comes from guards that may hold a not-a-number; the chain holds none."""
     assert rescore.clean({"a": float("nan"), "b": [float("inf"), 1.0], "c": {"d": (2, float("-inf"))}}) == {"a": None, "b": [None, 1.0], "c": {"d": [2, None]}}
     assert json.loads(json.dumps(rescore.clean({"x": float("nan")}))) == {"x": None}
+
+
+def test_old_code_meets_the_register_and_the_queue_as_they_were(programme, tmp_path):
+    """The first run of the re-score handed the code of 2026-09-11 a queue that held a question registered a day later,
+    with an entry kind that code had never heard of, and recorded two questions as not recreated. A stamped source is
+    given the Register up to the question's own measurement and a queue that holds that question alone."""
+    from occams import reproduce
+    from occams.question import QuestionQueue, QuestionQueued
+    from occams.register.store import Store
+
+    prog, archive, v, m = programme
+    queue = QuestionQueue(prog.queue)
+    mine = queue.records()[0]["question_json"]
+    queue.append(QuestionQueued("Q-2", mine.replace('"Q-1"', '"Q-2"').replace("down_run", "a_kind_from_the_future")))
+    dest = tmp_path / "scratch"
+    dest.mkdir()
+    reg, q = reproduce.as_it_was("Q-1", prog.register, prog.queue, dest)
+    types = [json.loads(ln)["payload"]["type"] for ln in reg.read_text().splitlines()]
+    assert "HypothesisMeasured" not in types and "HypothesisResolved" not in types and "HypothesisRegistered" in types
+    assert Store(reg).verify() == len(types) and Path(prog.register).read_text().startswith(reg.read_text())     # a prefix, and a chain
+    (only,) = QuestionQueue(q).records()
+    assert only["hypothesis_id"] == "Q-1" and "a_kind_from_the_future" not in only["question_json"]
+    assert only["question_json"] == json.loads(Path(prog.queue).read_text().splitlines()[0])["payload"]["question_json"]   # its own words
+    with pytest.raises(RuntimeError, match="not in the queue"):
+        reproduce.as_it_was("Q-9", prog.register, prog.queue, dest)
+
+
+def test_a_failure_is_recorded_in_one_line_with_no_path_of_this_machine():
+    from occams import reproduce
+
+    stderr = "\n".join(["Traceback (most recent call last):", '  File "/Users/someone/work/occams/spec/spec.py", line 237, in <genexpr>',
+                        "    entries=tuple(...)", "ValueError: 'down_run' is not a valid EntryKind", ""])
+    assert reproduce.last_words(stderr) == "ValueError: 'down_run' is not a valid EntryKind"
+    assert "/Users/" not in reproduce.last_words("FileNotFoundError: no bars at /Users/someone/private/archive/bars/SPY.json")
+    assert reproduce.last_words("") == "the child said nothing"

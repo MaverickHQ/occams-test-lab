@@ -118,6 +118,7 @@ def measure_at_source(*, commit: str, question: str, register: Path, queue: Path
 
 
 def _reproduction(qid: str, prog: Programme, recorded: dict, *, archive: Path, names, null_draws: int, at_source) -> dict:
+    from occams import reproduce
     from occams.reproduce import FOUR, _refusal_heads
 
     commit = sources.commit_of(recorded["engine_sha"])
@@ -125,7 +126,7 @@ def _reproduction(qid: str, prog: Programme, recorded: dict, *, archive: Path, n
         got = at_source(commit=commit, question=qid, register=prog.register, queue=prog.queue, archive=archive, config=prog.config,
                         seed=int(recorded["seed"]), null_draws=null_draws, names=names)
     except (sources.SourceMissing, RuntimeError) as e:
-        return {"reproduced": False, "source": commit, "reason": str(e)[-600:]}
+        return {"reproduced": False, "source": commit, "reason": reproduce.last_words(str(e))}
     checks = tuple(recorded["checks"] or FOUR)
     want = sorted(_refusal_heads(recorded["refusals"], checks))
     have = sorted(_refusal_heads(got["refusals"], checks))

@@ -178,17 +178,46 @@ print(json.dumps({"spec_hash": m.winner.spec_hash, "ev_net_r": float(m.winner.ev
 """
 
 
+def as_it_was(question: str, register, queue, dest: Path) -> tuple[Path, Path]:
+    """The Register and the queue as the stamped code met them, in ``dest``: the Register up to — not including — the
+    question's own measurement, and a queue that holds this question alone, in the words it was queued in. Old code
+    cannot read what was written after it: a later question's entry kind, a later record's field. Both are scratch
+    chains that verify; the programme's files are read and never opened for writing."""
+    from occams.question import QuestionQueue, QuestionQueued
+
+    lines = [ln for ln in Path(register).read_text(encoding="utf-8").splitlines() if ln.strip()]
+    cut = next((i for i, ln in enumerate(lines) if (p := json.loads(ln)["payload"]).get("hypothesis_id") == question
+                and p["type"] == "HypothesisMeasured"), len(lines))
+    scratch_register = Path(dest) / "register.jsonl"
+    scratch_register.write_text("".join(ln + "\n" for ln in lines[:cut]), encoding="utf-8")
+    queued = [json.loads(ln)["payload"] for ln in Path(queue).read_text(encoding="utf-8").splitlines() if ln.strip()]
+    mine = [p for p in queued if p.get("hypothesis_id") == question]
+    if not mine:
+        raise RuntimeError(f"{question} is not in the queue {Path(queue).name}")
+    scratch_queue = Path(dest) / "queue.jsonl"
+    QuestionQueue(scratch_queue).append(QuestionQueued(question, mine[-1]["question_json"]))
+    return scratch_register, scratch_queue
+
+
+def last_words(stderr: str) -> str:
+    """What a child said when it failed: its last line — the exception and its message — with no path of this machine in it."""
+    import re
+
+    lines = [ln.strip() for ln in stderr.strip().splitlines() if ln.strip()]
+    return re.sub(r"(?:/[\w.\-@+ ]+){2,}/?", "<path>", lines[-1] if lines else "the child said nothing")[:400]
+
+
 def measure_in(tree: Path, *, question: str, register, queue, archive, config, seed: int, null_draws: int, names) -> dict:
     """Run the stamped measurement with the code in ``tree`` — a worktree or an extracted snapshot — and this interpreter,
-    on a scratch copy of the Register. Returns what it measured; raises ``RuntimeError`` with the child's words if it did not run."""
+    on the Register and the queue as that code met them. Returns what it measured; raises ``RuntimeError`` with the
+    child's last words if it did not run."""
     with tempfile.TemporaryDirectory(prefix="occams-reproduce-") as scratch_dir:
-        scratch = Path(scratch_dir) / "register.jsonl"
-        shutil.copy(register, scratch)
-        child = subprocess.run([sys.executable, "-", question, str(scratch), str(Path(queue).resolve()), str(Path(archive).resolve()),
+        scratch, scratch_queue = as_it_was(question, register, queue, Path(scratch_dir))
+        child = subprocess.run([sys.executable, "-", question, str(scratch), str(scratch_queue), str(Path(archive).resolve()),
                                 str(Path(config).resolve()), str(seed), str(null_draws), ",".join(sorted(names))],
                                input=_CHILD, cwd=tree, capture_output=True, text=True)
     if child.returncode != 0:
-        raise RuntimeError(child.stderr.strip()[-2000:])
+        raise RuntimeError(last_words(child.stderr))
     return json.loads(child.stdout.strip().splitlines()[-1])
 
 
