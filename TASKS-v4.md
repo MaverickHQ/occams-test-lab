@@ -5818,3 +5818,37 @@ and stays resolved. M5.0, M0.22 and M0.21(c) are unchanged.
 > status of its last command, so the gate could not fail in CI at all. The
 > step is no longer piped, the calibration workflow keeps its table's exit
 > status, and a test refuses a piped gate in any workflow.
+
+> **2026-10-04 — the re-score on the pages and in a report (M16.19).** The
+> console shows each diagnostic under the verdict it annotates and the
+> programme page beside each record's own pill; neither puts one in a
+> verdict's place, and a Register with no diagnostics store beside it renders
+> the page it rendered before. `docs/RESCORE-2026-10.md` is written from the
+> store alone and opens by saying it has no standing. One sentence of its
+> first draft claimed more than ADR-0047 §5 says — that no correction can
+> turn a refusal into a pass — and was replaced before it was committed by
+> what the store shows: no check that refused a question as recorded passes
+> it in the re-score, computed, not asserted. The README's verdict table has
+> the re-scored column. `docs/LAB-CONCLUSION.md` is the bytes it was at
+> `v1.0.0`; a note on Q2-001 in it is the author's to adopt, and none was
+> written.
+
+> **S1, S3, S10 — 2026-10-04, M16.17 to M16.19 on the CI machine.** `94f73fc`
+> (M16.17): run `37233592057`; `9394754` (M16.18, the tool): run
+> `37234013570`; `e235147`: run `37234333274`, green although its tree held a
+> shape the scan refuses, for the reason the entry above gives; `0081ed6`:
+> run `37234496825`; `e7cc38d` (M16.18): run `37235899020`, and the `attest`
+> run `37235899056` on the changed heads, after which
+> `gh attestation verify register/HEADS.toml` exits 0; `7684c7d` (M16.19):
+> run `37236522865`. Every `check` run has `check` and `setup` success. The
+> `pages` dispatch `37236525416` deployed and the re-score answers 200 on
+> the site. `make null` refused and `make signal` accepted on both engines
+> at each.
+
+> **2026-10-04 — release 2.0.0 prepared (M16.20).** Version 2.0.0, a major
+> version because what a verdict attests changes. `docs/INTEGRITY.md` says
+> what 2.0.0 corrected, that one guard is still over its tolerance in one
+> world at 0.05, and what the re-score read. The notes name ADR-0047, 0048,
+> 0049, 0050, 0051, 0054 and 0055, state that no recorded outcome changed,
+> give the re-scored reading of each question, and record the open residual
+> and the slips of the run.

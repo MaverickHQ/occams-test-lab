@@ -64,8 +64,27 @@ and its tests; a Monte Carlo p counted with the observed value in it, so it is
 never zero; a record of what every check saw, written before each resolution,
 pass or fail; one module that draws every null, so a correction is made once;
 the engine identified by a hash of everything a measurement imports, with
-dirty or unknown code refused; an exclusive lock on every append. Release
-2.0.0 changes what the guards judge, by ADR, for records made after it.
+dirty or unknown code refused; an exclusive lock on every append.
+
+Release 2.0.0 changed what the guards judge, by ADR, for records made after
+it. The null is drawn by calendar day at the winner's count, and must pass by
+the bootstrap and by a date-clustered standard error (ADR-0048). The fifth
+check compares with a passive alternative that takes the winner's own side
+mix (ADR-0049). The floor is cleared by a lower confidence bound, and power
+is planned against an alternative declared at registration (ADR-0050). The
+plateau is judged in standard errors, without the winner in its own median
+(ADR-0051). Measured over 200 seeds, every guard is within tolerance of its
+declared rate at 0.01, where every question ran; one is over at 0.05 in one
+world, and the README names it as open.
+
+The same release read the six questions again under those rules, each first
+recreated exactly from the commit its record stamps. Under them the four
+nulls would be null or refused sooner, and Q2-001 would be null: its floor
+and its fifth check refuse. Those readings are diagnostics, kept in
+`register/diagnostics.jsonl` and written out in
+[the re-score](RESCORE-2026-10.md). They are not verdicts. No Register
+gained or lost a record, no outcome changed, and the closing statement is
+the bytes the author adopted.
 
 ## Reading the evidence yourself
 
