@@ -50,7 +50,9 @@ def test_only_beats_null_fails():
                           years=10, trades_per_group_year=1.0, sigma_r=1.2, cost_in_r=0.05,
                           effect=synthetic.flat(0.2), null_draws=4000)
     assert m.winner.ev >= 0.15
-    m = replace(m, baseline_ev=tuple(x - 0.5 for x in m.baseline_ev))   # the passive alternative is far below: only the coin-flip null refuses
+    # the passive alternative is far below — its draws and the reference they were drawn about — so only the coin-flip null refuses
+    m = replace(m, baseline_ev=tuple(x - 0.5 for x in m.baseline_ev),
+                baseline_stats=tuple({**dict(m.baseline_stats), "reference": dict(m.baseline_stats)["reference"] - 0.5}.items()))
     assert fired(m, h) == {"beats-null"}
     assert "random entry" in beats_null.check(m, h.power_plan, 1).reason
 
@@ -85,7 +87,7 @@ def test_only_beats_always_long_fails():
     matched = replace(m, baseline_ev=tuple(x + 0.35 for x in m.null_ev))
     assert fired(matched, hyp()) == {"beats-always-long"}
     r = beats_always_long.check(matched, hyp().power_plan, 9)
-    assert "being long at the same geometry and gate does as well" in r.reason and r.evidence["baseline_mean"] > 0.25
+    assert "the passive alternative at the same geometry, gate and side mix does as well" in r.reason and r.evidence["baseline_mean"] > 0.25
     # a distribution the engine did not supply, or too thin for the corrected alpha, is refused — never passed
     assert "too thin" in beats_always_long.check(replace(m, baseline_ev=()), hyp().power_plan, 9).reason
     assert "too thin" in beats_always_long.check(replace(m, baseline_ev=m.baseline_ev[:100]), hyp().power_plan, 9).reason

@@ -51,14 +51,7 @@ def exceedance(dist: Iterable[float], value: float, alpha_corrected: float) -> t
     return ("pass" if p <= alpha_corrected else "refuse"), p, need
 
 
-# ---- how a distribution is drawn -------------------------------------------------------------------
-
-def resampled_means(x: np.ndarray, *, n: int, draws: int, seed: int) -> tuple[float, ...]:
-    """``draws`` means of ``n`` outcomes drawn independently with replacement."""
-    rng = np.random.default_rng([int(seed), 11])
-    idx = rng.integers(0, x.size, size=(draws, n))
-    return tuple(float(v) for v in x[idx].mean(axis=1))
-
+# ---- the moving-block bootstrap of a mean (M9.2), and the vendored block length ------------------------
 
 def block_bootstrap_means(x: np.ndarray, *, block: int, draws: int, seed: int) -> np.ndarray:
     """Moving-block bootstrap of the mean (M9.2). Blocks of ``block``
@@ -189,7 +182,7 @@ def compare_by_day(calendar, *, winner, reference, hold: int, draws: int, seed: 
         return DayComparison(int(round(nw)), t_obs, mr, 0.0, se_cluster, block, days_n, tuple([mr] * int(draws)))
     rng = np.random.default_rng([int(seed), int(stream)])
     t_star = np.empty(int(draws))
-    chunk = max(1, min(int(draws), 2_000_000 // n_blocks))
+    chunk = max(1, min(int(draws), 200_000 // n_blocks))               # a few megabytes of working arrays, however many draws
     for lo in range(0, int(draws), chunk):
         starts = rng.integers(0, b_sw.size, size=(min(chunk, int(draws) - lo), n_blocks))
         r_sw, r_kw, r_sr, r_kr = b_sw[starts], b_kw[starts], b_sr[starts], b_kr[starts]

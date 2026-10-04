@@ -14,14 +14,14 @@ from __future__ import annotations
 import pytest
 
 from occams import calibrate
-from occams.calibrate import ALPHAS, ROWS, row, within
+from occams.calibrate import ROWS, row, within
 
 pytestmark = pytest.mark.calibration
 
 
-def _within(world: str, guard: str, alphas=ALPHAS) -> None:
+def _within(world: str, guard: str, alphas=None) -> None:
     r = row(world, guard)
-    for alpha in alphas:
+    for alpha in alphas or r.alphas:
         ok, got, bound = within(r, alpha)
         assert ok, f"{r.engine} {guard} on {r.world}: {got:.3f} at alpha {alpha}, tolerance {bound:.3f} over {r.seeds} seeds"
 
@@ -63,20 +63,32 @@ def test_position_boxed_null_holds_size_under_common_factor_at_005(world):
 
 
 def test_fifth_check_holds_size_for_a_long_entry_with_no_timing_skill():
-    """The fifth check's own control: on a rising market a long entry with no timing skill is refused as built."""
+    """The fifth check's own control: on a rising market a long entry with no timing skill is refused."""
     _within("day_boxed:updrift-rho0.5", "beats_always_long")
 
 
-@pytest.mark.xfail(strict=True, reason="M16.15 (ADR-0049): always-long is resampled at its own count, not the winner's, on the multi-day engine")
 def test_fifth_check_holds_size_on_empty_world_position_boxed():
+    """The fifth check's copy of F01: always-long was resampled at its own count, not the winner's — 0.055 and 0.165 as
+    built, within tolerance since M16.15 resamples winner and baseline together by calendar day (ADR-0049)."""
     _within("position_boxed:martingale-rho0.0", "beats_always_long")
 
 
-@pytest.mark.xfail(strict=True, reason="M16.15 (ADR-0049): the baseline is long on every box whatever the winner's side — "
-                                       "a coin flip beats it by being short half the time")
+def test_fifth_check_refuses_a_long_entry_with_no_skill_where_the_stop_binds():
+    """Where the stop bites a short harder than a long, a long entry with no skill is ahead of a coin's side — and
+    beats-null says so, one time in ten at 0.05. Refusing it is this check's work, and it does."""
+    _within("position_boxed:martingale-rho0.5", "beats_always_long")
+
+
 def test_fifth_check_refuses_coin_flip_on_drifting_paths():
-    """The review's F04: on a market that falls, a coin flip passes the check that is meant to attest the entry."""
+    """The review's F04: on a market that falls, a coin flip passed the check that is meant to attest the entry 96
+    times in 100, by being short half the time. Its baseline is now the coin's own expectation (ADR-0049)."""
     _within("day_boxed:downdrift-rho0.0:coin", "beats_always_long")
+
+
+def test_fifth_check_power_on_planted_reversal():
+    """And it still sees what is there: the signal control's planted reversal passes it at the control's own corrected
+    alpha at no less than the planned rate, less tolerance."""
+    _within("controls:signal", "beats_always_long")
 
 
 def test_every_row_of_the_table_is_a_test_here():

@@ -99,6 +99,11 @@ class Row:
     seeds: int
     planned: float = 0.0
     fixed_by: str = ""    # the M16 row that brings a known failure inside tolerance; "" when none is known
+    alpha: float | None = None   # a power row is read at the alpha its guard runs at; a size row at each of ALPHAS
+
+    @property
+    def alphas(self) -> tuple[float, ...]:
+        return ALPHAS if self.alpha is None else (self.alpha,)
 
 
 DOWN_DRIFT = -0.001       # log return a day: a market that falls, so being long loses and a coin's short half gains
@@ -112,6 +117,10 @@ def _measure(world: str, seed: int):
     from occams.engine import day_boxed, position_boxed
 
     engine, paths, *entry = world.split(":")
+    if engine == "controls":                      # the day-boxed control's own world, through the control's own sweep
+        from occams.controls import _day_boxed_measurement, load_controls
+
+        return _day_boxed_measurement(paths, load_controls(), seed, None, None, None)[1]
     rho = 0.5 if "rho0.5" in paths else 0.0
     drift = DOWN_DRIFT if "downdrift" in paths else UP_DRIFT if "updrift" in paths else None
     coin = Entry(EntryKind.COIN_FLIP, Side.LONG, (("seed", seed),)) if entry == ["coin"] else None
@@ -130,8 +139,8 @@ def p_values(task: tuple[str, int]) -> tuple[float, float]:
     world, seed = task
     m = _measure(world, seed)
     w = m.winner
-    # beats-null acts on the larger of its two p-values (ADR-0048 §5); the fifth check on its bootstrap's until M16.15
-    return guard_p(monte_carlo_p(m.null_ev, w.ev), m.null_stats, w), monte_carlo_p(m.baseline_ev, w.ev)
+    # each guard acts on the larger of its two p-values: the bootstrap's and the clustered standard error's (ADR-0048 §5)
+    return guard_p(monte_carlo_p(m.null_ev, w.ev), m.null_stats, w), guard_p(monte_carlo_p(m.baseline_ev, w.ev), m.baseline_stats, w)
 
 
 RESIDUAL = "an open residual at 0.05: ADR-0048, as built"
@@ -146,13 +155,18 @@ ROWS: tuple[Row, ...] = (
         "beats_null", "size", SIZE_SEEDS, fixed_by=RESIDUAL),
     Row("position_boxed:martingale-rho0.5", "position_boxed", "a martingale, names sharing a market, a stop that binds", "beats_null", "size",
         SIZE_SEEDS, fixed_by=RESIDUAL),
-    # beats-always-long: an entry that adds nothing over the passive alternative must pass at most at alpha
+    # the fifth check: an entry that adds nothing over the passive alternative at its own side mix must pass at most at alpha
     Row("day_boxed:updrift-rho0.5", "day_boxed", "an upward drift, names sharing a market; long with no timing skill",
         "beats_always_long", "size", SIZE_SEEDS),
     Row("position_boxed:martingale-rho0.0", "position_boxed", "a martingale, independent names; long with no skill",
-        "beats_always_long", "size", SIZE_SEEDS, fixed_by="M16.15"),
+        "beats_always_long", "size", SIZE_SEEDS),
+    Row("position_boxed:martingale-rho0.5", "position_boxed", "a martingale, names sharing a market, a stop that binds; long with no skill",
+        "beats_always_long", "size", SIZE_SEEDS),
     Row("day_boxed:downdrift-rho0.0:coin", "day_boxed", "a downward drift, entered by a coin flip: its short half is not skill",
-        "beats_always_long", "size", SIZE_SEEDS, fixed_by="M16.15"),
+        "beats_always_long", "size", SIZE_SEEDS),
+    # and it must still see what is there: the signal control's planted reversal, at the control's own corrected alpha
+    Row("controls:signal", "day_boxed", "the signal control's planted reversal", "beats_always_long", "power", POWER_SEEDS,
+        planned=0.80, alpha=0.05 / 9),
 )
 
 
@@ -225,7 +239,7 @@ def within(row: Row, alpha: float) -> tuple[bool, float, float]:
 def table() -> list[dict]:
     out = []
     for row in ROWS:
-        for alpha in ALPHAS:
+        for alpha in row.alphas:
             ok, got, bound = within(row, alpha)
             out.append({"engine": row.engine, "guard": row.guard, "world": row.world, "kind": row.kind, "alpha": alpha,
                         "measured": got, "bound": bound, "within": ok, "seeds": row.seeds, "fixed_by": row.fixed_by})
@@ -244,7 +258,7 @@ def main(argv: list[str] | None = None) -> int:
         known = r["fixed_by"]
         note = "" if r["within"] or not known else f"  ({known})" if known == RESIDUAL else f"  (a known defect: {known} fixes it)"
         out_of += 0 if r["within"] else 1
-        print(f"{r['engine']:15s} {r['guard']:18s} {r['alpha']:5.2f} {r['measured']:8.3f} {r['bound']:6.3f}  {mark:6s} "
+        print(f"{r['engine']:15s} {r['guard']:18s} {r['alpha']:5.3f} {r['measured']:8.3f} {r['bound']:6.3f}  {mark:6s} "
               f"{r['world']} [{r['seeds']} seeds]{note}")
     print(f"{len(rows) - out_of} of {len(rows)} rows within tolerance.")
     if "--save" in argv:

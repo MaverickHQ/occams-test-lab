@@ -215,7 +215,7 @@ NULL CONTROL [synthetic] — CONTROL-NULL, N = 1000 (required 837), winner EV = 
 REFUSED at MEASURED -> FORWARD, by:
   - beats-null: random entry under the same geometry does as well
   - floor: EV per trade in net R is below the declared floor
-  - beats-always-long: being long at the same geometry and gate does as well
+  - beats-always-long: the passive alternative at the same geometry, gate and side mix does as well
 checks that passed: ['plateau', 'leave_one_out']
 
 SIGNAL CONTROL [synthetic] — CONTROL-SIGNAL, N = 1000 (required 837), winner EV = +0.1583 net R

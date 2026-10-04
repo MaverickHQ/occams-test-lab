@@ -142,7 +142,16 @@ must pass:
    `Measurement` carries the distribution beside the null's. A supported
    verdict attests the entry, not the gate and the side *(ADR-0043, from
    2026-09-17; verdicts before it were evaluated against the four above and
-   say so)*.
+   say so)*. *Since ADR-0049 (2026-10-03): the passive alternative takes the
+   winner's own side mix — always-long for a long-only entry, the coin's own
+   expectation for a coin, which had been passing this check on a falling
+   market by being short half the time — and winner and baseline are
+   resampled together by calendar day at the winner's count, as in check 2.
+   The margin is recorded in two parts: selection, the passive outcome on the
+   boxes the winner chose less the passive outcome on every admitted box; and
+   execution, the winner's outcome less the passive outcome on the same
+   boxes, which is nil for a market entry. The surface the sweep optimises
+   is measured against the same baseline.*
 
 **The objective changes.** `search.py` optimises `p_pass` and its gates are
 thresholds on it; here the surface is EV in net R — and, since ADR-0045

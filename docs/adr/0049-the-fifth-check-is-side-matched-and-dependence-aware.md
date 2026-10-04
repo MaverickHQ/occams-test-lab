@@ -60,3 +60,56 @@ and a long-only entry the check fires at 0.065 against a declared 0.01.
 - **Resample the passive pool with the winner's clustering**, as the review
   proposes. Rejected for ADR-0048's reasons: a pool cannot reproduce
   positions that overlap across neighbouring entry days.
+
+## As built (M16.15, 2026-10-04)
+
+**One helper gives the baseline everywhere.** `probes.baseline_of` runs the
+long passive probe for a cell, and the short one only when the cell holds a
+short trade; the engines' sweeps, the definition surface shown before alpha
+moves and the survey's readiness all take the baseline from it, so the
+surface and the guard cannot hold two numbers. A long-only cell's baseline
+is always-long, number for number: every cell of every long-only world in
+`tests/test_probes_unchanged.py` is what it was.
+
+**The comparison is ADR-0048's.** The winner and its side-matched baseline
+are summed by calendar day and resampled together, studentised, at the
+winner's count; the clustered standard error is read beside it and the
+check passes only when both agree. A baseline drawn at any other count is
+refused.
+
+**What the size table reads** (200 seeds a row, the fifth check alone, at a
+declared 0.01 and 0.05; tolerance 0.026 and 0.086):
+
+| World | As built | Now |
+|---|---|---|
+| day-boxed, a rising shared market; long, no timing skill | 0.015, 0.060 | 0.000, 0.020 |
+| multi-day, a martingale; long, no skill | 0.055, 0.165 | 0.005, 0.040 |
+| multi-day, a shared market, a stop that binds; long, no skill | — | 0.000, 0.060 |
+| day-boxed, a falling market, entered by a coin flip | 0.960, 0.985 | 0.010, 0.035 |
+
+Every row is inside tolerance at both rates. The third is the world where
+beats-null lets a long entry with no skill through one time in ten at 0.05
+(ADR-0048, *As built*): the stop bites a short harder there, so being long
+is ahead of a coin. This check is the one that refuses it.
+
+**It still sees what is there.** The signal control's planted reversal
+passes the fifth check in 100 of 100 seeds at the control's corrected alpha
+of 0.05 / 9, against a planned 0.80.
+
+**S3 changed once, as §Consequences said.** `make null --engine=day_boxed`
+is refused by beats-null, the floor and beats-always-long, and passes the
+plateau and leave-one-out. `make signal` is accepted on both engines.
+
+**Execution is simulated only where it can differ.** For a market entry it
+is nil by construction and nothing is run. For a resting order the passive
+market entry is simulated on each of the winner's boxes, same side, and the
+difference averaged; selection is the margin less that.
+
+**The refusal reads as it judges:** *the passive alternative at the same
+geometry, gate and side mix does as well*. Records made before this say
+*being long at the same geometry and gate does as well*, and stand.
+
+**The survey's readiness uses the guard's comparison** at the cell's own
+count, on the cell's trades re-run now. It still tests each candidate alone:
+twenty candidates are the best of thousands of cells, and nothing corrects
+for that here (the review's F08; the successor lab's).

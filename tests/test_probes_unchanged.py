@@ -18,6 +18,13 @@ every winner, every always-long distribution and the survey's readiness rows are
 they were. The null's spread is what moved: 0.0074 to 0.0131 on the day-boxed world whose
 names share a market and 0.0096 to 0.0281 on the multi-day one — and within a few per cent
 of what it was on the three worlds whose names are independent, where the old null was right.
+
+**M16.15 (ADR-0049) replaced the fifth check's fingerprints.** The always-long distribution
+is now the winner against its side-matched baseline, resampled together by calendar day:
+its draws moved on every world. On the three long-only worlds every cell is the number it
+was — a long-only cell's side-matched baseline *is* always-long — and so is the null. On the
+two worlds entered by a coin every cell's baseline moved, to the coin's own expectation, and
+on the null control so did the winner the margin picks.
 """
 
 from __future__ import annotations

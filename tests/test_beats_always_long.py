@@ -32,7 +32,7 @@ def test_a_signal_that_only_rides_the_drift_is_refused_by_name(tmp_path):
     assert v.refusals[0] == "leave-one-out: the pooled score is not positive; leave-one-out has nothing to preserve"
     assert v.checks == forward.CHECKS
     rec = [r for r in reg.records() if r["type"] == "HypothesisResolved"][-1]
-    assert tuple(rec["checks"]) == forward.CHECKS and rec["refusals"][-1].startswith("beats-always-long: being long")
+    assert tuple(rec["checks"]) == forward.CHECKS and rec["refusals"][-1].startswith("beats-always-long: the passive alternative")
     assert rec["surface"] == "margin" and m.surface == "margin"                                  # ADR-0045: the record names its surface
     ev = [r for r in reg.records() if r["type"] == "RefusalRecorded"][-1]["evidence"]
     assert ev["p_baseline"] > ev["alpha_corrected"] and "baseline_mean" in ev

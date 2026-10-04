@@ -26,7 +26,7 @@ from occams.engine.regime_gate import admits, check_gate
 from occams.data.actions import ActionSeries, rebase
 from occams.engine import probes
 from occams.engine.common import cost as _cost, on_basis as _on_basis
-from occams.engine.day_boxed import (NO_ACTIONS, Missed, TradeRecord, Trades, baseline_summary, limit_through_the_open,
+from occams.engine.day_boxed import (NO_ACTIONS, Missed, TradeRecord, Trades, limit_through_the_open,
                                      signal, stop_distance)
 from occams.inference import block_bootstrap_means, block_length  # noqa: F401 — the names this module has always offered
 from occams.data.bars import Bars
@@ -178,17 +178,6 @@ def always_long_trades(compiled: CompiledStrategy, bars_by_name: dict[str, Bars]
                           regime=regime)
 
 
-def baseline_distribution_of(trades, *, draws: int, seed: int) -> tuple[float, ...]:
-    """ADR-0043: always-long's positions in time order, block bootstrap over them."""
-    return _distribution(probes.passive_distribution, NAME, trades, n_trades=len(trades), draws=draws, seed=seed)
-
-
-def baseline_distribution(compiled: CompiledStrategy, bars_by_name: dict[str, Bars], *, draws: int, seed: int,
-                          cost_in_r: float, actions: ActionSeries = NO_ACTIONS, costs=None, regime=None) -> tuple[float, ...]:
-    return baseline_distribution_of(always_long_trades(compiled, bars_by_name, seed=seed, cost_in_r=cost_in_r, actions=actions,
-                                                       costs=costs, regime=regime), draws=draws, seed=seed)
-
-
 def measure(template: StrategySpec, axes: dict[str, list[float]],
             cell_spec: Callable[[StrategySpec, dict[str, float]], StrategySpec],
             bars_by_name: dict[str, Bars], *, seed: int, cost_in_r: float, null_draws: int,
@@ -198,31 +187,28 @@ def measure(template: StrategySpec, axes: dict[str, list[float]],
     names = list(axes)
     years = max(b.days for b in bars_by_name.values()) / 252.0
     cells: list[Cell] = []
-    compiled_by_idx: dict[tuple[int, ...], CompiledStrategy] = {}
-    passive: dict[tuple[int, ...], object] = {}
+    kept: dict[tuple[int, ...], tuple] = {}
+    kw = dict(cost_in_r=cost_in_r, actions=actions, costs=costs, regime=regime)
     for idx in product(*(range(len(axes[a])) for a in names)):
         params = {a: float(axes[a][i]) for a, i in zip(names, idx, strict=True)}
         c = to_engine(cell_spec(template, params))
-        trades = run(c, bars_by_name, seed=seed, cost_in_r=cost_in_r, actions=actions, costs=costs, regime=regime)
-        probe = always_long_trades(c, bars_by_name, seed=seed, cost_in_r=cost_in_r, actions=actions, costs=costs, regime=regime)
-        base_ev, base_by = baseline_summary(probe)                                                           # ADR-0045
-        cells.append(Cell(tuple(idx), tuple(sorted(params.items())), tuple(t.as_trade() for t in trades),
-                          spec_hash=c.spec_hash, baseline_ev=base_ev, baseline_by_group=base_by))
-        compiled_by_idx[tuple(idx)] = c
-        passive[tuple(idx)] = probe
+        trades = run(c, bars_by_name, seed=seed, **kw)
+        base = probes.baseline_of(c, bars_by_name, trades, seed=seed, **kw)                                    # ADR-0045, ADR-0049
+        cells.append(Cell(tuple(idx), tuple(sorted(params.items())), tuple(t.as_trade() for t in trades), spec_hash=c.spec_hash,
+                          baseline_ev=base.ev, baseline_by_group=base.by_group, baseline_rule=probes.SIDE_MATCHED, long_share=base.share))
+        kept[tuple(idx)] = (c, trades, base)
     if not any(c.trades for c in cells):
         raise EngineRefusal("the sweep traded nothing in every cell — an instrument failure, never a verdict")
     winner = Measurement(spec_hash="", engine=NAME, engine_sha="", seed=seed, partition=partition, years=years,
                          cells=tuple(cells), null_ev=()).winner                                                 # the surface's winner
-    longs = passive[winner.indices]
-    shorts = probes.passive(compiled_by_idx[winner.indices], bars_by_name, side=Side.SHORT, seed=seed, cost_in_r=cost_in_r,
-                            actions=actions, costs=costs, regime=regime)
-    against = _distribution(probes.against_random_entry, compiled_by_idx[winner.indices], bars_by_name, winner.trades, longs=longs,
-                            shorts=shorts, draws=null_draws, seed=seed)                                         # ADR-0048
-    baseline = baseline_distribution_of(passive[winner.indices], draws=null_draws, seed=seed)                     # ADR-0043
-    any_compiled = next(iter(compiled_by_idx.values()))
-    return Measurement(spec_hash=template.hash, engine=NAME, engine_sha=any_compiled.engine_sha, seed=seed,
+    compiled, records, base = kept[winner.indices]
+    shorts = base.shorts if base.shorts is not None else probes.passive(compiled, bars_by_name, side=Side.SHORT, seed=seed, **kw)
+    against = _distribution(probes.against_random_entry, compiled, bars_by_name, records, longs=base.longs, shorts=shorts,
+                            draws=null_draws, seed=seed)                                                        # ADR-0048
+    baseline, baseline_n, baseline_stats = _distribution(probes.fifth_check, compiled, bars_by_name, records, base, draws=null_draws,
+                                                         seed=seed, **kw)                                      # ADR-0043, ADR-0049
+    return Measurement(spec_hash=template.hash, engine=NAME, engine_sha=compiled.engine_sha, seed=seed,
                        partition=partition, years=years, cells=tuple(cells), null_ev=against.draws,
                        partition_bounds=partition_bounds, split=split,
                        cost_basis=(costs.basis if costs is not None else "declared"), baseline_ev=baseline,
-                       null_n=against.n, null_stats=against.stats(), baseline_n=len(longs))
+                       null_n=against.n, null_stats=against.stats(), baseline_n=baseline_n, baseline_stats=baseline_stats)

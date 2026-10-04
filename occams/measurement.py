@@ -45,6 +45,10 @@ class Cell:
     spec_hash: str | None = None  # the cell's own spec (M3); the winner's is what a Verdict freezes
     baseline_ev: float | None = None                                  # always-long at this geometry and gate, net R per trade (ADR-0045)
     baseline_by_group: tuple[tuple[str, float, int], ...] = ()        # (group, always-long EV, trades) — for leave-one-out on the margin
+    # ADR-0049: the passive alternative takes the cell's own side mix — "side_matched" — and for a long-only cell that is
+    # always-long, as before; a cell measured before the rule reads "always_long"
+    baseline_rule: str = "always_long"
+    long_share: float | None = None                                   # the share of the cell's trades that are long
 
     @property
     def margin(self) -> float | None:

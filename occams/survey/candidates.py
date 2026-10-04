@@ -353,20 +353,22 @@ def question_from_cell(row: dict, fam: Family, *, qid: str, index: dict, record:
 
 def fifth_check_readiness(cands: list[dict], index: dict, *, archive, register, cfg, seed: int, draws: int = 4000) -> list[dict]:
     """What the fifth check would say of each candidate on the definition
-    partition, at zero alpha (D13): always-long at the cell's geometry and
-    gate, run now on the current engine; the Monte Carlo the guard uses —
-    the block bootstrap of its positions in time order, or the long box
-    outcomes resampled with the cell's trade count — and the cell's EV
-    against it at the axis's corrected alpha; and the margin over
+    partition, at zero alpha (D13): the cell's trades and always-long at the
+    cell's geometry and gate, both run now on the current engine; the
+    comparison the guard makes — the two resampled together by calendar day
+    at the cell's own count, with the clustered standard error beside it
+    (ADR-0048, ADR-0049) — at the axis's corrected alpha; and the margin over
     always-long in each definition era, which the survey's tiers pooled.
     A screen is not a verdict; this is the gate shown passable, or not,
-    before alpha moves."""
+    before alpha moves. It tests each candidate alone: twenty candidates are
+    the best of thousands of cells, and nothing here corrects for that.
 
-
+    """
     from occams.costs.equity import EquityCosts, InstrumentClass
     from occams.data.partitions import Partitions
     from occams.engine import probes
     from occams.engine.regime_gate import RegimeContext
+    from occams.measurement import Cell as MeasuredCell
     from occams.proposers.regime import frozen
     from occams.spec.compile import to_engine
     from occams.survey.grid import Cell
@@ -398,10 +400,25 @@ def fifth_check_readiness(cands: list[dict], index: dict, *, archive, register, 
         eras_margin = [(a - b) if a is not None and b is not None else None for a, b in zip(eras_cell, eras_base, strict=False)]
         alpha_c = float(cfg.alpha.axes[InformationAxis(row["axis"])].mechanism_test_alpha)
         ev = float(row["ev_net"])
-        # M16.9: the engine's own always-long distribution and the guard's own test — neither re-implemented here
-        dist = probes.passive_distribution(engine.NAME, trades, n_trades=max(int(row["trades"]), 1), draws=draws, seed=seed) if net else ()
-        verdict, p_b, need = inference.exceedance(dist, ev, alpha_c)
+        # M16.9, M16.15: the guard's own comparison and the guard's own test, neither re-implemented here — the cell's trades,
+        # re-run now, against the passive alternative at their side mix, resampled together by calendar day (ADR-0048, ADR-0049)
+        compiled = to_engine(spec)
+        cell_trades = engine.run(compiled, world.definition, seed=seed, actions=world.actions, costs=costs, regime=regime)
+        ev_now = _mean(t.net_r for t in cell_trades)
+        share = probes.long_share(cell_trades)
+        base = (probes.Baseline(base_now, (), 1.0, tuple(trades), None) if share >= 1.0 else
+                probes.baseline_of(compiled, world.definition, cell_trades, seed=seed, cost_in_r=0.0, actions=world.actions, costs=costs,
+                                   regime=regime))
+        dist, p_b, verdict, need = (), None, "thin", inference.draws_needed(alpha_c)
+        if net and cell_trades:
+            cmp = probes.against_passive(compiled, world.definition, cell_trades, base, draws=draws, seed=seed)
+            dist = cmp.draws
+            state, p_mc, need = inference.exceedance(dist, ev_now, alpha_c)
+            if state != "thin":
+                p_b = inference.guard_p(p_mc, cmp.stats(), MeasuredCell((0,), (), tuple(t.as_trade() for t in cell_trades)))
+                verdict = "pass" if p_b <= alpha_c else "refuse"
         out.append({"cell": row["cell"], "universe": fam.universe, "tier": c["tier"], "family": fam.describe(), "ev_net": ev,
+                    "ev_now": ev_now, "trades_now": len(cell_trades), "long_share": share,
                     "baseline_survey": row.get("baseline_ev_net"), "baseline_now": base_now, "baseline_trades_now": len(trades),
                     "margin_now": (ev - base_now) if base_now is not None else None, "p_baseline": p_b, "alpha_corrected": alpha_c,
                     "draws": len(dist), "needed": need, "fifth_check": verdict, "eras_cell": eras_cell, "eras_baseline": eras_base,
@@ -435,8 +452,10 @@ def readiness_document(rows: list[dict], index: dict, record: dict, *, register,
             f"**Dated {__import__('datetime').date.today().isoformat()}. Zero alpha; the definition partition only (D13); nothing here is a verdict.** "
             f"Survey record #{record['seq']}, {_n(index['cell_count'])} cells screened, results `{index['results_sha'][:12]}`; "
             f"always-long re-run now on engine `{engine_code_sha()}` (the survey's screen was {screened_on}); "
-            f"{_n(draws)} draws, seed {seed}. *Fifth check* is ADR-0043's test as the guard would apply it here: the cell's EV "
-            f"against a Monte Carlo of always-long at the same geometry and gate, at the axis's corrected alpha. *Margin by era* is "
+            f"{_n(draws)} draws, seed {seed}. *Fifth check* is ADR-0043's test as the guard would apply it here: the cell's trades "
+            f"against the passive alternative at the same geometry, gate and side mix, resampled together by calendar day, at the axis's "
+            f"corrected alpha (ADR-0048, ADR-0049). It tests each candidate alone and corrects nothing for their being the best of "
+            f"{_n(index['cell_count'])} cells. *Margin by era* is "
             f"the cell's EV less always-long's in each third of the definition partition, oldest first — the survey's tiers pooled these.", ""]
     if priors:
         head.append("**Measured priors** — every question registered from a survey and resolved, screen beside measurement (M12.6), "

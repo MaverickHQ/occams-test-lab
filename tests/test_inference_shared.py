@@ -42,7 +42,7 @@ def test_survey_and_guard_share_fifth_check(tmp_path, monkeypatch):
     cands = candidates(index, grid, budget=AlphaBudget(cfg, reg, config_sha=config_sha(cfg)))
     rows = fifth_check_readiness(cands, index, archive=a, register=reg, cfg=cfg, seed=7, draws=600)
     assert rows and len(seen) == len(rows)
-    assert [(n, ev, alpha) for n, ev, alpha in seen] == [(r["draws"], r["ev_net"], r["alpha_corrected"]) for r in rows]
+    assert [(n, ev, alpha) for n, ev, alpha in seen] == [(r["draws"], r["ev_now"], r["alpha_corrected"]) for r in rows]
     m, plan = measure(synthetic.flat(0.35)), PowerPlan(1.2, 0.05, 0.8, 1000)
     del seen[:]
     assert beats_always_long.evaluate(m, plan, 9)[0] is None and beats_null.evaluate(m, plan, 9)[0] is None
@@ -85,5 +85,5 @@ def test_the_engines_and_the_survey_draw_through_the_shared_modules():
         assert "default_rng" not in source.replace("np.random.default_rng([int(seed), zlib.crc32", ""), rel   # the coin's own stream stays
         assert ">= w.ev" not in source and "/ len(dist)" not in source.replace("sum(dist) / len(dist)", ""), rel
     probes = (ROOT / "occams/engine/probes.py").read_text(encoding="utf-8")
-    assert "inference.compare_by_day" in probes                      # beats-null, since M16.14 (ADR-0048)
-    assert "inference.block_bootstrap_means" in probes and "inference.resampled_means" in probes   # the fifth check, until M16.15
+    assert probes.count("inference.compare_by_day") == 2            # beats-null (M16.14, ADR-0048) and the fifth check (M16.15, ADR-0049)
+    assert "block_bootstrap_means" not in probes and "default_rng" not in probes   # no passive pool is resampled on its own any more

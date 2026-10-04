@@ -407,7 +407,7 @@ def definition_surface(template, sweep, definition_bars, *, ctx, seed: int) -> l
     from itertools import product
 
     from occams.engine import day_boxed, position_boxed
-    from occams.engine.day_boxed import baseline_summary
+    from occams.engine import probes
     from occams.question import apply_cell
     from occams.spec.compile import to_engine
     from occams.spec.spec import Horizon
@@ -419,7 +419,7 @@ def definition_surface(template, sweep, definition_bars, *, ctx, seed: int) -> l
         params = dict(zip(axes, values, strict=True))
         c = to_engine(apply_cell(template, params))
         trades = engine.run(c, definition_bars, seed=seed, regime=ctx, audit_fills=False)
-        base_ev, _by = baseline_summary(engine.always_long_trades(c, definition_bars, seed=seed, cost_in_r=0.0, regime=ctx))
+        base_ev = probes.baseline_of(c, definition_bars, trades, seed=seed, cost_in_r=0.0, regime=ctx).ev     # side-matched (ADR-0049)
         if not trades or base_ev is None:
             continue
         ev = sum(t.net_r for t in trades) / len(trades)
