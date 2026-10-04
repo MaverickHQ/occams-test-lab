@@ -2,9 +2,11 @@
 
 **State:** published and public (`MaverickHQ/occams-test-lab`, pages at
 `https://maverickhq.github.io/occams-test-lab/`). Three programmes are run,
-stopped by record and concluded; M0–M15 are closed. **M16 is open**: an
-external review of the inference, verified by rerun, fixed in three releases —
-1.0.1 and 1.1.0 (released), 2.0.0. `TASKS-v4.md` holds every row, its *Rules of
+stopped by record and concluded; **M0–M16 are closed**. M16 fixed an external
+review of the inference in three releases — 1.0.1, 1.1.0, 2.0.0 — and
+re-scored the six questions as diagnostics, never verdicts
+(`register/diagnostics.jsonl`, `docs/RESCORE-2026-10.md`). One residual is
+open (ADR-0048, *As built*). `TASKS-v4.md` holds every row, its *Rules of
 the run*, and the dated status log: read the last entries before any change.
 This file's long form, as it stood before M16.12, is `git show b838479:CLAUDE.md`.
 
