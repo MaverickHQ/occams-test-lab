@@ -4,6 +4,12 @@
 # repository whenever it changes. The attestation dates the pin, not the past.
 
 [[store]]
+path = "register/diagnostics.jsonl"
+count = 6
+head = "b64adb55f687c1f4b40a6588ef83f7cb2952067c4692a2f4282050965d32f90d"
+pinned_at = "2026-10-04T21:20:12.780552+00:00"
+
+[[store]]
 path = "register/programme-2-queue.jsonl"
 count = 2
 head = "a1c2f0c2ea4bf503bae8c19c75faee2fad139e543700ba39ba5aea9ab1e83525"

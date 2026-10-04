@@ -59,7 +59,8 @@ jobs:
       - name: Publication gate, the whole tree (M15.3)
         # Every committed text file: broker terms, money figures, private paths, e-mail shapes, account ids.
         # A hit is removed or kept by a recorded decision; an unresolved one fails the run.
-        run: python tools/prepublish.py --all | tail -3
+        # Not piped: a pipe would hand the step the exit status of the last command in it, and an unresolved hit would pass.
+        run: python tools/prepublish.py --all
 
   # M15.4 — the setup path on a clean machine: a fresh runner is one. `make setup`,
   # the skeleton from `init`, then the configuration filled with the TEST FIXTURE's

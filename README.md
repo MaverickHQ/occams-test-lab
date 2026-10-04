@@ -113,56 +113,59 @@ says so in its own words.
 ## Known limitations of the guards
 
 An external review on 2026-10-03 found the guards looser than this page
-claims, and every claim it made was rerun and confirmed before anything was
+claimed, and every claim it made was rerun and confirmed before anything was
 changed ([the review](docs/reviews/2026-10-03-inference-review.md),
 [the verification](docs/reviews/2026-10-03-inference-review-verification.md)).
-Each finding errs toward a false positive, so no null verdict is at risk
-from it; the one supported verdict is where it bites.
+Each finding erred toward a false positive, so no null verdict was at risk
+from it; the one supported verdict is where it bit. Three releases followed.
+What was fixed binds from the next registration and re-judges nothing; what
+the corrected rules would have said of the six questions is written beside
+the record ([the re-score](docs/RESCORE-2026-10.md)), never in its place.
 
-| What was found | Measured on this code | Where it is fixed |
+| What was found | Measured as it stood | Now |
 |---|---|---|
-| The multi-day engine's null is resampled at the pool's size, not the winner's | 0.140 false positives at a declared 0.01, on a world with no effect | 2.0.0, ADR-0048 |
-| Both engines' nulls treat trades that share a date as independent | 0.093 at a declared 0.01 when the names share a market | 2.0.0, ADR-0048 |
-| The fifth check compares with always-long whatever side the winner took | a coin flip passes it on the day-boxed null control | 2.0.0, ADR-0049 |
-| The floor is cleared by the winner's point estimate | an effect exactly at the floor passes about half the time | 2.0.0, ADR-0050 |
-| Power is planned at one cell's dispersion while any cell may win | Q2-001 planned at 2.22 R and won where its sibling measures 4.09 R | 2.0.0, ADR-0050 |
-| The plateau keeps the winner in its own median, with a slack in absolute R | — | 2.0.0, ADR-0051 |
-| The Register's chain carries no key | a forged and re-chained copy verifies; so does a truncated one | 1.0.1, ADR-0054: the heads are pinned and attested |
-| The engine is identified by a commit that can read `-dirty` and a hand-kept file list | every programme 2 verdict reads `-dirty` | **fixed in 1.1.0**, ADR-0055: the content hash covers everything a measurement imports, only code can make the tree dirty, and dirty or unknown code does not measure |
-| The controls show that a coin flip is refused once, not how often a guard errs | — | **built in 1.1.0**: `make calibrate`, the table below |
-| A Monte Carlo p left out the observed value, and a check that passed recorded nothing | a readiness table printed `0.0000` | **fixed in 1.1.0**: p counted plus one; every resolution records what each of the five checks saw |
+| The multi-day engine's null was resampled at the pool's size, not the winner's | 0.130 false positives at a declared 0.01, on a world with no effect | **fixed in 2.0.0**, ADR-0048: 0.010 |
+| Both engines' nulls treated trades that share a date as independent | 0.095 at a declared 0.01 when the names share a market | **fixed in 2.0.0**, ADR-0048: winner and reference are resampled together by calendar day; 0.010 |
+| The fifth check compared with always-long whatever side the winner took | a coin flip on a falling market passed it 96 times in 100 | **fixed in 2.0.0**, ADR-0049: the baseline takes the winner's side mix; 1 time in 100 |
+| The floor was cleared by the winner's point estimate | an EV exactly at the floor passed about half the time | **fixed in 2.0.0**, ADR-0050: a lower confidence bound; 1 time in 100 at a declared 0.01 |
+| Power was planned at one cell's dispersion while any cell may win | Q2-001 planned at 2.22 R and won where its sibling measures 4.09 R | **fixed in 2.0.0**, ADR-0050: planned at the widest cell, and a winner too dispersed for its count is refused |
+| The plateau kept the winner in its own median, with a slack in absolute R | — | **fixed in 2.0.0**, ADR-0051: the neighbours' median, and a declared slack in standard errors |
+| The Register's chain carries no key | a forged and re-chained copy verifies; so does a truncated one | **fixed in 1.0.1**, ADR-0054: the heads are pinned and attested |
+| The engine was identified by a commit that could read `-dirty` and a hand-kept file list | every programme 2 verdict reads `-dirty` | **fixed in 1.1.0**, ADR-0055: a content hash over everything a measurement imports; dirty or unknown code does not measure |
+| The controls showed that a coin flip is refused once, not how often a guard errs | — | **built in 1.1.0**: `make calibrate`, the table below |
+| A Monte Carlo p left out the observed value, and a check that passed recorded nothing | a readiness table printed `0.0000` | **fixed in 1.1.0**: p counted plus one; every resolution records what each check saw |
 | Append read the tail and then wrote, with nothing held between | two appenders could fork the chain | **fixed in 1.1.0**: an exclusive lock, and the verified records re-checked by a digest of their bytes |
-| The commits the verdicts stamp are not in this repository | by the publication decision | 2.0.0: their hashes, with the sources kept beside the private archive |
+| The commits the verdicts stamp are not in this repository | by the publication decision | **fixed in 2.0.0**, ADR-0055: `SOURCES.toml` names each by its tree and its content hash; the snapshots stay in the private archive, and a reproduction runs from one |
+| **Still open:** on names that share a market the multi-day engine's beats-null is on the edge of its tolerance at 0.05 | 0.340 as it stood; 0.095 to 0.100 now over the table's 200 seeds, 0.067 over a thousand; at its declared rate at 0.01, where every question ran | open, recorded in ADR-0048, *As built*: no block length closes it |
 | A survey's readiness table tests its own top twenty at an uncorrected alpha | twenty of twenty pass, in both surveys | not here: it needs every cell run again; the successor lab's |
 | A second look at one partition passes on a sentence, or on a change of axis | Q2-002 re-measured Q2-001's mechanism on the same days | not here: no registration runs in this lab again |
 | Each programme declares its own alpha total | 1.20 declared across three programmes, 0.55 spent | not here, for the same reason |
 | The single-name universes are today's members measured on earlier history | named on every universe record, never corrected | not here: data the declared budget does not buy |
 | Costs are a declared bound, never measured, and a stop fills at its level | — | not here: nothing trades (ADR-0044) |
 
-**How often each Monte Carlo guard errs, as release 1.1.0 measures it.**
-`make calibrate` runs each guard alone over 200 seeds on a world whose truth
-is known, and prints the rate at which it lets that world through beside the
-rate it declares. Release 1.1.0 changes no guard, so this is the lab as its
-verdicts were reached; release 2.0.0 is what brings the rows inside tolerance.
+**How often each guard errs, before and after.** `make calibrate` runs each
+guard alone over 200 seeds on a world whose truth is known, and prints the
+rate at which it lets that world through beside the rate it declares.
+Tolerance is the declared rate plus 2.33 standard errors: 0.026 and 0.086.
 
-| Engine | Guard | A world with nothing to find | Passed at a declared 0.01 | at 0.05 | |
-|---|---|---|---:|---:|---|
-| day-boxed | beats-null | a martingale, independent names | 0.005 | 0.030 | within tolerance |
-| day-boxed | beats-null | a martingale, names sharing a market | 0.095 | 0.200 | over |
-| multi-day | beats-null | a martingale, independent names | 0.130 | 0.210 | over |
-| multi-day | beats-null | a martingale, names sharing a market | 0.295 | 0.340 | over |
-| day-boxed | fifth check | a rising market; long, with no timing skill | 0.015 | 0.060 | within tolerance |
-| multi-day | fifth check | a martingale; long, with no skill | 0.055 | 0.165 | over |
-| day-boxed | fifth check | a falling market, entered by a coin flip | 0.960 | 0.985 | over |
+| Engine | Guard | A world with nothing to find | As it stood, at 0.01 and 0.05 | In 2.0.0 | |
+|---|---|---|---|---|---|
+| day-boxed | beats-null | a martingale, independent names | 0.005, 0.030 | 0.000, 0.035 | within |
+| day-boxed | beats-null | a martingale, names sharing a market | 0.095, 0.200 | 0.010, 0.045 | within |
+| multi-day | beats-null | a martingale, independent names | 0.130, 0.210 | 0.010, 0.040 | within |
+| multi-day | beats-null | a martingale, names sharing a market | 0.295, 0.340 | 0.010, 0.100 | within at 0.01; **over at 0.05** |
+| day-boxed | fifth check | a rising market; long, with no timing skill | 0.015, 0.060 | 0.000, 0.020 | within |
+| multi-day | fifth check | a martingale; long, with no skill | 0.055, 0.165 | 0.005, 0.040 | within |
+| day-boxed | fifth check | a falling market, entered by a coin flip | 0.960, 0.985 | 0.010, 0.035 | within |
+| the law | floor | the true EV exactly at the floor | about a half | 0.010, 0.065 | within |
 
-Tolerance is the declared rate plus 2.33 standard errors at 200 seeds: 0.026
-and 0.086. The rows over it are tests that are expected to fail, each naming
-the task that fixes it; the day one is fixed its test passes and the
-expectation must be removed.
-
-What the corrected rules would have said of each of the six questions is
-recorded beside the record, never in its place, as a diagnostic re-score
-(ADR-0047). The verdicts stand as reached.
+And what is there is still seen: with the true EV at a declared alternative
+and the count the plan asks for, the floor's bound is cleared 75 times in
+100 against a planned 80; across seeds the null control is accepted by all
+five checks 0 times in 200 on either engine, and the signal control 92 times
+in 100 on the synthetic law and 100 in 100 through the day-boxed engine.
+The row that is still over is a test that is expected to fail and names the
+ADR that records why; the day it is fixed, the expectation must be removed.
 
 ## What you get by cloning it
 

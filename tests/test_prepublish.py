@@ -131,3 +131,13 @@ def test_the_whole_tree_scan_reads_what_a_commit_would_add_not_only_what_is_trac
     names = sorted(p.name for p in pp.committed_text_files(tmp_path))
     assert names == ["new.py", "tracked.py"]
     assert "prepublish-all" in next(ln for ln in (ROOT / "Makefile").read_text().splitlines() if ln.startswith("check:"))
+
+
+def test_no_workflow_step_pipes_a_gate():
+    """2026-10-04: the whole-tree scan ran in CI as `… --all | tail -3`, and a pipe gives a step the exit status of its
+    last command. `e235147` held a shape the scan refuses and its CI run was green. A step that runs a gate is not piped."""
+    for wf in sorted((ROOT / ".github" / "workflows").glob("*.yml")):
+        for line in wf.read_text(encoding="utf-8").splitlines():
+            stripped = line.strip()
+            if stripped.startswith("run:") and ("prepublish" in stripped or "pytest" in stripped or "ruff" in stripped or "credscan" in stripped):
+                assert "|" not in stripped.split("#")[0], f"{wf.name}: {stripped}"

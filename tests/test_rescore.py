@@ -201,3 +201,52 @@ def test_a_failure_is_recorded_in_one_line_with_no_path_of_this_machine():
     said = reproduce.last_words(f"FileNotFoundError: no bars at {home}/private/archive/bars/SPY.json")
     assert home not in said and said == "FileNotFoundError: no bars at <path>"
     assert reproduce.last_words("") == "the child said nothing"
+
+
+# ---- the committed store ------------------------------------------------------------------------------
+
+SIX = {"Q-003": "register.jsonl", "Q-004": "register.jsonl", "Q-005": "register.jsonl", "Q2-001": "programme-2.jsonl",
+       "Q2-002": "programme-2.jsonl", "Q3-001": "programme-3.jsonl"}
+HEADS_AT_THE_CLOSING_STATEMENT = {"register.jsonl": "c2706a09716b", "programme-2.jsonl": "23cf22aa6586", "programme-3.jsonl": "e92fda14a7f1"}
+
+
+def test_the_committed_diagnostics_hold_one_record_for_each_of_the_six_questions():
+    store = Diagnostics(ROOT / "register" / "diagnostics.jsonl")
+    records = store.records()
+    assert store.verify() == 6 and {r["type"] for r in records} == {"Rescored"}
+    assert {r["hypothesis_id"]: r["register"] for r in records} == SIX                       # each question once, beside its own Register
+    assert len({(r["engine_sha"], r["engine_code_sha"]) for r in records}) == 1              # one commit and one content hash judged all six
+    for r in records:
+        chain = Register(ROOT / "register" / r["register"]).chain()
+        line = chain[r["annotates_seq"]]
+        assert line["sha"] == r["annotates_sha"]                                             # it annotates a record that is there, by its chain sha
+        assert line["payload"]["hypothesis_id"] == r["hypothesis_id"]
+        assert line["payload"]["type"] == ("RefusalRecorded" if r["recorded"]["outcome"] == "refused at measurement" else "HypothesisResolved")
+        assert r["rules"] == list(rescore.RULES)
+    by = {r["hypothesis_id"]: r for r in records}
+    # the five with a verdict were recreated exactly from their stamped sources, and then re-scored; the sixth stamps no engine
+    for qid in ("Q-003", "Q-004", "Q-005", "Q2-001", "Q2-002"):
+        r = by[qid]
+        assert r["reproduced"] and r["rescored"] and r["reproduction"]["measured"]["ev_net_r"] == pytest.approx(r["recorded"]["ev_net_r"], abs=1e-9)
+        assert r["reproduction"]["measured"]["n"] == r["recorded"]["n"] and len(r["checks"]) == 5
+        assert all(c["evidence"] for c in r["checks"]) and len(r["not_judged"]) == 2
+    assert not by["Q3-001"]["reproduced"] and by["Q3-001"]["reading"] == "not re-scored" and "stamps no engine" in by["Q3-001"]["reproduction"]["reason"]
+    # what the corrected rules would have said — recorded here so that a change to the store is a change to a test
+    assert {q: by[q]["reading"] for q in SIX} == {
+        "Q-003": "would be null", "Q-004": "would be null", "Q-005": "would be refused at measurement",
+        "Q2-001": "would be null", "Q2-002": "would be null", "Q3-001": "not re-scored"}
+    assert by["Q2-001"]["recorded"]["outcome"] == "supported" and by["Q2-001"]["refused_by"] == ["clears_floor", "beats_always_long"]
+    assert by["Q2-001"]["winner"]["is_the_recorded_winner"] is False and by["Q2-002"]["refused_by"] == ["clears_floor"]
+
+
+def test_the_rescore_moved_no_programme_register():
+    """ADR-0047: the record gains a second, smaller chain, and the three programme Registers' heads do not move."""
+    from occams.register import heads
+
+    pinned = {Path(e["path"]).name: e for e in heads.load()}
+    for name, head in HEADS_AT_THE_CLOSING_STATEMENT.items():
+        assert pinned[name]["head"].startswith(head) and head_of(ROOT / "register" / name)[1].startswith(head)
+    assert pinned["diagnostics.jsonl"]["count"] == 6 and heads.check() == []
+    verdicts = [r for name in HEADS_AT_THE_CLOSING_STATEMENT for r in Register(ROOT / "register" / name).records() if r["type"] == "HypothesisResolved"]
+    assert sorted((r["hypothesis_id"], r["outcome"]) for r in verdicts) == [
+        ("Q-003", "null"), ("Q-004", "null"), ("Q-005", "null"), ("Q2-001", "supported"), ("Q2-002", "null")]     # as reached, every one

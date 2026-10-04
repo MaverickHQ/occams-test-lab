@@ -27,6 +27,7 @@ jobs:
         run: pip install -e ".[dev]"
       - name: The table
         run: |
+          set -o pipefail      # the table's own exit status, not tee's
           {
             echo '```'
             python -m occams.calibrate --save build/calibration.json
