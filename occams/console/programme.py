@@ -20,7 +20,7 @@ import sys
 from pathlib import Path
 
 from occams.console.facts import AuthorView, Facts, Finding, gather
-from occams.console.render import CSS, _shrinkage_table, count, day, esc, num, pill, short
+from occams.console.render import CSS, _shrinkage_table, count, day, esc, num, pill, short, state_pill
 from occams.stopping import describe as describe_stop
 
 TITLE = "Occams · the programmes"
@@ -166,8 +166,33 @@ def _found(f: Facts, n: int) -> str:
                  + rows + '</table></div>')
     else:
         body += '<p class="note">No verdict yet.</p>'
+    body += _rescored_table(f)
     body += _shrinkage_table(f)
     return f'<h3 id="found-{n}">What did we find</h3>' + tiles_html + body
+
+
+def _rescored_table(f: Facts) -> str:
+    """M16.19 (ADR-0047): each question's diagnostic beside what the Register says of it — never in its place."""
+    from occams.rescored import one_line
+
+    marked = [fd for fd in f.findings if fd.rescored]
+    if not marked:
+        return ""
+    rows = ""
+    for fd in marked:
+        p = fd.rescored
+        v = fd.resolved                                                          # the pill the verdict table above gives the same record
+        recorded = pill("null" if v["outcome"] == "null" else "pass", v["outcome"]) if v else state_pill(fd.state)
+        again = "exactly" if p["reproduced"] else "no"
+        rows += (f'<tr><td class="mono">{esc(fd.id)}</td><td>{recorded}</td><td>{again}</td><td>{esc(one_line(p))}</td>'
+                 f'<td class="mono">#{esc(p["annotates_seq"])} {short(p["annotates_sha"])}</td></tr>')
+    return ('<h5>Re-scored under the corrected rules — a diagnostic beside each record, never a verdict</h5>'
+            '<p class="note">Every outcome above stands as it was reached. The rules that reached them were later found looser than they '
+            'claimed and were corrected, for records made after (ADR-0047). What those rules would have said of each question is in '
+            '<code>register/diagnostics.jsonl</code> and in <a href="RESCORE-2026-10.html">the re-score</a>: a question is first '
+            'recreated exactly from its stamped source, and only then judged again. It moves no falsifier and spends no alpha.</p>'
+            '<div class="wrap"><table><tr><th>Question</th><th>As recorded</th><th>Recreated first</th><th>Under the corrected rules</th>'
+            '<th>Annotates</th></tr>' + rows + '</table></div>')
 
 
 def _footer(progs: list[Facts]) -> str:

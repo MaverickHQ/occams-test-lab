@@ -25,6 +25,7 @@ from datetime import datetime, UTC
 from pathlib import Path
 
 from occams.register import Register
+from occams.rescored import beside
 
 CALENDAR_FLOOR = 600_000   # an archive day below this is a bar index, not a calendar ordinal (pre ADR-0005 fix)
 PAST_MEASURED = ("FORWARD", "APPROVED", "LIVE", "RETIRED")
@@ -69,6 +70,7 @@ class Finding:
     transitions: list[dict]
     depth: dict | None = None        # EraDecomposition (M12.6): the winner's eras, each held out, and its missed entries
     shrinkage: dict | None = None    # Shrinkage (M12.6): the survey cell's definition numbers beside the measured ones
+    rescored: dict | None = None     # Rescored (M16.19, ADR-0047): what the corrected rules would have said — beside the record, never a verdict
 
     @property
     def id(self) -> str:
@@ -220,7 +222,8 @@ def controls_hold(outcomes: list) -> bool:
     return all((not o.accepted) if o.kind.startswith("null") else o.accepted for o in outcomes)
 
 
-def _findings(records: list[dict]) -> list[Finding]:
+def _findings(records: list[dict], rescored: dict[str, dict] | None = None) -> list[Finding]:
+    rescored = rescored or {}
     by: dict[str, dict[str, list[dict]]] = defaultdict(lambda: defaultdict(list))
     for r in records:
         hid = r.get("hypothesis_id")
@@ -234,7 +237,7 @@ def _findings(records: list[dict]) -> list[Finding]:
         out.append(Finding(r, (g["AlphaSpent"] or [None])[-1], list(g["ObservationsConsumed"]),
                            (g["HypothesisMeasured"] or [None])[-1], (g["HypothesisResolved"] or [None])[-1],
                            (g["PathsArchived"] or [None])[-1], list(g["RefusalRecorded"]), list(g["StrategyTransitioned"]),
-                           (g["EraDecomposition"] or [None])[-1], (g["Shrinkage"] or [None])[-1]))
+                           (g["EraDecomposition"] or [None])[-1], (g["Shrinkage"] or [None])[-1], rescored.get(r["hypothesis_id"])))
     return out
 
 
@@ -269,7 +272,7 @@ def gather(register_path: Path, *, archive_dir: Path | None = None, author: Auth
         author=author,
         controls=outcomes,
         controls_ok=controls_hold(outcomes),
-        findings=_findings(records),
+        findings=_findings(records, beside(Path(register_path).parent / "diagnostics.jsonl", Path(register_path).name)),
         series=series,
         archive_present=present,
         classifier=frozen[-1] if frozen else None,

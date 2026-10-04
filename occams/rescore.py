@@ -230,6 +230,11 @@ def run(programmes, *, archive: Path, out: Diagnostics, null_draws: int = 4000, 
 
 
 def main(argv: list[str] | None = None) -> int:
+    argv = list(sys.argv[1:] if argv is None else argv)
+    if argv and argv[0] == "report":             # M16.19: the report, written from the diagnostics alone
+        from occams.rescored import main as report_main
+
+        return report_main(argv[1:])
     ap = argparse.ArgumentParser(prog="python -m occams rescore",
                                  description="what the corrected rules would have said, beside the record and never in its place (ADR-0047)")
     ap.add_argument("--archive", required=True, type=Path, help="the private archive: the licensed bars and the source snapshots")
@@ -237,7 +242,7 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--question", default=None, help="one question id; default: every question not yet re-scored")
     ap.add_argument("--out", type=Path, default=OUT)
     ap.add_argument("--null-draws", type=int, default=4000)
-    a = ap.parse_args(sys.argv[1:] if argv is None else argv)
+    a = ap.parse_args(argv)
     for reg, queue, config in a.programme:
         for label, p in (("register", reg), ("queue", queue), ("config", config)):
             if not Path(p).exists():

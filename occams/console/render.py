@@ -347,7 +347,42 @@ def _finding(fd: Finding) -> str:
     states = " → ".join(t["to_state"] for t in fd.transitions)
     if states:
         body += f'<p class="note">Strategy: SPECIFIED → {esc(states)}.</p>'
+    body += _rescored(fd)
     return f'<div class="card finding">{head}{body}</div>'
+
+
+def _rescored(fd: Finding) -> str:
+    """M16.19 (ADR-0047): what the corrected rules would have said, under the record and never in its place. The state
+    pill, the estimate and every row above are the Register's; this block is the diagnostics store's and says so."""
+    from occams.rescored import _check_line, one_line
+
+    p = fd.rescored
+    if not p:
+        return ""
+    md = lambda text: esc(text).replace("**", "")      # noqa: E731 — the report's sentences, without its emphasis marks
+    stands = (f'The verdict above stands as reached: <strong>{esc(fd.resolved["outcome"])}</strong>.' if fd.resolved else
+              "The record above stands as written: refused at measurement, unresolved.")
+    out = ('<h5>Re-scored under the corrected rules — a diagnostic, not a verdict</h5>'
+           f'<p class="note">{stands} The rules that judged it were later corrected, for records made after (ADR-0047). '
+           'This is what they would have said, from <code>register/diagnostics.jsonl</code>; it changes no outcome, no alpha '
+           'balance and no falsifier count. The whole reading is in <a href="RESCORE-2026-10.html">the re-score</a>.</p>')
+    rows = [("Reading", f'<strong>{esc(one_line(p))}</strong>')]
+    if p["reproduced"]:
+        m = p["reproduction"]["measured"]
+        rows.append(("Recreated first", f'exactly, at its stamped source {short(p["reproduction"]["source"])}: EV {num(m["ev_net_r"], 4, True)} '
+                                        f'net R over {count(m["n"])} trades — the record\'s own numbers'))
+        w = p["winner"]
+        rows.append(("Winner under those rules", f'cell [{esc(", ".join(str(i) for i in w["cell"]))}] · n {count(w["n"])} · EV '
+                                                 f'{num(w["ev_net_r"], 4, True)} · margin {num(w["margin_net_r"], 4, True)} over its passive '
+                                                 f'alternative · {"the recorded winner" if w["is_the_recorded_winner"] else "not the recorded winner"}'))
+    else:
+        rows.append(("Not recreated", esc(p["reproduction"]["reason"])))
+    rows.append(("Judged by", f'code {short(p["engine_sha"])} · content {esc(p["engine_code_sha"])} · {esc(", ".join(p["rules"]))} · '
+                              f'annotates record #{esc(p["annotates_seq"])} ({short(p["annotates_sha"])})'))
+    out += kv(rows)
+    if p["checks"]:
+        out += '<ul class="refusals">' + "".join(f"<li>{md(_check_line(c))}</li>" for c in p["checks"]) + "</ul>"
+    return out
 
 
 def _findings(f: Facts, sfx: str = "") -> str:

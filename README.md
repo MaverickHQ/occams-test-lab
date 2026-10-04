@@ -74,14 +74,23 @@ question was refused before a verdict: its winning cell held fewer trades
 than the power plan required — which exposed a promise `prepare` had made
 in every programme, fixed the same day.
 
-| question | origin | EV net R | trades | outcome |
-|---|---|---|---|---|
-| `Q-003` | Draft, index ETFs, regime axis | −0.047 | 1,391 | null — beats-null and the floor refused |
-| `Q-004` | Draft, superseding `Q-003` | −0.045 | 2,088 | null — every check refused |
-| `Q-005` | Draft, reversal after a down-run | +0.051 | 893 | null — the floor and leave-one-out refused |
-| `Q2-001` | survey cell, S&P 100, down-run in the up regime | +0.213 | 6,946 | **supported** by four checks; margin over always-long −0.001 |
-| `Q2-002` | survey cell, S&P 100, the same mechanism ungated | +0.109 | 12,732 | null on the floor alone, under five checks |
-| `Q3-001` | survey cell, sector ETFs, pullback in trend | — | 863 held | refused at measurement: 1,068 required |
+| question | origin | EV net R | trades | outcome, as recorded | re-scored under 2.0.0 — a diagnostic, never a verdict |
+|---|---|---|---|---|---|
+| `Q-003` | Draft, index ETFs, regime axis | −0.047 | 1,391 | null — beats-null and the floor refused | would be null: four checks refuse |
+| `Q-004` | Draft, superseding `Q-003` | −0.045 | 2,088 | null — every check refused | would be null: all five refuse |
+| `Q-005` | Draft, reversal after a down-run | +0.051 | 893 | null — the floor and leave-one-out refused | would be refused at measurement, underpowered at its own dispersion |
+| `Q2-001` | survey cell, S&P 100, down-run in the up regime | +0.213 | 6,946 | **supported** by four checks; margin over always-long −0.001 | **would be null**: the floor and beats-always-long refuse |
+| `Q2-002` | survey cell, S&P 100, the same mechanism ungated | +0.109 | 12,732 | null on the floor alone, under five checks | would be null on the floor alone |
+| `Q3-001` | survey cell, sector ETFs, pullback in trend | — | 863 held | refused at measurement: 1,068 required | not re-scored: its refusal stamps no engine |
+
+The last column is not a record. Every outcome stands as it was reached; the
+rules that reached it were corrected afterwards, for records made after
+(ADR-0047). Each question was first recreated exactly from the commit its
+record stamps and only then judged again:
+[docs/RESCORE-2026-10.md](docs/RESCORE-2026-10.md), written from
+`register/diagnostics.jsonl` alone. Under the corrected rules the one verdict
+of **supported** would be null. The record stays as it was reached; a note on
+this in the closing statement is the author's to adopt.
 
 The lab's product is its refusals. What three programmes established, and
 what they did not, is in [docs/LAB-CONCLUSION.md](docs/LAB-CONCLUSION.md);
