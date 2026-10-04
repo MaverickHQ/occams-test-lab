@@ -1,0 +1,55 @@
+# The sources the Registers stamp (M16.17, ADR-0055 §5). Each verdict names the commit that
+# measured it; this repository begins at a snapshot and does not hold those commits. Each is
+# named here by what can be checked without them: its tree, the content hash of the code a
+# measurement imports at that tree (occams/identity.py, as hashed today), and the sha256 of
+# `git archive` of the tree. The snapshots themselves are kept beside the licensed bars in
+# the private archive and are never committed. Written by `python -m occams sources build`.
+
+[[source]]
+commit = "e2cdf14d9281743eeccae3beffcf86064c455be0"
+tree = "dea7b78156e0093eb964d4b9ff0563de41ff6c1c"
+engine_code_sha = "4d90f6b1ac4a42ff"
+tar_sha256 = "e72ff0803bb7c6e1362a858e4f74d2d8d3f402b03e9e0a0f6d6402af95bd2f24"
+stamped_by = ["register#5 HypothesisMeasured Q-003", "register#9 HypothesisResolved Q-003"]
+
+[[source]]
+commit = "b145d49a7c7e3e6064ff10f0fa1f0d37de2a3f54"
+tree = "53652b1ccc11759a21adca142c6348db4e909772"
+engine_code_sha = "cd99d76c434e5f3b"
+tar_sha256 = "561d843d7fbb7817dfe3c926e28af7ef1ec93ed391ec6d4a912bd0992903e270"
+stamped_by = ["register#13 HypothesisMeasured Q-004", "register#21 HypothesisResolved Q-004"]
+
+[[source]]
+commit = "e05a659dceaf2ab0592e23e71fe2e8aa385dc354"
+tree = "de02ae013951e5fa7ae206c9d155cb6a4f5315b0"
+engine_code_sha = "760ca3258e396179"
+tar_sha256 = "490e3fbdef608f5c7a36ec94d01c8cdcb4d1ae0928055a380fc939439dc16de1"
+stamped_by = ["register#26 HypothesisMeasured Q-005", "register#32 HypothesisResolved Q-005"]
+
+[[source]]
+commit = "43b8778a95dc359d76458a893c27e51a374f98b8"
+tree = "5bafc75b4754d520191ef7a9cb6bdc3bc979cf3b"
+engine_code_sha = "5038c747f99823ab"
+tar_sha256 = "31facca4302828263f939ef4ff22ac6076ee155ac4f4075f8cfcf814fa3fe1f2"
+stamped_by = ["programme-2#9 SurveyRecorded grid-001 (day_boxed)", "programme-2#9 SurveyRecorded grid-001 (position_boxed)"]
+
+[[source]]
+commit = "1a243e504eb46abf4d6f987056b2e62b128b5d37"
+tree = "1b62719a8dc5455d0deaf7f93a09ca3ba9bb5e0d"
+engine_code_sha = "7e81063b0609c70a"
+tar_sha256 = "eb90bd1d5fd76e6fa6cef22b576aada03763ec841637bc9b7aa1b299ef4b94bc"
+stamped_by = ["programme-2#15 HypothesisMeasured Q2-001", "programme-2#19 HypothesisResolved Q2-001"]
+
+[[source]]
+commit = "8f81ff3599fe7edb496e94c4b7ff77daacf7c514"
+tree = "626a51e593f43bb09d1b7ce0dd751dd395586c4a"
+engine_code_sha = "23c2e8ee941708ff"
+tar_sha256 = "bcdece56b08fba8cbf353d6758d0f7111a177f80c61c9afc69708d4122f86d5a"
+stamped_by = ["programme-2#28 HypothesisMeasured Q2-002", "programme-2#33 HypothesisResolved Q2-002"]
+
+[[source]]
+commit = "9ee3d61c2a25af1e68ccbb080be538ab5ef8c2f5"
+tree = "85c8371c66f42b187b87b2e614f8bfa6adefa647"
+engine_code_sha = "882ff978cb80c466"
+tar_sha256 = "8c0ec5f437adf16a2bd32e1c2b376f543df4150d5f2f2fac80780148509e59df"
+stamped_by = ["programme-3#9 SurveyRecorded grid-002 (day_boxed)", "programme-3#9 SurveyRecorded grid-002 (position_boxed)"]

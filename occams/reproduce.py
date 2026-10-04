@@ -1,6 +1,6 @@
 """Reproduction, which never skips (M11.5, M11.6; F14, N1)::
 
-    python -m occams reproduce private --question ID --register R --queue Q --archive A --config C [--null-draws N] [--at-commit]
+    python -m occams reproduce private --question ID --register R --queue Q --archive A --config C [--null-draws N] [--at-commit | --at-source]
     python -m occams reproduce public [--claim-historical]
 
 **Private** re-measures a resolved question from the licensed archive, on
@@ -11,7 +11,9 @@ when it recreates it; 1 when it does not, saying what moved, the engine
 commit first; 2 when it cannot run at all — no archive on this machine,
 no such question, no config — loudly, never as a skip. ``--at-commit``
 runs the measurement in a detached worktree of the commit the verdict
-stamps, so an engine that has moved since is not the reason.
+stamps, so an engine that has moved since is not the reason; ``--at-source``
+does the same from the commit's snapshot in the private archive, verified
+against ``SOURCES.toml``, where the history is not a checkout (ADR-0055).
 
 **Public** runs the pipeline on synthetic fixtures — the two controls on
 both engines, the null refused and the planted effect accepted — and
@@ -112,7 +114,7 @@ def private(a) -> int:
     if stamped_cfg and config_sha(cfg) != stamped_cfg:
         print(f"NOTE: the question was registered under config {stamped_cfg}; this reproduction runs under {config_sha(cfg)} — "
               f"costs and partitions may differ, and a difference below may be the config's, not the engine's")
-    if a.at_commit:
+    if a.at_commit or a.at_source:
         return _at_commit(a, stamped_commit, resolved, measured, names)
     from occams import identity
 
@@ -163,7 +165,11 @@ class NamesOnly:
     def __init__(self, archive, keep): self._archive, self._keep = archive, set(keep.split(","))
     def latest_bars(self, names=None):
         keep = self._keep if names is None else self._keep & set(names)
-        return {n: v for n, v in self._archive.latest_bars(names=keep).items() if n in self._keep}
+        try:
+            got = self._archive.latest_bars(names=keep)
+        except TypeError:                      # a tree from before the archive read by name (M14.7): read all, keep these
+            got = self._archive.latest_bars()
+        return {n: v for n, v in got.items() if n in keep}
     def __getattr__(self, name): return getattr(self._archive, name)
 _, m = measure_question(q, cfg=cfg, archive=NamesOnly(BarArchive(Path(arch)), names), register=Register(Path(reg)), seed=int(seed), null_draws=int(draws))
 fired = forward.check(m, q.hypothesis) or ()
@@ -172,45 +178,68 @@ print(json.dumps({"spec_hash": m.winner.spec_hash, "ev_net_r": float(m.winner.ev
 """
 
 
+def measure_in(tree: Path, *, question: str, register, queue, archive, config, seed: int, null_draws: int, names) -> dict:
+    """Run the stamped measurement with the code in ``tree`` — a worktree or an extracted snapshot — and this interpreter,
+    on a scratch copy of the Register. Returns what it measured; raises ``RuntimeError`` with the child's words if it did not run."""
+    with tempfile.TemporaryDirectory(prefix="occams-reproduce-") as scratch_dir:
+        scratch = Path(scratch_dir) / "register.jsonl"
+        shutil.copy(register, scratch)
+        child = subprocess.run([sys.executable, "-", question, str(scratch), str(Path(queue).resolve()), str(Path(archive).resolve()),
+                                str(Path(config).resolve()), str(seed), str(null_draws), ",".join(sorted(names))],
+                               input=_CHILD, cwd=tree, capture_output=True, text=True)
+    if child.returncode != 0:
+        raise RuntimeError(child.stderr.strip()[-2000:])
+    return json.loads(child.stdout.strip().splitlines()[-1])
+
+
 def _at_commit(a, stamped_commit: str, resolved: dict, measured: dict, names: frozenset[str]) -> int:
-    """Measure inside a detached worktree of the stamped commit, with this
-    interpreter, and compare here. The worktree is removed afterwards."""
+    """Measure inside a detached worktree of the stamped commit — or, with ``--at-source``, inside its snapshot from the
+    private archive, verified against ``SOURCES.toml`` — with this interpreter, and compare here. The tree is removed afterwards."""
     commit = stamped_commit.split("-")[0]
     if not commit or commit == "unknown":
         print("REPRODUCTION FAILED: the verdict stamps no engine commit to reproduce at")
         return 2
     root = Path(__file__).resolve().parent.parent
     tmp = Path(tempfile.mkdtemp(prefix="occams-worktree-"))
+    at_source = bool(getattr(a, "at_source", False))
+    where = "its stamped source" if at_source else "the stamped commit"
     try:
-        wt = subprocess.run(["git", "worktree", "add", "--detach", str(tmp / "tree"), commit], cwd=root, capture_output=True, text=True)
-        if wt.returncode != 0:
-            print(f"REPRODUCTION FAILED: cannot check out {commit[:12]}: {wt.stderr.strip()}")
+        if at_source:
+            from occams import sources
+
+            try:
+                sources.extract(commit, archive=Path(a.archive), dest=tmp / "tree")
+            except sources.SourceMissing as e:
+                print(f"REPRODUCTION FAILED: {e}")
+                return 2
+        else:
+            wt = subprocess.run(["git", "worktree", "add", "--detach", str(tmp / "tree"), commit], cwd=root, capture_output=True, text=True)
+            if wt.returncode != 0:
+                print(f"REPRODUCTION FAILED: cannot check out {commit[:12]}: {wt.stderr.strip()}")
+                return 2
+        try:
+            got = measure_in(tmp / "tree", question=a.question, register=a.register, queue=a.queue, archive=a.archive, config=a.config,
+                             seed=int(resolved["seed"]), null_draws=int(a.null_draws), names=names)
+        except RuntimeError as e:
+            print(f"REPRODUCTION FAILED: the measurement at {commit[:12]} did not run:\n{e}")
             return 2
-        with tempfile.TemporaryDirectory(prefix="occams-reproduce-") as scratch_dir:
-            scratch = Path(scratch_dir) / "register.jsonl"
-            shutil.copy(a.register, scratch)
-            child = subprocess.run([sys.executable, "-", a.question, str(scratch), str(Path(a.queue).resolve()),
-                                    str(Path(a.archive).resolve()), str(Path(a.config).resolve()), str(resolved["seed"]),
-                                    str(a.null_draws), ",".join(sorted(names))], input=_CHILD, cwd=tmp / "tree", capture_output=True, text=True)
-        if child.returncode != 0:
-            print(f"REPRODUCTION FAILED: the measurement at {commit[:12]} did not run:\n{child.stderr.strip()[-2000:]}")
-            return 2
-        got = json.loads(child.stdout.strip().splitlines()[-1])
     finally:
-        subprocess.run(["git", "worktree", "remove", "--force", str(tmp / "tree")], cwd=root, capture_output=True)
+        if not at_source:
+            subprocess.run(["git", "worktree", "remove", "--force", str(tmp / "tree")], cwd=root, capture_output=True)
         shutil.rmtree(tmp, ignore_errors=True)
     checks = tuple(resolved.get("checks") or FOUR)
     want_ref = sorted(_refusal_heads(resolved["refusals"], checks))
     got_ref = sorted(_refusal_heads(got["refusals"], checks))
     same = (got["spec_hash"] == resolved["spec_hash"] and abs(got["ev_net_r"] - float(resolved["ev_net_r"])) < 1e-9
             and got["n"] == int(measured["n"]) and got_ref == want_ref)
-    print(f"{a.question}: re-measured at the stamped commit {commit[:12]}, seed {resolved['seed']}, {a.null_draws} null draws")
+    print(f"{a.question}: re-measured at {where} {commit[:12]}, seed {resolved['seed']}, {a.null_draws} null draws")
     print(f"  spec_hash   stamped {resolved['spec_hash']}  re-measured {got['spec_hash']}")
     print(f"  ev_net_r    stamped {float(resolved['ev_net_r'])}  re-measured {got['ev_net_r']}")
     print(f"  n           stamped {measured['n']}  re-measured {got['n']}")
     print(f"  refused_by  stamped {want_ref}  re-measured {got_ref}")
     if same:
-        print(f"REPRODUCED: the stamped Verdict of {a.question} is recreated exactly at its own commit (M11.5, F14).")
+        print(f"REPRODUCED: the stamped Verdict of {a.question} is recreated exactly "
+              + ("from its stamped source, with no checkout of the history (M16.17, ADR-0055)." if at_source else "at its own commit (M11.5, F14)."))
         return 0
     print(f"NOT REPRODUCED: the re-measurement at {commit[:12]} differs from the stamped Verdict of {a.question}.")
     return 1
@@ -267,6 +296,8 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--config", required=True)
     p.add_argument("--null-draws", type=int, default=4000)
     p.add_argument("--at-commit", action="store_true", help="re-measure in a worktree of the commit the verdict stamps")
+    p.add_argument("--at-source", action="store_true",
+                   help="re-measure in the stamped commit's snapshot from the private archive, verified against SOURCES.toml (ADR-0055)")
     u = sub.add_parser("public", help="the pipeline on synthetic fixtures; no vendor access; no exact-historical claim")
     u.add_argument("--source", default="tiingo-starter", help="the archive's source id, whose rights decide what may be claimed")
     u.add_argument("--claim-historical", action="store_true", help="ask for an exact-historical claim; refused when the rights forbid it")

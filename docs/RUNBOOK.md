@@ -155,7 +155,22 @@ make reproduce-private QUESTION=Q-005      # exact, from the licensed archive, o
 make reproduce-public                      # the pipeline on synthetic fixtures; refuses an exact-historical claim the rights forbid
 ```
 
-`--at-commit` recreates the stamped commit in a worktree. The reproduction
+`--at-commit` recreates the stamped commit in a worktree, which needs the
+commit: the public repository begins at a snapshot and does not hold the
+commits the verdicts stamp. `--at-source` runs the same measurement from the
+commit's snapshot in the private archive (`archive/source/<commit>.tar.gz`),
+after checking it against `SOURCES.toml` — the tree's digest, then the
+content hash of the code a measurement imports — and fails loudly, exit 2,
+when the snapshot is not on the machine (M16.17, ADR-0055).
+
+```bash
+python -m occams sources check                    # every commit a Register stamps is named in SOURCES.toml; needs no history
+python -m occams sources build --archive archive  # the author's machine only: needs the private history; writes the snapshots
+python -m occams reproduce private --question Q-005 --register register/register.jsonl --queue register/queue.jsonl \
+    --archive archive --config occams.toml --at-source
+```
+
+The reproduction
 key is `engine_code_sha`: the content hash of everything a measurement
 imports, on every measured, resolved and surveyed record since M16.10
 (ADR-0055). `engine_sha` is the commit, read once when the run begins
