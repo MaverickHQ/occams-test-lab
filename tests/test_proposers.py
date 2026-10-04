@@ -30,7 +30,7 @@ SWEEP = Sweep((("stop", (2.0, 3.0, 4.0)), ("hold", (1.0, 2.0, 3.0))))
 def draft(**kw) -> Draft:
     base = dict(proposer="t", axis=InformationAxis.REGIME, mechanism="m", if_true="t", if_false="f", falsifier="x",
                 floor=Floor(0.15, 50), sweep=SWEEP, sigma_r=1.2, sigma_provenance="definition period, fixture",
-                power=0.8, gates=GATES)
+                power=0.8, gates=GATES, alternative_ev_net_r=0.45)
     base.update(kw)
     return Draft(**base)
 

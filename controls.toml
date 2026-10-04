@@ -11,16 +11,18 @@ min_trades_per_year = 50
 sigma_r = 1.2
 alpha = 0.05
 power = 0.80
+alternative_ev_net_r = 0.30  # ADR-0050, an apparatus number: the EV the control plans its power at and the signal plants at — twice the floor
 
 [world]                      # the synthetic law the engine draws from
 groups = ["A", "B", "C", "D", "E"]
 years = 10
-trades_per_group_year = 20   # 5 x 10 x 20 = 1,000 per cell, above the 837 the plan requires at 9 cells
+trades_per_group_year = 20   # 5 x 10 x 20 = 1,000 per cell, above the 732 the plan requires at 9 cells
 cost_in_r = 0.05             # random entry loses the spread: the null's mean is -cost
 seed = 20260910
 
-[signal]                     # planted at or just above the floor — sensitivity at the boundary
-planted_ev_net_r = 0.165
+# the signal control plants at [power].alternative_ev_net_r, net of the spread (ADR-0050 §5): S10 is "a planted effect
+# at the alternative is accepted". Before the rule it planted 0.165 before costs — 0.115 net, under the floor — and was
+# accepted because the best of nine cells cleared 0.15 by its point estimate: the defect the bound removes.
 
 [sweep]                      # 3 x 3 = 9 cells -> search_space_size = 9, Bonferroni alpha 0.05 / 9
 stop = [1.0, 2.0, 3.0]
@@ -42,5 +44,5 @@ seed = 20260910
 sigma_r = 0.6                # sigma_daily / stop fraction at the 5 % cell; the plan declares it
 stop_percent = [4.0, 5.0, 6.0]
 target_multiple = [2.0, 3.0, 4.0]
-planted_return_daily = 0.0100  # (0.15R floor + 0.05R spread) x 5 % stop: the planted effect at the boundary after costs, in bar terms — on the day after `planted_runs` lower closes only (ADR-0043); a drift on every day is what the fifth check refuses
+planted_return_daily = 0.0175  # (0.30R alternative + 0.05R spread) x 5 % stop: the planted effect at the alternative after costs, in bar terms — on the day after `planted_runs` lower closes only (ADR-0043, ADR-0050);
 planted_runs = 2                 # the entry the signal control uses, DOWN_RUN(runs): always-long rides the planted day one day in four; the entry catches every one

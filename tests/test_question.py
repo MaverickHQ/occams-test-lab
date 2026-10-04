@@ -51,7 +51,7 @@ def template(axis=InformationAxis.REGIME):
 def draft(sweep=Sweep((("stop", (2.0, 3.0)), ("target", (3.0, 4.0)))), floor=Floor(0.15, 20)):
     return Draft(proposer="t", axis=InformationAxis.REGIME, mechanism="continuation after the open", if_true="t",
                  if_false="f", falsifier="x", floor=floor, sweep=sweep, sigma_r=1.2, sigma_provenance="fixture",
-                 power=0.8, gates=Gates(2, 0.30, 0.5, 50.0))
+                 power=0.8, gates=Gates(2, 0.30, 0.5, 50.0), alternative_ev_net_r=floor.ev_net_r + 0.30)
 
 
 def world_archive(tmp_path, *, drift: float, days=600, names=("A", "B", "C")) -> BarArchive:
@@ -127,7 +127,7 @@ def test_m8_1_the_first_mechanism_hypothesis_registers_and_the_axis_is_decrement
 
 def test_m8_2_an_underpowered_question_is_refused_at_registration_and_spends_nothing(lab):
     c, reg, budget = lab
-    q = from_draft(draft(), id="Q-weak", template=template(), budget=budget, available_n=80)
+    q = from_draft(draft(), id="Q-weak", template=template(), budget=budget, available_n=40)
     with pytest.raises(Refused, match="underpowered"):
         register_question(q, confirmation=HUMAN, budget=budget, register=reg, declared=None)
     assert budget.remaining(InformationAxis.REGIME) == pytest.approx(0.5)

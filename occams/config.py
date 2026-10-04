@@ -123,6 +123,14 @@ class Config:
     path: Path
 
 
+REGISTRATION_KEYS = {
+    "floor.ev_net_r": "the detectable floor, EV per trade in net R (R3, D5)",
+    "floor.min_trades_per_year": "the floor's frequency half",
+    "power.alternative_ev_net_r": "the EV the question wants power at, strictly above its floor (ADR-0050)",
+    "gates.plateau_slack_se": "the plateau's slack in the winner's own standard errors (ADR-0051)",
+}
+
+
 def schema() -> str:
     """Every required key, no values. Printing a value would be recommending one."""
     lines = ["[capital]  # amounts in the account currency, not fractions; R9"]
@@ -138,6 +146,8 @@ def schema() -> str:
               "# invariant: sum(axis budgets) + reserve == total",
               "# runnable axis (budget > 0): 0 < implementation_test_alpha < mechanism_test_alpha",
               "# non-runnable axis (budget == 0): all three fields exactly 0"]
+    lines += ["", "# declared per question, at registration and never in this file — each the author's, none with a default:"]
+    lines += [f"#   {k} = <float>  # {why}" for k, why in REGISTRATION_KEYS.items()]
     return "\n".join(lines)
 
 

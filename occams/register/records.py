@@ -37,6 +37,9 @@ class HypothesisRegistered:
     survey_results_sha: str = ""
     survey_cell: str = ""
     universe: str = ""
+    # ADR-0050, ADR-0051: what the registration declared beside its floor; nil on a record made before each rule
+    alternative_ev_net_r: float = 0.0
+    plateau_slack_se: float = 0.0
 
     @classmethod
     def from_hypothesis(cls, h) -> HypothesisRegistered:
@@ -46,7 +49,8 @@ class HypothesisRegistered:
                    h.required_n, h.power_plan.available_n, float(h.alpha_spent or 0.0),
                    h.registered_by or "", h.parent_id, h.supersedes, h.config_sha or "", bool(h.capability),
                    int(sv.get("screened_cells", 0)), str(sv.get("results_sha", "")), str(sv.get("cell", "")),
-                   str(sv.get("universe", "")))
+                   str(sv.get("universe", "")), float(getattr(h.power_plan, "alternative_ev_net_r", None) or 0.0),
+                   float(getattr(h.gates, "plateau_slack_se", None) or 0.0))
 
 
 @register_record

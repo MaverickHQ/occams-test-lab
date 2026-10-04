@@ -49,7 +49,7 @@ null:                     ## S3 — a coin flip through the whole pipeline is RE
 	python3 -m occams.controls null
 	python3 -m occams.controls null --engine=day_boxed
 
-signal:                   ## S10 — a planted effect at the floor is ACCEPTED, naming that all five checks passed
+signal:                   ## S10 — a planted effect at the control's alternative is ACCEPTED (ADR-0050), naming that all five checks passed
 	python3 -m occams.controls signal
 	python3 -m occams.controls signal --engine=day_boxed
 

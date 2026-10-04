@@ -91,6 +91,29 @@ def test_fifth_check_power_on_planted_reversal():
     _within("controls:signal", "beats_always_long")
 
 
+def test_the_floor_bound_holds_size_when_the_ev_is_exactly_at_the_floor():
+    """The review's F05: the point estimate let an EV sitting exactly at the floor through about half the time. The
+    lower confidence bound lets it through at the rate it declares (ADR-0050)."""
+    _within("synthetic:at-floor", "clears_floor")
+
+
+def test_the_floor_bound_has_its_planned_power_at_the_alternative():
+    """And at the count the one-sided plan asks for, an EV at the declared alternative clears the bound at the planned power."""
+    _within("synthetic:at-alternative", "clears_floor")
+
+
+def test_the_null_control_is_never_accepted():
+    """S3 over seeds, on both engines: a coin flip through all five checks."""
+    _within("controls-synthetic:null", "all_five")
+    _within("controls:null", "all_five")
+
+
+def test_the_signal_control_is_accepted_at_planned_power():
+    """S10 over seeds, on both engines (ADR-0050 §5): a planted effect at the alternative is accepted by all five checks."""
+    _within("controls-synthetic:signal", "all_five")
+    _within("controls:signal", "all_five")
+
+
 def test_every_row_of_the_table_is_a_test_here():
     """A row added to the table without a test would be printed and never enforced."""
     import inspect

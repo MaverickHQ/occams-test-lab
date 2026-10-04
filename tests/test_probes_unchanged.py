@@ -25,6 +25,10 @@ its draws moved on every world. On the three long-only worlds every cell is the 
 was — a long-only cell's side-matched baseline *is* always-long — and so is the null. On the
 two worlds entered by a coin every cell's baseline moved, to the coin's own expectation, and
 on the null control so did the winner the margin picks.
+
+**M16.21 (ADR-0050 §5) replaced the signal control's fingerprint.** The control plants at
+its apparatus alternative now, so its world is another world. The other five are the
+numbers they were.
 """
 
 from __future__ import annotations

@@ -102,7 +102,7 @@ says so in its own words.
   earned anyway** — the five checks, each named on the record with its
   evidence.
 - **A coin flip.** `make null` runs one through the whole pipeline and must
-  be refused; `make signal` plants an effect at the floor and must be
+  be refused; `make signal` plants an effect at the control's declared alternative and must be
   accepted, naming all five checks. Both run on every build and in CI.
 - **A number the author did not declare.** Capital, drawdown, risk, the
   alpha split and the falsifier count have no defaults anywhere; the lab
@@ -208,17 +208,18 @@ ALL FOUR PASS in 0.03s. This touched no market data, no API key, and no network.
 ```
 
 The null control — a coin flip through the whole pipeline — and the
-signal control, a planted effect at the floor:
+signal control, a planted effect at the alternative the control plans its
+power at (ADR-0050):
 
 ```text
-NULL CONTROL [synthetic] — CONTROL-NULL, N = 1000 (required 837), winner EV = -0.0067 net R
+NULL CONTROL [synthetic] — CONTROL-NULL, N = 1000 (required 732), winner EV = -0.0067 net R
 REFUSED at MEASURED -> FORWARD, by:
   - beats-null: random entry under the same geometry does as well
-  - floor: EV per trade in net R is below the declared floor
+  - floor: the lower confidence bound on EV is below the declared floor (ADR-0050)
   - beats-always-long: the passive alternative at the same geometry, gate and side mix does as well
 checks that passed: ['plateau', 'leave_one_out']
 
-SIGNAL CONTROL [synthetic] — CONTROL-SIGNAL, N = 1000 (required 837), winner EV = +0.1583 net R
+SIGNAL CONTROL [synthetic] — CONTROL-SIGNAL, N = 1000 (required 732), winner EV = +0.3433 net R
 ACCEPTED at MEASURED -> FORWARD: all five checks passed — ['plateau', 'beats_null', 'clears_floor', 'leave_one_out', 'beats_always_long']
 ```
 
@@ -265,7 +266,7 @@ make setup                 # a virtual environment with the lab and its dev extr
 export PATH="$PWD/.venv/bin:$PATH"
 make quickstart            # $0, no data, no keys, no network, under ten seconds
 make null                  # a coin flip is REFUSED, naming why
-make signal                # a planted effect at the floor is ACCEPTED, naming all five checks
+make signal                # a planted effect at the alternative is ACCEPTED, naming all five checks
 make reproduce-public      # the pipeline on synthetic fixtures; refuses an exact-historical claim
 make site                  # every page and document as one static site under build/site, checked by the publication gate
 ```
@@ -312,7 +313,7 @@ python -m occams init      # the configuration skeleton — every required key, 
 python -m occams doctor    # what is missing, by name; never a secret
 make quickstart      # $0, no data, no keys, no network, under ten seconds
 make null            # a coin flip through the whole pipeline is REFUSED, naming why (S3)
-make signal          # a planted effect at the floor is ACCEPTED, naming all five checks (S10, ADR-0043)
+make signal          # a planted effect at the alternative is ACCEPTED, naming all five checks (S10, ADR-0043)
 make check           # tests · lint · credential scan · provenance · the publication gate on the pages and on the whole tree · null · signal
 make test-fast       # every test not marked slow — the fast cycle, never the proof (M14.1)
 make calibrate       # the size-and-power table: each Monte Carlo guard alone, 200 seeds, against the rate it declares — minutes, never part of `make check` (M16.7)

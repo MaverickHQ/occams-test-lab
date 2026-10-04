@@ -95,7 +95,7 @@ def test_nothing_registers_after_the_lab_closed(tmp_path):
     reg = Register(tmp_path / "r.jsonl")
     reg.append(LabClosed(3, "null", ("Q-1", "Q-2", "Q-3")))
     h = Hypothesis(id="Q-4", tier=Tier.MECHANISM, axis=InformationAxis.PRICE_DAILY, mechanism="m", if_true="t", if_false="f",
-                   falsifier="x", floor=Floor(0.15, 50), power_plan=PowerPlan(1.2, 0.05, 0.8, 1000), gates=Gates(4, 0.1, 0.5, 50.0),
+                   falsifier="x", floor=Floor(0.15, 50), power_plan=PowerPlan(1.2, 0.05, 0.8, 1000, alternative_ev_net_r=0.45), gates=Gates(4, 0.1, 0.5, 50.0),
                    search_space_size=1, capability=True)
     with pytest.raises(Refused, match="the lab is closed"):
         register(h, confirmation=Confirmation("apparatus", human=False), parent=None, register=reg)

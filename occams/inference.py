@@ -11,6 +11,7 @@ from __future__ import annotations
 import math
 from collections.abc import Iterable
 from dataclasses import dataclass
+from statistics import NormalDist
 
 import numpy as np
 
@@ -89,6 +90,26 @@ INDEPENDENT = "independent draws: the synthetic law has no dates"
 def one_sided_p(z: float) -> float:
     """P(Z >= z) for a standard normal."""
     return 0.5 * math.erfc(z / math.sqrt(2.0))
+
+
+def z(p: float) -> float:
+    """The standard normal quantile at ``p``."""
+    return NormalDist().inv_cdf(p)
+
+
+def one_sided_n(sigma: float, gap: float, *, alpha: float, power: float) -> int:
+    """The trades needed for a one-sided lower confidence bound at ``alpha`` to clear a floor with probability
+    ``power`` when the true EV sits ``gap`` above it (ADR-0050 §2): ``ceil(((z(1 - alpha) + z(power)) * sigma / gap)^2)``.
+    The vendored calculator answers another question — the floor against nil, two-sided — and is untouched."""
+    if not gap > 0:
+        raise ValueError("the alternative must be strictly above the floor")
+    return math.ceil(((z(1.0 - alpha) + z(power)) * sigma / gap) ** 2)
+
+
+def lower_bound(ev: float, se: float, alpha: float) -> float:
+    """The one-sided lower confidence bound on an EV at ``alpha``: ``ev - z(1 - alpha) * se``. At ``alpha / k`` for each
+    of k cells the bounds hold together with probability at least ``1 - alpha``, so the winner's holds after it is chosen."""
+    return ev - z(1.0 - alpha) * se
 
 
 @dataclass(frozen=True)

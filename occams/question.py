@@ -387,7 +387,24 @@ def implementation_draft(parent: Hypothesis, winner_spec: StrategySpec, *, propo
                  # "lone spike?", which a single cell cannot be. Inheriting the parent's plateau_cells
                  # made every implementation child unpassable at MEASURED -> FORWARD (found 2026-09-12
                  # by max_plateau_neighbourhood, before any child had been registered).
-                 gates=replace(parent.gates, plateau_cells=1), tier=Tier.IMPLEMENTATION, parent_id=parent.id)
+                 gates=replace(parent.gates, plateau_cells=1), tier=Tier.IMPLEMENTATION, parent_id=parent.id,
+                 alternative_ev_net_r=parent.power_plan.alternative_ev_net_r)   # the child inherits what its parent declared (ADR-0050)
+
+
+def declared_at_registration(h: Hypothesis, indent: str = "") -> bool:
+    """Two numbers a registration declares beside its floor and that have no default — the alternative its power is
+    planned at (ADR-0050) and the plateau's slack in standard errors (ADR-0051). Says which is missing; never suggests one."""
+    ok = True
+    if h.gates.plateau_slack_se is None:
+        ok = False
+        print(f"{indent}UNDECLARED — plateau_slack_se: the plateau's slack in the winner's own standard errors is declared at "
+              f"registration (--plateau-slack-se) and has no default (ADR-0051); registration would be refused")
+    if h.power_plan.alternative_ev_net_r is None:
+        ok = False
+        print(f"{indent}UNDECLARED — alternative_ev_net_r: the EV the question wants power at is declared at registration "
+              f"(--alternative-ev), strictly above the floor, and has no default (ADR-0050); the count above is the rule before it, "
+              f"the floor against nil; registration would be refused")
+    return ok
 
 
 # ---- the author-facing command: prepare, then register ---------------------------------
@@ -451,6 +468,8 @@ def main(argv=None) -> int:
         p.add_argument("--distinction", default=None, help="the stated difference from an overlapping resolved question (R4.9)")
         p.add_argument("--plateau-cells", type=int, default=4)
         p.add_argument("--plateau-slack", type=float, default=0.10)
+        p.add_argument("--alternative-ev", type=float, default=None,
+                       help="the EV in net R the question wants power at, strictly above its floor (ADR-0050): the author's, no default")
         p.add_argument("--plateau-slack-se", type=float, default=None,
                        help="the plateau's slack in the winner's own standard errors (ADR-0051): the author's, declared here, no default")
         p.add_argument("--loo-min-fraction", type=float, default=0.5)
@@ -513,6 +532,7 @@ def main(argv=None) -> int:
                                  floor=Floor(a.floor_ev, a.floor_frequency), sigma_r=a.sigma,
                                  sigma_provenance=a.sigma_provenance, power=a.power, gates=gates, sweep=sweep, **entry_kw)
         (draft,) = proposer.propose(sb)
+    draft = replace(draft, alternative_ev_net_r=a.alternative_ev)      # ADR-0050: the author's, declared here, never the proposer's
     q = from_draft(draft, id=a.id, template=template, budget=budget, available_n=pre["available_n"])
     if pre["clustering"] is not None:
         q = replace(q, hypothesis=replace(q.hypothesis, power_plan=q.hypothesis.power_plan.with_clustering(pre["clustering"])))
@@ -571,7 +591,7 @@ def main(argv=None) -> int:
               f"k = {h.search_space_size} charges for cells that are not distinct questions. Drop the axis or change the horizon")
     if overlap_refusal is not None:
         print(f"OVERLAP — {overlap_refusal.reason}")
-    clean = powered and supportable and plateau_ok and not inert and overlap_refusal is None
+    clean = powered and supportable and plateau_ok and not inert and overlap_refusal is None and declared_at_registration(h)
     if a.cmd == "prepare":
         print("nothing registered, nothing spent.")
         return 0 if clean else 1

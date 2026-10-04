@@ -80,3 +80,41 @@ adopted it by name.
   own formula at the winner's standard deviation and refused as
   *underpowered at the winning cell's own dispersion* when the effective
   count is below it. It reads the measurement partition and can only refuse.
+
+## As built: the bound and the alternative (M16.21, 2026-10-04)
+
+- **§1, the bound.** `clears_floor` refuses unless
+  `winner.ev − z(1 − alpha/k) · se` is at or above the declared floor; `se`
+  is the winner's standard error clustered by date, which the engine puts in
+  the Measurement. A measurement with no standard error is refused by name.
+  The frequency half is unchanged.
+- **§2, the alternative.** `PowerPlan.alternative_ev_net_r`; a registration
+  without it is refused, naming the key and no value, and so is one whose
+  alternative is not above its floor; `--alternative-ev` on both
+  registration commands, no default; `prepare` says *UNDECLARED*. The
+  required count is `inference.one_sided_n`. The review's figure checks:
+  1,446 at 1.2 R, a gap of 0.10 R, a corrected alpha of 0.01 and power 0.8.
+  `python -m occams --schema` lists the four keys a registration declares —
+  the floor's pair, the alternative, the plateau's slack in standard errors —
+  each with its type and none with a value. `whatif` prints the count for
+  four gaps beside the count under the rule before.
+- **§5, the controls.** `controls.toml` declares an apparatus alternative of
+  0.30 R, twice the control's floor, and the signal control plants there net
+  of the spread: 732 trades a cell required, 1,000 held. Before this the
+  signal planted 0.165 R before costs — 0.115 net, *under* its own floor —
+  and was accepted because the best of nine cells cleared 0.15 by its point
+  estimate. That acceptance was the defect.
+- **§6, never backwards.** A question with no declared alternative is judged
+  by its point estimate, as it was registered to, and its bound is written
+  into the evidence beside it. A re-score asks for the bound by name.
+- **What the size table reads.** With the true EV exactly at the floor the
+  bound is cleared 0.010 of the time at a declared 0.01 and 0.065 at 0.05,
+  over 200 seeds. With the true EV at the alternative and the count the plan
+  asks for it is cleared 0.75 of the time against a planned 0.80, over 100
+  seeds, inside tolerance. Across seeds the null control is accepted by all
+  five checks 0 times in 200 on either engine; the signal control 92 times
+  in 100 on the synthetic law and 100 in 100 through the day-boxed engine.
+- **What it costs is real.** A survey family that was powered at its chosen
+  cell and a floor told from nil is not powered at its widest cell and a
+  floor to be cleared from above. That is what the consequence above says,
+  measured on the fixture.

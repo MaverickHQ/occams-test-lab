@@ -11,7 +11,7 @@ import re
 import tomllib
 from pathlib import Path
 
-from occams.core.power import n_for_mean_shift
+from occams.inference import one_sided_n
 
 ROOT = Path(__file__).resolve().parent.parent
 
@@ -33,8 +33,9 @@ def test_controls_comment_matches_computed_n():
     text = (ROOT / "controls.toml").read_text(encoding="utf-8")
     cfg = tomllib.loads(text)
     cells = len(cfg["sweep"]["stop"]) * len(cfg["sweep"]["hold"])
-    need = n_for_mean_shift(cfg["floor"]["ev_net_r"] / cfg["power"]["sigma_r"], alpha=cfg["power"]["alpha"] / cells,
-                            power=cfg["power"]["power"])
+    # ADR-0050: the control plans one-sided against its apparatus alternative; before it, the floor against nil (837)
+    need = one_sided_n(cfg["power"]["sigma_r"], cfg["power"]["alternative_ev_net_r"] - cfg["floor"]["ev_net_r"],
+                       alpha=cfg["power"]["alpha"] / cells, power=cfg["power"]["power"])
     m = re.search(r"above the ([\d,]+) the plan requires at (\d+) cells", text)
     assert m, "the comment that states the required count is gone"
     assert int(m.group(2)) == cells

@@ -24,6 +24,7 @@ from pathlib import Path
 
 import numpy as np
 
+from occams import inference
 from occams.config import Config, ConfigRefused, load
 from occams.core import power
 from occams.costs.equity import EquityCosts, InstrumentClass
@@ -35,6 +36,7 @@ SIGNAL_RATES = (0.05, 0.10, 0.20)            # trades per name-day a mechanism m
 FLOORS_WIDE = (0.05, 0.075, 0.10, 0.15, 0.20, 0.25)
 HALT_TRADES = (100, 200, 500)
 FLOORS = (0.10, 0.15, 0.20, 0.25)
+GAPS = (0.05, 0.10, 0.15, 0.20)       # ADR-0050: the alternative less the floor, in R — arithmetic to read, none of them a suggestion
 SIGMA_R = 1.2      # the on-paper sigma the M0.15 tables used; a Hypothesis declares its own
 FLOOR_EV = 0.15    # the M0.15 headline floor; a Hypothesis declares its own
 CELLS = (4, 9)     # the two sweep sizes in use (DRAFT-001, the controls)
@@ -170,6 +172,7 @@ def derive(cfg: Config) -> dict:
             "spend_per_question": {k: a.mechanism_test_alpha * k for k in CELLS},
             "questions_affordable": {k: int(a.budget // (a.mechanism_test_alpha * k)) for k in CELLS},
             "required_n_mech": {f: power.n_for_mean_shift(f / SIGMA_R, alpha=a.mechanism_test_alpha, power=0.8) for f in FLOORS},
+            "required_n_mech_gap": {g: inference.one_sided_n(SIGMA_R, g, alpha=a.mechanism_test_alpha, power=0.8) for g in GAPS},
             "required_n_impl": {f: power.n_for_mean_shift(f / SIGMA_R, alpha=a.implementation_test_alpha, power=0.8) for f in FLOORS},
         }
     out["axes"] = axes
@@ -246,7 +249,9 @@ def affordability_table(cfg: Config, us: list[dict]) -> str:
              "would afford on the measurement partition after the design effect at the universe's own same-day rho "
              "(daily returns, definition partition only), and the lowest floor in "
              + "/".join(f"{f:g}" for f in FLOORS_WIDE)
-             + "R that count can detect at each sweep size — a lower floor needs more trades. The floor stays the author's.", "",
+             + "R that count can detect at each sweep size — a lower floor needs more trades. The floor stays the author's. "
+             "*Detect* here is the rule before ADR-0050, the floor told from nil; a question registered now plans against its "
+             "declared alternative, and the counts for that are in the table above.", "",
              "| universe | names | meas. days | rho | rate | N raw | N effective | lowest detectable floor at " + " / ".join(f"k={k}" for k in CELLS) + " |",
              "|---|---|---|---|---|---|---|---|"]
     for u in us:
@@ -281,7 +286,9 @@ def report(cfgs: list[Config], universes_: list[dict] | None = None) -> str:
         for k in CELLS:
             lines.append(f"| {ax}: spend per {k}-cell question · affordable | "
                          f"{_cols(ds, lambda d, ax=ax, k=k: _spend_cell(d, ax, k))} |")
-        lines.append(f"| {ax}: N per cell, mechanism, at {'/'.join(str(f) for f in FLOORS)}R | "
+        lines.append(f"| {ax}: N per cell, mechanism, alternative {'/'.join(str(g) for g in GAPS)}R above the floor (ADR-0050) | "
+                     f"{_cols(ds, lambda d, ax=ax: ('/'.join(str(d['axes'][ax]['required_n_mech_gap'][g]) for g in GAPS) if ax in d['axes'] else '—'))} |")
+        lines.append(f"| {ax}: the same before ADR-0050 — the floor against nil — at floors {'/'.join(str(f) for f in FLOORS)}R | "
                      f"{_cols(ds, lambda d, ax=ax: ('/'.join(str(d['axes'][ax]['required_n_mech'][f]) for f in FLOORS) if ax in d['axes'] else '—'))} |")
         lines.append(f"| {ax}: N per cell, implementation | "
                      f"{_cols(ds, lambda d, ax=ax: ('/'.join(str(d['axes'][ax]['required_n_impl'][f]) for f in FLOORS) if ax in d['axes'] else '—'))} |")

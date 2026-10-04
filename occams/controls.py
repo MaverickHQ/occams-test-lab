@@ -53,8 +53,46 @@ def _effect(kind: str, cfg: dict):
     if kind == "null":
         return synthetic.flat(0.0)
     if kind == "signal":
-        return synthetic.flat(float(cfg["signal"]["planted_ev_net_r"]))
+        # ADR-0050 §5: planted at the apparatus alternative, net of the spread the law charges — so the EV the law
+        # delivers is the alternative, and S10 reads "a planted effect at the alternative is accepted"
+        return synthetic.flat(float(cfg["power"]["alternative_ev_net_r"]) + float(cfg["world"]["cost_in_r"]))
     raise ValueError(kind)
+
+
+def synthetic_measurement(kind: str, cfg: dict, seed: int, *, spec_hash: str = "control"):
+    """The control through the synthetic law: the declared sweep, the planted effect or none."""
+    w = cfg["world"]
+    return synthetic.measure(spec_hash=spec_hash, seed=seed, axes={k: [float(x) for x in v] for k, v in cfg["sweep"].items()},
+                             groups=list(w["groups"]), years=float(w["years"]), trades_per_group_year=float(w["trades_per_group_year"]),
+                             sigma_r=float(cfg["power"]["sigma_r"]), cost_in_r=float(w["cost_in_r"]),
+                             effect=_effect(kind, cfg), null_draws=int(cfg["gates"]["null_draws"]))
+
+
+def hypothesis(kind: str, cfg: dict, *, engine: str = "synthetic") -> Hypothesis:
+    """The control Hypothesis, as a Draft: its floor, its gates, and a power plan against the apparatus alternative."""
+    day_boxed = engine == "day_boxed"
+    d, w = cfg["day_boxed"], cfg["world"]
+    if day_boxed:
+        cells, available, sigma = len(d["stop_percent"]) * len(d["target_multiple"]), int(d["days"]) * len(d["groups"]), float(d["sigma_r"])
+        what = "random entry has no edge" if kind == "null" else "a planted reversal at the alternative is detectable over always-long"
+    else:
+        cells = 1
+        for v in cfg["sweep"].values():
+            cells *= len(v)
+        available, sigma = int(round(w["years"] * w["trades_per_group_year"])) * len(w["groups"]), float(cfg["power"]["sigma_r"])
+        what = "random entry has no edge" if kind == "null" else "a planted effect at the alternative is detectable"
+    return Hypothesis(
+        id=f"CONTROL-{kind.upper()}" + ("-DAY-BOXED" if day_boxed else ""), tier=Tier.MECHANISM, axis=InformationAxis.PRICE_DAILY,
+        mechanism="apparatus test" + (" through the day-boxed engine: " if day_boxed else ": ") + what,
+        if_true="the pipeline refuses it" if kind == "null" else "the pipeline accepts it",
+        if_false="the guards are decorative" if kind == "null" else "the gates are jointly unsatisfiable",
+        falsifier="the opposite decision",
+        floor=Floor(float(cfg["floor"]["ev_net_r"]), float(cfg["floor"]["min_trades_per_year"])),
+        power_plan=PowerPlan(sigma, float(cfg["power"]["alpha"]), float(cfg["power"]["power"]), available,
+                             alternative_ev_net_r=float(cfg["power"]["alternative_ev_net_r"])),
+        gates=Gates(int(cfg["gates"]["plateau_cells"]), float(cfg["gates"]["plateau_slack"]),
+                    float(cfg["gates"]["loo_min_fraction"]), float(cfg["gates"]["plateau_slack_se"])),
+        search_space_size=cells, capability=True)
 
 
 def _reverting_walk(name: str, *, days: int, seed: int, sigma_daily: float, planted: float, runs: int,
@@ -127,36 +165,15 @@ def run(kind: str, cfg: dict, register_dir: Path, *, seed: int | None = None, en
         return run_day_boxed(kind, cfg, register_dir, seed=seed)
     reg = Register(register_dir / "register.jsonl")
     axes = {k: [float(x) for x in v] for k, v in cfg["sweep"].items()}
-    cells = 1
-    for v in axes.values():
-        cells *= len(v)
-    w = cfg["world"]
-    seed = int(w["seed"] if seed is None else seed)
-    groups = list(w["groups"])
-    available = int(round(w["years"] * w["trades_per_group_year"])) * len(groups)
-
-    h = Hypothesis(
-        id=f"CONTROL-{kind.upper()}", tier=Tier.MECHANISM, axis=InformationAxis.PRICE_DAILY,
-        mechanism="apparatus test: " + ("random entry has no edge" if kind == "null" else "a planted effect at the floor is detectable"),
-        if_true="the pipeline refuses it" if kind == "null" else "the pipeline accepts it",
-        if_false="the guards are decorative" if kind == "null" else "the gates are jointly unsatisfiable",
-        falsifier="the opposite decision",
-        floor=Floor(float(cfg["floor"]["ev_net_r"]), float(cfg["floor"]["min_trades_per_year"])),
-        power_plan=PowerPlan(float(cfg["power"]["sigma_r"]), float(cfg["power"]["alpha"]),
-                             float(cfg["power"]["power"]), available),
-        gates=Gates(int(cfg["gates"]["plateau_cells"]), float(cfg["gates"]["plateau_slack"]),
-                    float(cfg["gates"]["loo_min_fraction"]), float(cfg["gates"]["plateau_slack_se"])),
-        search_space_size=cells, capability=True)
+    seed = int(cfg["world"]["seed"] if seed is None else seed)
+    h = hypothesis(kind, cfg)
     h = register(h, confirmation=Confirmation(by="apparatus", human=False), parent=None, register=reg)
 
     s = Strategy.specify({"kind": "coin_flip" if kind == "null" else "planted",
                           "stop": float(axes["stop"][0]), "hold": float(axes["hold"][0]),
                           "engine": synthetic.NAME}, hypothesis_id=h.id)
     s = transition(s, StrategyState.COMPILED, register=reg)
-    m = synthetic.measure(spec_hash=s.spec_hash, seed=seed, axes=axes, groups=groups,
-                          years=float(w["years"]), trades_per_group_year=float(w["trades_per_group_year"]),
-                          sigma_r=float(cfg["power"]["sigma_r"]), cost_in_r=float(w["cost_in_r"]),
-                          effect=_effect(kind, cfg), null_draws=int(cfg["gates"]["null_draws"]))
+    m = synthetic_measurement(kind, cfg, seed, spec_hash=s.spec_hash)
     h = measure(h, m, register=reg)
     s = transition(s, StrategyState.MEASURED, register=reg, measurement=m)
     try:
@@ -174,20 +191,8 @@ def run_day_boxed(kind: str, cfg: dict, register_dir: Path, *, seed: int | None 
     reg = Register(register_dir / "register.jsonl")
     d = cfg["day_boxed"]
     seed = int(d["seed"] if seed is None else seed)
-    cells = len(d["stop_percent"]) * len(d["target_multiple"])
-    available = int(d["days"]) * len(d["groups"])
-    floor = Floor(float(cfg["floor"]["ev_net_r"]), float(cfg["floor"]["min_trades_per_year"]))
-    gates = Gates(int(cfg["gates"]["plateau_cells"]), float(cfg["gates"]["plateau_slack"]),
-                  float(cfg["gates"]["loo_min_fraction"]), float(cfg["gates"]["plateau_slack_se"]))
-    h = Hypothesis(
-        id=f"CONTROL-{kind.upper()}-DAY-BOXED", tier=Tier.MECHANISM, axis=InformationAxis.PRICE_DAILY,
-        mechanism="apparatus test through the day-boxed engine: " + (
-            "random entry has no edge" if kind == "null" else "a planted reversal at the floor is detectable over always-long"),
-        if_true="the pipeline refuses it" if kind == "null" else "the pipeline accepts it",
-        if_false="the guards are decorative" if kind == "null" else "the gates are jointly unsatisfiable",
-        falsifier="the opposite decision", floor=floor,
-        power_plan=PowerPlan(float(d["sigma_r"]), float(cfg["power"]["alpha"]), float(cfg["power"]["power"]), available),
-        gates=gates, search_space_size=cells, capability=True)
+    h = hypothesis(kind, cfg, engine="day_boxed")
+    floor, gates = h.floor, h.gates
     h = register(h, confirmation=Confirmation(by="apparatus", human=False), parent=None, register=reg)
     template, m = _day_boxed_measurement(kind, cfg, seed, None, floor, gates)
     s = _Strategy.from_spec(template, hypothesis_id=h.id)

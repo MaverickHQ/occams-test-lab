@@ -58,7 +58,7 @@ advisory.
 ```bash
 make quickstart          # $0, no data, no keys, no network, under ten seconds
 make null                # a coin flip through the whole pipeline is REFUSED, naming why
-make signal              # a planted effect at the floor is ACCEPTED, naming all five checks
+make signal              # a planted effect at the alternative is ACCEPTED, naming all five checks
 make reproduce-public    # the pipeline on synthetic fixtures; refuses an exact-historical claim
 make test-fast           # every test not marked slow; `make check` is the proof
 ```

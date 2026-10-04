@@ -44,6 +44,9 @@ class PowerPlan:
     available_n: int
     rho: float | None = None            # measured intra-cluster correlation, once it is (M7.7)
     rho_provenance: str = ""
+    # ADR-0050: the EV the question wants power *at* — strictly above its floor, declared at registration, no default.
+    # ``None`` only on a question registered before the rule, whose plan told the floor from nil.
+    alternative_ev_net_r: float | None = None
 
     def with_clustering(self, cm) -> PowerPlan:
         """Consume a *measured* clustering: the design effect is applied to
@@ -68,8 +71,15 @@ class PowerPlan:
         return replace(self, available_n=eff, rho=cm.rho, rho_provenance=cm.provenance)
 
     def required_n(self, floor: Floor, search_space_size: int) -> int:
-        """``((z_a + z_b) * sigma / effect)^2`` at Bonferroni-corrected alpha —
-        the M0.15 formula, evaluated by the vendored calculator."""
+        """With a declared alternative (ADR-0050): the one-sided count for the floor's lower confidence bound to clear
+        the floor when the EV is the alternative, at the Bonferroni-corrected alpha. Without one — a question registered
+        before the rule — ``((z_a + z_b) * sigma / effect)^2``, the floor against nil: the M0.15 formula, evaluated by
+        the vendored calculator."""
+        if self.alternative_ev_net_r is not None:
+            from occams import inference
+
+            return inference.one_sided_n(self.sigma_r, self.alternative_ev_net_r - floor.ev_net_r,
+                                         alpha=self.alpha / search_space_size, power=self.power)
         return _power.n_for_mean_shift(floor.ev_net_r / self.sigma_r,
                                        alpha=self.alpha / search_space_size,
                                        power=self.power)

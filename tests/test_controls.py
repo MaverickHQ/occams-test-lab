@@ -26,19 +26,22 @@ def test_signal_is_accepted_naming_all_five_passes(tmp_path):
     assert o.n >= o.required_n
 
 
-def test_the_planted_effect_sits_at_the_boundary_not_far_above_it():
-    floor = CFG["floor"]["ev_net_r"]
-    planted = CFG["signal"]["planted_ev_net_r"]
-    assert floor <= planted <= floor * 1.25
+def test_the_signal_plants_at_the_apparatus_alternative_and_nowhere_else():
+    """ADR-0050 §5: S10 is *a planted effect at the alternative is accepted*. The alternative is declared once, in the
+    control's power plan, strictly above its floor; there is no second planted figure to drift from it."""
+    floor, alternative = CFG["floor"]["ev_net_r"], CFG["power"]["alternative_ev_net_r"]
+    assert floor < alternative <= 2 * floor and "signal" not in CFG
+    d = CFG["day_boxed"]
+    assert d["planted_return_daily"] == pytest.approx((alternative + d["cost_in_r"]) * 0.05)
 
 
 def test_sample_size_is_computed_not_typed(tmp_path):
     o = run("signal", CFG, tmp_path)
-    from occams.core import power
+    from occams import inference
     k = len(CFG["sweep"]["stop"]) * len(CFG["sweep"]["hold"])
-    expect = power.n_for_mean_shift(CFG["floor"]["ev_net_r"] / CFG["power"]["sigma_r"],
-                                    alpha=CFG["power"]["alpha"] / k, power=CFG["power"]["power"])
-    assert o.required_n == expect
+    expect = inference.one_sided_n(CFG["power"]["sigma_r"], CFG["power"]["alternative_ev_net_r"] - CFG["floor"]["ev_net_r"],
+                                   alpha=CFG["power"]["alpha"] / k, power=CFG["power"]["power"])
+    assert o.required_n == expect == 732
 
 
 @pytest.mark.slow

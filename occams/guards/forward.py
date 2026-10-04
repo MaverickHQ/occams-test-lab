@@ -29,6 +29,6 @@ def evaluations(m, h) -> tuple[tuple[Refusal | None, dict], ...]:
     """Each check evaluated once: its refusal or None, and what it saw."""
     return (plateau.evaluate(m, h.gates),
             beats_null.evaluate(m, h.power_plan, h.search_space_size),
-            clears_floor.evaluate(m, h.floor),
+            clears_floor.evaluate(m, h.floor, h.power_plan, h.search_space_size),     # the bound, for a question that declared an alternative
             leave_one_out.evaluate(m, h.gates),
             beats_always_long.evaluate(m, h.power_plan, h.search_space_size))

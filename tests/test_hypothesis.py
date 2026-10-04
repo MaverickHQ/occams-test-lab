@@ -33,7 +33,7 @@ def draft(**kw) -> Hypothesis:
     # the accountant's refusals show up in these tests
     base = dict(id="H-1", tier=Tier.MECHANISM, axis=InformationAxis.REGIME,
                 mechanism="m", if_true="t", if_false="f", falsifier="x",
-                floor=Floor(0.15, 50), power_plan=PowerPlan(1.2, 0.05, 0.8, 1000),
+                floor=Floor(0.15, 50), power_plan=PowerPlan(1.2, 0.05, 0.8, 1000, alternative_ev_net_r=0.45),
                 gates=Gates(4, 0.10, 0.5, 50.0), search_space_size=1)
     base.update(kw)
     return Hypothesis(**base)
@@ -113,7 +113,7 @@ def test_implementation_on_a_null_parent_is_refused(reg):
 
 
 def test_underpowered_is_refused_at_measure_not_discovered_after(reg):
-    h = register(draft(power_plan=PowerPlan(1.2, 0.05, 0.8, available_n=100)),
+    h = register(draft(power_plan=PowerPlan(1.2, 0.05, 0.8, available_n=100, alternative_ev_net_r=0.30)),
                  confirmation=HUMAN, parent=None, register=reg, budget=budget(reg))
     assert h.required_n > 100
     with pytest.raises(Refused) as e:

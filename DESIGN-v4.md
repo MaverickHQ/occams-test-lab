@@ -139,7 +139,17 @@ must pass:
    before it were judged on an independent or a position-ordered null and say
    so.*
 3. **Clears its declared floor** — the **pair**: EV per trade in net R, and
-   the minimum frequency. Not a floor computed afterwards.
+   the minimum frequency. Not a floor computed afterwards. *Since ADR-0050
+   (2026-10-03): the EV half is cleared by a lower confidence bound —
+   the winner's EV less z(1 − alpha/k) of its standard error clustered by
+   date — because the winner is the best of k cells and its point estimate
+   let an EV sitting exactly at the floor through about half the time. A
+   registration declares, beside its floor, the EV it wants power at, with no
+   default; the required count is one-sided against the gap between the two;
+   a survey registration plans on its family's widest cell; and a winner too
+   dispersed for its count is refused at measurement. A question registered
+   before the rule declared no alternative and is judged as it was, by its
+   point estimate, with the bound recorded beside it.*
 4. **Leave-one-out robustness** — the pooled effect must not be carried by a
    small minority of names *(ADR-0012)*.
 5. **Beats always-long** — the winner against a Monte Carlo of always-long at

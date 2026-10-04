@@ -325,7 +325,8 @@ def widest_sigma(row: dict, kin: list[dict]) -> tuple[float | None, dict]:
 
 
 def question_from_cell(row: dict, fam: Family, *, qid: str, index: dict, record: dict, template, pre: dict, budget,
-                       floor, sigma: float | None, power: float, gates, kin: list[dict] | None = None):
+                       floor, sigma: float | None, power: float, gates, kin: list[dict] | None = None,
+                       alternative: float | None = None):
     from occams.measurement import Floor
     from occams.proposers.base import Draft
     from occams.question import from_draft
@@ -346,7 +347,7 @@ def question_from_cell(row: dict, fam: Family, *, qid: str, index: dict, record:
               falsifier="the winner cell's EV in net R at or below the null's corrected quantile, or below the declared floor, "
                         "on the measurement partition",
               floor=Floor(float(floor[0]), float(floor[1])), sweep=fam.sweep, sigma_r=float(s), sigma_provenance=provenance,
-              power=power, gates=gates)
+              power=power, gates=gates, alternative_ev_net_r=alternative)
     q = from_draft(d, id=qid, template=template, budget=budget, available_n=pre["available_n"])
     if pre["clustering"] is not None:
         q = replace(q, hypothesis=replace(q.hypothesis, power_plan=q.hypothesis.power_plan.with_clustering(pre["clustering"])))
@@ -612,7 +613,7 @@ def register_main(argv: list[str]) -> int:  # noqa: C901 — the author's comman
     from occams.hypothesis import Confirmation, Gates
     from occams.ledger.alpha_budget import AlphaBudget, Consumed, SearchBudget
     from occams.proposers.regime import axis_sensitivity, frozen
-    from occams.question import QuestionQueue, max_plateau_neighbourhood, register_question
+    from occams.question import QuestionQueue, declared_at_registration, max_plateau_neighbourhood, register_question
     from occams.register import Register
     from occams.whatif import config_sha
 
@@ -631,6 +632,8 @@ def register_main(argv: list[str]) -> int:  # noqa: C901 — the author's comman
     ap.add_argument("--power", type=float, default=0.8)
     ap.add_argument("--plateau-cells", type=int, default=4)
     ap.add_argument("--plateau-slack", type=float, default=0.10)
+    ap.add_argument("--alternative-ev", type=float, default=None,
+                    help="the EV in net R the question wants power at, strictly above its floor (ADR-0050): the author's, no default")
     ap.add_argument("--plateau-slack-se", type=float, default=None,
                     help="the plateau's slack in the winner's own standard errors (ADR-0051): the author's, declared here, no default")
     ap.add_argument("--loo-min-fraction", type=float, default=0.5)
@@ -732,7 +735,8 @@ def register_main(argv: list[str]) -> int:  # noqa: C901 — the author's comman
         pre = bound_by_thinnest_cell(pre, family_cells)
         try:
             q = question_from_cell(row, fam, qid=qid, index=index, record=record, template=template, pre=pre, budget=budget,
-                                   floor=(a.floor_ev, a.floor_frequency), sigma=a.sigma, power=a.power, gates=gates, kin=family_cells)
+                                   floor=(a.floor_ev, a.floor_frequency), sigma=a.sigma, power=a.power, gates=gates, kin=family_cells,
+                                   alternative=a.alternative_ev)
         except ValueError as e:
             print(f"REFUSED: {e}")
             return 1
@@ -791,11 +795,8 @@ def register_main(argv: list[str]) -> int:  # noqa: C901 — the author's comman
             print(f"    INERT AXIS — {inert}: every cell along it produces the same trades; k charges for cells that are not distinct questions")
         if overlap is not None:
             print(f"    OVERLAP — {overlap.reason}")
-        if h.gates.plateau_slack_se is None:
-            print("    UNDECLARED — plateau_slack_se: the plateau's slack in the winner's own standard errors is declared at "
-                  "registration (--plateau-slack-se) and has no default (ADR-0051); registration would be refused")
         clean = (powered and supportable and plateau_ok and not inert and overlap is None and alpha_refusal is None
-                 and h.gates.plateau_slack_se is not None)
+                 and declared_at_registration(h, indent="    "))
         all_clean = all_clean and clean
         prepared.append((q, declared, pre))
     if cmd == "prepare":

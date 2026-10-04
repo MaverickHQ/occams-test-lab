@@ -114,7 +114,7 @@ def test_a_strategy_clearing_only_under_optimistic_costs_is_refused():
 def test_approval_refuses_a_verdict_not_reached_under_the_bound():
     s = Strategy(identity=(("stop", 1.0),), state=StrategyState.FORWARD)
     h = Hypothesis(id="H", tier=Tier.MECHANISM, axis=InformationAxis.PRICE_DAILY, mechanism="m", if_true="t",
-                   if_false="f", falsifier="x", floor=Floor(0.1, 1), power_plan=PowerPlan(1.0, 0.05, 0.8, 100),
+                   if_false="f", falsifier="x", floor=Floor(0.1, 1), power_plan=PowerPlan(1.0, 0.05, 0.8, 100, alternative_ev_net_r=0.4),
                    gates=Gates(1, 1.0, 0.5, 50.0), search_space_size=1, state=HypothesisState.RESOLVED,
                    verdict=Verdict("supported", 0.3, 100, s.spec_hash, "e", 1, "measurement", (), cost_basis="declared"))
     r = approve.check(s, SimpleNamespace(hypothesis=h))

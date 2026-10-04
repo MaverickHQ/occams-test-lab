@@ -64,6 +64,9 @@ class Draft:
     sources: tuple[str, ...] = ()    # references to retrieved content, never its text
     surfaced: tuple[str, ...] = ()   # quoted passages that read as instructions (M7.5)
     notes: str = ""
+    # ADR-0050: the EV the question wants power at — the author's, declared at registration beside the floor, never a
+    # proposer's and never defaulted; ``None`` until then
+    alternative_ev_net_r: float | None = None
 
     @property
     def search_space_size(self) -> int:
@@ -90,6 +93,8 @@ def validate_draft(d: Draft) -> None:
         reasons.append("sigma_r needs provenance — an assumed sigma is how a power plan is rigged")
     if not (0 < d.power < 1):
         reasons.append("power must be in (0, 1)")
+    if d.alternative_ev_net_r is not None and isinstance(d.floor, Floor) and not d.alternative_ev_net_r > d.floor.ev_net_r:
+        reasons.append("the declared alternative must be strictly above the floor (ADR-0050)")
     if hasattr(d, "alpha"):
         reasons.append("a proposer may not set alpha (R4.4)")
     if not isinstance(d.gates, Gates):
@@ -107,7 +112,8 @@ def to_hypothesis(d: Draft, *, id: str, available_n: int, alpha: float) -> Hypot
     validate_draft(d)
     return Hypothesis(id=id, tier=d.tier, axis=d.axis, mechanism=d.mechanism, if_true=d.if_true,
                       if_false=d.if_false, falsifier=d.falsifier, floor=d.floor,
-                      power_plan=PowerPlan(d.sigma_r, alpha, d.power, available_n), gates=d.gates,
+                      power_plan=PowerPlan(d.sigma_r, alpha, d.power, available_n, alternative_ev_net_r=d.alternative_ev_net_r),
+                      gates=d.gates,
                       search_space_size=d.search_space_size, parent_id=d.parent_id)
 
 

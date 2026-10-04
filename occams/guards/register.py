@@ -29,6 +29,13 @@ def check(h, *, confirmation, parent, budget=None, declared=None) -> Refusal | N
     p = h.power_plan
     if p.sigma_r <= 0 or not (0 < p.alpha < 1) or not (0 < p.power < 1) or p.available_n < 0:
         return Refusal(T, "power plan is not well-formed", {"sigma_r": p.sigma_r, "alpha": p.alpha, "power": p.power, "available_n": p.available_n})
+    alternative = getattr(p, "alternative_ev_net_r", None)
+    if alternative is None:
+        return Refusal(T, "a registration declares alternative_ev_net_r — the EV the question wants power at, beside its floor "
+                          "(ADR-0050); it has no default", {"power": "alternative_ev_net_r"})
+    if not alternative > h.floor.ev_net_r:
+        return Refusal(T, "the declared alternative must be strictly above the floor (ADR-0050)",
+                       {"alternative_ev_net_r": alternative, "floor_ev_net_r": h.floor.ev_net_r})
     if not confirmation.by.strip():
         return Refusal(T, "registration needs a named confirmation", {})
     if not h.capability:

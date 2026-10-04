@@ -77,7 +77,7 @@ def test_on_the_margin_surface_the_standard_error_is_the_margins():
 
 def _draft(gates: Gates) -> Hypothesis:
     return Hypothesis(id="H", tier=Tier.MECHANISM, axis=InformationAxis.PRICE_DAILY, mechanism="m", if_true="t", if_false="f",
-                      falsifier="x", floor=Floor(0.15, 50), power_plan=PowerPlan(1.2, 0.05, 0.8, 1000), gates=gates,
+                      falsifier="x", floor=Floor(0.15, 50), power_plan=PowerPlan(1.2, 0.05, 0.8, 1000, alternative_ev_net_r=0.45), gates=gates,
                       search_space_size=9, capability=True)
 
 
@@ -163,9 +163,10 @@ def test_a_survey_registration_plans_on_the_widest_cell_and_names_it(tmp_path, c
     common = ["--from-survey", str(out), "--grid", str(grid_path), "--archive", str(tmp_path / "archive"), "--register", str(reg_path),
               "--config", str(cfg_path), "--floor-ev", "0.15", "--floor-frequency", "1", "--seed", "3",
               "--id-prefix", "Q2-"]
-    assert question_main(["prepare", *common, "--ids", cid, "--plateau-slack-se", "50"]) in (0, 1)
+    assert question_main(["prepare", *common, "--ids", cid, "--plateau-slack-se", "50", "--alternative-ev", "0.30"]) == 0
     text = capsys.readouterr().out
     assert f"σ {widest['sigma_net']:.4f}" in text and "the family's widest cell" in text and widest["cell"] in text
     # and without the slack in standard errors nothing is registrable: the key is named, no value suggested
     assert question_main(["prepare", *common, "--ids", cid]) == 1
-    assert "plateau_slack_se" in capsys.readouterr().out
+    text = capsys.readouterr().out
+    assert "UNDECLARED — plateau_slack_se" in text and "UNDECLARED — alternative_ev_net_r" in text
