@@ -37,10 +37,7 @@ class NotPublishable(TypeError):
     """A record class that could carry money was offered to the Register."""
 
 
-def register_record(cls):
-    """Declare a class appendable to the Register. Refuses, at declaration
-    time, any field typed Money or named like money — so the assertion
-    holds for every instance that can ever exist."""
+def _publishable(cls) -> None:
     if not is_dataclass(cls):
         raise TypeError("register records are frozen dataclasses")
     for f in fields(cls):
@@ -50,7 +47,22 @@ def register_record(cls):
         if f.name.lower() in FORBIDDEN_IN_REGISTER or any(
                 f.name.lower().endswith("_" + w) for w in ("currency", "money", "cash")):
             raise NotPublishable(f"{cls.__name__}.{f.name} names money; the Register holds no account currency (S7)")
+
+
+def register_record(cls):
+    """Declare a class appendable to the Register. Refuses, at declaration
+    time, any field typed Money or named like money — so the assertion
+    holds for every instance that can ever exist."""
+    _publishable(cls)
     cls.__register_record__ = True
+    return cls
+
+
+def diagnostic_record(cls):
+    """Declare a class appendable to the diagnostics store (ADR-0047) and to no Register: published like a Register
+    record, so it passes the same declaration-time check, and never a verdict, so no Register takes it."""
+    _publishable(cls)
+    cls.__diagnostic_record__ = True
     return cls
 
 

@@ -1,6 +1,7 @@
 """The record types the two stores accept (M14.6, split from ``occams/register.py``):
 nineteen for the Register — publishable by construction, ``@register_record`` refusing any
-field that could carry money — and four for Operations, never published. A record's
+field that could carry money — four for Operations, never published, and one for the
+diagnostics store (ADR-0047), published and never a verdict. A record's
 ``type`` in the chain is its class name, unchanged by the move.
 """
 
@@ -8,7 +9,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from occams.register.store import Money, operations_record, register_record  # noqa: F401 — Money for the type check
+from occams.register.store import Money, diagnostic_record, operations_record, register_record  # noqa: F401 — Money for the type check
 
 
 # ---- Register record types (publishable by construction) ----------------
@@ -353,6 +354,38 @@ class ProgrammeStopped:
     surveys: int
     questions: int
     config_sha: str
+
+
+# ---- the diagnostics store's one record (ADR-0047) -----------------------
+
+@diagnostic_record
+@dataclass(frozen=True)
+class Rescored:
+    """What the corrected rules would have said of a question, written beside the record it annotates and never in its
+    place (M16.18, ADR-0047 §3). Not a verdict: it lives in its own store, counts toward no falsifier, and spends,
+    accrues and changes no alpha. A question is re-scored only after its recorded numbers were recreated exactly from
+    its stamped source; one that could not be is recorded with ``reproduced=False`` and its reason, and not re-scored."""
+
+    hypothesis_id: str
+    register: str                  # the programme Register it annotates, by file name
+    annotates_seq: int             # the record it annotates — the resolution, or the refusal at measurement — by its place
+    annotates_sha: str             # and by its chain sha: an annotation of another record is another annotation
+    recorded: dict                 # what that record says: outcome, winner, EV, count, refusals, the checks it was judged by
+    reproduced: bool               # the recorded numbers recreated exactly from the stamped source, first (§4)
+    reproduction: dict             # the source and what it measured, or the reason there was none
+    rescored: bool
+    rules: tuple[str, ...]         # the ADRs the re-score judges under, in full: a reader can tell which rules made a number
+    engine_sha: str                # the commit of the code that re-scored
+    engine_code_sha: str           # and its content hash (ADR-0055)
+    seed: int                      # the seed the record stamps
+    null_draws: int
+    winner: dict                   # the winner under those rules, and whether it is the recorded one
+    at_measurement: dict           # REGISTERED -> MEASURED under those rules: passed, or the refusal with its numbers
+    checks: tuple[dict, ...]       # the five checks, each with every number it judged, passing or failing
+    refused_by: tuple[str, ...]
+    reading: str                   # would be supported | would be null | would be refused at measurement | not re-scored
+    not_judged: tuple[str, ...] = ()   # rules whose numbers the question never declared: reported, not judged (§7)
+    note: str = ""
 
 
 # ---- Operations record types (never published) --------------------------

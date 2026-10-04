@@ -81,6 +81,10 @@ def main(argv: list[str] | None = None) -> int:
         from occams.register.heads import main as heads_main
 
         return heads_main(argv[1:])
+    if argv and argv[0] == "rescore":          # M16.18: what the corrected rules would have said — beside the record, never a verdict
+        from occams.rescore import main as rescore_main
+
+        return rescore_main(argv[1:])
     if argv and argv[0] == "sources":          # M16.17: the stamped sources, named and addressable without the history
         from occams.sources import main as sources_main
 

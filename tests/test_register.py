@@ -86,11 +86,11 @@ def test_records_carry_an_instant_not_a_date(tmp_path):
 # ---- M14.6: the module is a package; nothing recorded changed ------------------------------------
 
 PUBLIC_NAMES = (
-    "CalendarFrozen", "ClassifierFrozen", "EraDecomposition", "Exposure", "FORBIDDEN_IN_REGISTER", "ForwardFill",
+    "CalendarFrozen", "ClassifierFrozen", "Diagnostics", "EraDecomposition", "Exposure", "FORBIDDEN_IN_REGISTER", "ForwardFill",
     "ForwardWindowOpened", "ForwardWindowResolved", "GuardEvidence", "HypothesisMeasured", "HypothesisRegistered", "HypothesisResolved",
     "LabClosed", "Money", "NotPublishable", "Operations", "OrderIntent", "PathsArchived", "ProgrammeStopped",
-    "ProposalIssued", "RefusalRecorded", "Register", "ReserveLook", "RollMeasured", "Shrinkage", "Store", "StrategyTransitioned",
-    "SurveyRecorded", "TamperedHistory", "UniverseDeclared", "_plain", "canonical", "now", "operations_record",
+    "ProposalIssued", "RefusalRecorded", "Register", "Rescored", "ReserveLook", "RollMeasured", "Shrinkage", "Store", "StrategyTransitioned",
+    "SurveyRecorded", "TamperedHistory", "UniverseDeclared", "_plain", "canonical", "diagnostic_record", "now", "operations_record",
     "register_record",
 )
 
@@ -120,8 +120,9 @@ def test_every_committed_register_and_queue_still_verifies_and_every_record_type
     from occams.question import QuestionQueue
 
     root = Path(__file__).resolve().parent.parent / "register"
-    registers = sorted(p for p in root.glob("*.jsonl") if not p.name.endswith("-queue.jsonl") and p.name != "queue.jsonl")
-    queues = sorted(p for p in root.glob("*.jsonl") if p not in registers)
+    diagnostics = root / "diagnostics.jsonl"            # ADR-0047: a store beside the Registers, with one record kind, and not one of them
+    registers = sorted(p for p in root.glob("*.jsonl") if not p.name.endswith("-queue.jsonl") and p.name != "queue.jsonl" and p != diagnostics)
+    queues = sorted(p for p in root.glob("*.jsonl") if p not in registers and p != diagnostics)
     assert len(registers) == 3 and len(queues) == 3
     for p in registers:
         reg = Register(p)

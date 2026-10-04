@@ -30,6 +30,7 @@ from occams.register.records import (  # noqa: F401
     LabClosed,
     RefusalRecorded,
     GuardEvidence,
+    Rescored,
     StrategyTransitioned,
     ReserveLook,
     ForwardWindowOpened,
@@ -52,6 +53,7 @@ from occams.register.store import (  # noqa: F401
     TamperedHistory,
     _plain,
     canonical,
+    diagnostic_record,
     now,
     operations_record,
     register_record,
@@ -82,6 +84,15 @@ class Register(Store):
     SurveyRecorded = SurveyRecorded
 
 
+class Diagnostics(Store):
+    """What the corrected rules would have said, beside the Registers and never in them (ADR-0047 §3): one record kind,
+    ``Rescored``. Hash-chained like a Register; no Register record is appendable to it and it is appendable to none."""
+
+    marker = "__diagnostic_record__"
+    name = "Diagnostics"
+    Rescored = Rescored
+
+
 class Operations(Store):
     marker = "__operations_record__"
     name = "Operations"
@@ -98,6 +109,7 @@ class Operations(Store):
 __all__ = [
     "CalendarFrozen",
     "ClassifierFrozen",
+    "Diagnostics",
     "EraDecomposition",
     "Exposure",
     "FORBIDDEN_IN_REGISTER",
@@ -118,6 +130,7 @@ __all__ = [
     "ProposalIssued",
     "RefusalRecorded",
     "Register",
+    "Rescored",
     "RollMeasured",
     "ReserveLook",
     "Shrinkage",
@@ -128,6 +141,7 @@ __all__ = [
     "UniverseDeclared",
     "_plain",
     "canonical",
+    "diagnostic_record",
     "now",
     "operations_record",
     "register_record",
