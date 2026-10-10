@@ -83,8 +83,9 @@ nulls would be null or refused sooner, and Q2-001 would be null: its floor
 and its fifth check refuse. Those readings are diagnostics, kept in
 `register/diagnostics.jsonl` and written out in
 [the re-score](RESCORE-2026-10.md). They are not verdicts. No Register
-gained or lost a record, no outcome changed, and the closing statement is
-the bytes the author adopted.
+gained or lost a record and no outcome changed. The closing statement's
+text of 2026-09-24 is unchanged; under it sits a plain note on the
+re-score, adopted by the author on 2026-10-10.
 
 ## Reading the evidence yourself
 

@@ -16,7 +16,7 @@ from occams.register import Diagnostics
 from tests.test_rescore import _as_recorded, programme  # noqa: F401 — the fixture programme of one supported verdict
 
 ROOT = Path(__file__).resolve().parents[1]
-LAB_CONCLUSION_SHA256 = "408b6450abaa6e78d8d3d2d2c6a8493d328039834419b60ed6db34e14f3fb53f"      # the file at v1.0.0, and at every commit since
+LAB_CONCLUSION_SHA256 = "c6df20358c3874313adf9a351b25884cd1e7863239558d32a85e04aaa448b625"      # the text of 2026-09-24 plus the note adopted 2026-10-10
 
 
 @pytest.fixture
@@ -80,6 +80,7 @@ def test_the_report_is_written_from_the_diagnostics_alone_and_says_it_has_no_sta
 
 def test_the_closing_statement_is_the_bytes_the_author_adopted():
     """`docs/LAB-CONCLUSION.md` was adopted by the author on 2026-09-24. A re-score is written beside it; adopting a
-    note on it into the closing statement is the author's act, and no row of M16 touches the file."""
+    note on it into the closing statement is the author's act, and no row of M16 touched the file. On 2026-10-10 the
+    author adopted a plain-language note on the re-score, appended under the text of 2026-09-24, which is unchanged."""
     digest = hashlib.sha256((ROOT / "docs" / "LAB-CONCLUSION.md").read_bytes()).hexdigest()
     assert digest == LAB_CONCLUSION_SHA256

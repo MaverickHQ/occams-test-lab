@@ -189,3 +189,56 @@ is the one step of *Definition of done* that remains.
 record #22 for Q2-001's four passed checks. The resolved record is #19;
 #22 is the Strategy's transition to `FORWARD`. Found while indexing the
 Registers for `docs/INTEGRITY.md`.
+
+**Note added 2026-10-10.** Nothing above has been edited.
+
+In October 2026 an outside reviewer looked at the statistics behind the
+five checks and found they were easier to pass than we had claimed. We
+reran every point the review made, and it held up. The fixes went out in
+three releases, 1.0.1 and 1.1.0 on 3 October and 2.0.0 on 4 October. The
+checks are stricter now. The three Registers this statement is written
+from have not changed by a single line.
+
+That raised an obvious question: if the six questions had been judged
+under the stricter rules, what would the answers have been? To find out,
+each question was first rerun in the exact code that judged it at the
+time, to confirm the original numbers came back. Five of the six did.
+Q3-001 never reached the engine, so there was nothing to rerun. Each of
+the five was then judged again with the current code, on the same data
+and the same seed. The results are kept in `register/diagnostics.jsonl`
+and written up in plain terms in `docs/RESCORE-2026-10.md`.
+
+| question | original verdict | under today's rules |
+|---|---|---|
+| Q-003 | null | still null; four of the five checks fail it |
+| Q-004 | null | still null; all five fail it |
+| Q-005 | null | would not have been measured at all: 893 trades is too few for how noisy its returns are |
+| Q2-001 | **supported** | **null**: it fails the floor and the fifth check |
+| Q2-002 | null | still null; it fails the floor, as before |
+| Q3-001 | refused before measurement | not rerun |
+
+The one that matters is Q2-001, the only supported verdict this lab ever
+produced. Under today's rules it fails. The best cell in its sweep is now
+a different one from the one recorded (cell [2, 0] rather than [4, 0]):
+7,642 trades averaging +0.091 R each, which is +0.054 R better than simply
+being long at the same times. Once the uncertainty in that average is
+allowed for, the lower bound is +0.002 R, against a floor of 0.15 R. And
+the fifth check, which asks whether the entry signal adds anything over
+just being long, gives p = 0.031 where 0.01 is required. Nothing that
+failed a question originally passes it now, and no question comes out
+better than its original verdict.
+
+What this does not change. The Q2-001 verdict stays "supported" in the
+Register, because that is what the rules in force at the time said, and
+sealed records are never rewritten. This note sits beside it. The
+falsifier count, the alpha spent and every number in §1 are as they were.
+The lab is still closed: nothing will be registered or measured in these
+three Registers again. And this note is not a verdict. It is a reading of
+the old questions under new rules, written down so that nobody has to
+take the one supported verdict at face value.
+
+One known gap remains. On the multi-day engine, when the names in a
+universe move together with the market, the beats-null check still passes
+a little more often than it should at the 5% level. Every question in
+this lab was run at the 1% level, where it behaves. The gap is recorded in
+ADR-0048.

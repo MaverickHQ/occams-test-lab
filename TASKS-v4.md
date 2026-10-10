@@ -5874,3 +5874,20 @@ and stays resolved. M5.0, M0.22 and M0.21(c) are unchanged.
 > is acceptable; any number a new programme would need. No Register gained or
 > lost a record in M16, and the three programme heads are the ones pinned on
 > 2026-10-03.
+
+> **S1, S3, S10 — 2026-10-04 to 2026-10-05, the closing commit of M16 on the
+> CI machine.** `8a4dfbc` (M16 closed): run `37238428914`, `check` and
+> `setup` success. The scheduled size table of 2026-10-05, run
+> `37308725229` on the same commit: success, the same two rows outside
+> tolerance as on 2026-10-04. `make null` refused and `make signal` accepted
+> on both engines.
+
+> **2026-10-10 — a note on the re-score adopted into the closing
+> statement.** On the author's instruction ("append it to the closing
+> statement and update the pin"), a note in plain language is appended to
+> `docs/LAB-CONCLUSION.md` under the text adopted on 2026-09-24, which is
+> not edited: what the review found, how the six questions were reread,
+> what the stricter rules say of each, and what that does not change. Every
+> number in it is read from `register/diagnostics.jsonl`. The sha256 pin in
+> `tests/test_rescore_pages.py` moves to the new bytes in the same commit;
+> the README and `docs/INTEGRITY.md` say the note exists. No Register moved.

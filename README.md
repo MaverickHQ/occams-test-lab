@@ -89,8 +89,9 @@ rules that reached it were corrected afterwards, for records made after
 record stamps and only then judged again:
 [docs/RESCORE-2026-10.md](docs/RESCORE-2026-10.md), written from
 `register/diagnostics.jsonl` alone. Under the corrected rules the one verdict
-of **supported** would be null. The record stays as it was reached; a note on
-this in the closing statement is the author's to adopt.
+of **supported** would be null. The record stays as it was reached; the
+closing statement carries a plain note on this, adopted by the author on
+2026-10-10 under its original text.
 
 The lab's product is its refusals. What three programmes established, and
 what they did not, is in [docs/LAB-CONCLUSION.md](docs/LAB-CONCLUSION.md);
