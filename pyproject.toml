@@ -14,7 +14,7 @@ dependencies = ["numpy>=1.26"]
 # scipy is a TEST-ONLY oracle for occams/core/stats.py, as in the donor:
 # testing our implementation against scipy pins OUR numbers. ruff is PINNED,
 # not floored — the donor watched two machines disagree about the rules.
-dev = ["pytest>=8.0", "ruff==0.16.9", "scipy>=1.11"]
+dev = ["pytest>=8.0", "ruff==0.16.10", "scipy>=1.11"]
 
 [project.urls]
 Homepage = "https://maverickhq.github.io/occams-test-lab/"
