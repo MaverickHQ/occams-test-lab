@@ -25,7 +25,7 @@ jobs:
           grep -Eq '^Decision: publish' docs/PUBLICATION.md || { echo "REFUSED: docs/PUBLICATION.md records no 'Decision: publish' line"; exit 1; }
           grep -Eq '^Date: [0-9]{4}-[0-9]{2}-[0-9]{2}' docs/PUBLICATION.md || { echo "REFUSED: the decision carries no date"; exit 1; }
           grep -Eq '^By: .+' docs/PUBLICATION.md || { echo "REFUSED: the decision names no author"; exit 1; }
-      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: "3.12"
       - name: Install
